@@ -1,10 +1,11 @@
 # Python
 .venv/
 __pycache__/
-*.pyc
+*.py[cod]
 
 # Environment
 .env
+.env.*
 
 # VS Code
 .vscode/
@@ -12,13 +13,20 @@ __pycache__/
 # macOS
 .DS_Store
 
-# Logs
-*.log
+# Windows
+Thumbs.db
 
-# Database
-*.db
-*.sqlite3
+# Python caches
+.pytest_cache/
+.mypy_cache/
 
 # Build
 dist/
 build/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Logs
+*.log
