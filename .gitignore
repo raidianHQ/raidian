@@ -3,6 +3,10 @@
 __pycache__/
 *.py[cod]
 
+# SQLite dev databases
+*.db
+*.sqlite3
+
 # Environment
 .env
 .env.*
