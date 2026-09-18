@@ -1,4 +1,4 @@
-"""The Reading Integration orchestration layer (Step 9).
+"""The Reading Integration orchestration layer (Step 9; extended Step 11).
 
 The only module permitted to combine database access with calls into the
 deterministic Interpretation Engine (app/services/interpretation/) and the
@@ -7,10 +7,16 @@ mirrors the loader/seed and compute/persist separations already
 established elsewhere in this project. See
 Documentation/READING_INTEGRATION_DESIGN.md Section 13.
 
-Neither function here commits or rolls back the session -- the caller
+Also the only module the Interpretation API (app/api/interpretation.py,
+Step 11) is permitted to call into for Interpretation/Narrative data --
+the API layer must never query Interpretation directly
+(Documentation/INTERPRETATION_API_DESIGN.md Section 2.1/16).
+
+None of these functions commit or roll back the session -- the caller
 controls the transaction boundary
 (Documentation/READING_INTEGRATION_DESIGN.md Section 14), exactly as
-interpretation/persistence.py's own save_interpretation already does.
+interpretation/persistence.py's own save_interpretation already does. For
+the API, that caller is app/db/session.py's get_db() dependency.
 """
 
 from __future__ import annotations
@@ -69,6 +75,43 @@ def interpret_reading(session: Session, reading: Reading) -> Interpretation:
     return save_interpretation(session, reading, model)
 
 
+def get_current_interpretation(session: Session, reading: Reading) -> Interpretation | None:
+    """The Interpretation row with the highest `sequence` for `reading`, or
+    None if `reading` has never been interpreted
+    (Documentation/READING_INTEGRATION_DESIGN.md Section 7, Resolved Q2).
+
+    Exposed as its own reusable function (Step 11,
+    INTERPRETATION_API_DESIGN.md Section 2.1) so callers such as the API
+    layer never write this query themselves; `get_narrative_for_reading()`
+    below is itself built on this function rather than duplicating it.
+    """
+    return session.execute(
+        select(Interpretation)
+        .where(Interpretation.reading_id == reading.id)
+        .order_by(Interpretation.sequence.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+
+
+def list_interpretations(session: Session, reading: Reading) -> list[Interpretation]:
+    """Every Interpretation row for `reading`, newest-first (descending
+    `sequence` -- the current interpretation is always index 0).
+
+    Deliberately the opposite order of `Reading.interpretations`' own
+    relationship ordering (ascending, chosen for the ORM's own convenience
+    -- Documentation/READING_INTEGRATION_DESIGN.md Section 7): a history
+    *list* is a different consumer with a different natural expectation
+    (Step 11, INTERPRETATION_API_DESIGN.md Section 12).
+    """
+    return list(
+        session.execute(
+            select(Interpretation)
+            .where(Interpretation.reading_id == reading.id)
+            .order_by(Interpretation.sequence.desc())
+        ).scalars()
+    )
+
+
 def get_narrative_for_reading(session: Session, reading: Reading) -> NarrativeModel | None:
     """Assembles the narrative for `reading`'s current interpretation --
     the Interpretation row with the highest `sequence` for this
@@ -76,10 +119,11 @@ def get_narrative_for_reading(session: Session, reading: Reading) -> NarrativeMo
     Resolved Q2) -- or None if `reading` has never been interpreted.
 
     Performs the only database read anywhere in the narrative path: fetches
-    the current Interpretation row and reconstructs its InterpretiveModel
-    via `InterpretiveModel.model_validate(...)` (an already-proven-lossless
-    round-trip -- test_save_interpretation_round_trips_the_model_through_json),
-    then hands that already-materialized object to the pure, database-free
+    the current Interpretation row via `get_current_interpretation()` and
+    reconstructs its InterpretiveModel via `InterpretiveModel.model_validate(...)`
+    (an already-proven-lossless round-trip --
+    test_save_interpretation_round_trips_the_model_through_json), then
+    hands that already-materialized object to the pure, database-free
     `assemble_narrative()` (NARRATIVE_LAYER_DESIGN.md Section 2/4).
 
     NarrativeModel is never persisted or cached here (Section 9, Resolved
@@ -88,12 +132,7 @@ def get_narrative_for_reading(session: Session, reading: Reading) -> NarrativeMo
     Interpretation row is touched or affected -- this function performs no
     write of any kind (Section 10/12).
     """
-    latest = session.execute(
-        select(Interpretation)
-        .where(Interpretation.reading_id == reading.id)
-        .order_by(Interpretation.sequence.desc())
-        .limit(1)
-    ).scalar_one_or_none()
+    latest = get_current_interpretation(session, reading)
 
     if latest is None:
         return None
