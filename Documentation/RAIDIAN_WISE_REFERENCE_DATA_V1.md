@@ -2,7 +2,7 @@
 
 # Document Information
 
-Version: 1.1
+Version: 1.2
 Status: Active
 Owner: RaidianHQ
 Last Updated: September 2026
@@ -56,9 +56,9 @@ Every card's upright and reversed meaning was written to:
 
 ## 4.1 Shared theme vocabulary
 
-`primary_themes` and `secondary_themes` are drawn from a deliberately reused, shared vocabulary (e.g. `new_beginnings`, `letting_go`, `uncertainty`, `transition`, `structure`, `conflict`, `clarity`, `patience`, `surrender`) rather than inventing a unique tag per card. This is intentional: the Interpretation Engine's future compound-theme matching (Section 11 of the product spec) depends on multiple cards in a spread sharing recognizable theme tags. A tag vocabulary where every card has unique tags would make that matching impossible. Tags are lowercase `snake_case`, matching the Scripture theme taxonomy's naming style (`RAIDIAN_WISE_PRODUCT_SPEC_V1.md`, Section 15.3) so the two systems can eventually share vocabulary where themes overlap (e.g. `patience`, `surrender`, `uncertainty`).
+`primary_themes` and `secondary_themes` are drawn from a deliberately reused, shared vocabulary (e.g. `new_beginnings`, `letting_go`, `uncertainty`, `transition`, `structure`, `conflict`, `clarity`, `patience`) rather than inventing a unique tag per card. This is intentional: the Interpretation Engine's future compound-theme matching (Section 11 of the product spec) depends on multiple cards in a spread sharing recognizable theme tags. Tags are lowercase `snake_case`, matching the Scripture theme taxonomy's naming style (`RAIDIAN_WISE_PRODUCT_SPEC_V1.md`, Section 15.3) so the two systems can eventually share vocabulary where themes overlap (e.g. `patience`, `uncertainty`).
 
-This vocabulary is not currently enforced by a database constraint or enum — it is a *content convention*, documented here so future edits stay consistent. If the Interpretation Engine phase finds it needs a stricter, closed vocabulary, that should become a formal enum at that point rather than being retrofitted silently.
+**This vocabulary is a closed, enforced list**, not just a convention: `backend/app/reference_data/theme_vocabulary.yaml` is the canonical set (107 tags), and `app/seed/loader.py` rejects any card whose theme tags fall outside it. It started as an open convention (v1.0 of this document) and was consolidated and closed off in the Reference Data Enrichment & Normalization pass — see `RAIDIAN_WISE_THEME_VOCABULARY_V1.md` for the full merge mapping (which near-duplicate tags were folded together, and which similar-looking tags were deliberately kept distinct) and `RAIDIAN_WISE_REFERENCE_DATA_AUDIT_V1.md` (Section 7.1) for the audit finding that prompted it.
 
 ---
 
@@ -183,7 +183,9 @@ All other values (including spelling/casing normalization — e.g. "Pices" → "
 
 ## 8.5 The `astrology_note` field
 
-The source spreadsheet's `Astrology` column holds full narrative paragraphs per card (not just a short label like its other correspondence fields), written in a voice that suggests derivation from third-party tarot websites (the sheet's `Image Path` column points to `tarotcardmeanings.net`). Per the same content-sourcing principle as Section 1, this prose was **not** copied. Instead, `astrology_note` holds a brief (1–2 sentence) original note synthesizing the correspondence already captured in the structured fields (e.g. *"This card is associated with Leo and the Sun, echoing Strength's connection to warmth, confidence, and steady inner resolve."*) — for Minor Arcana, generated from the card's actual `astrological_influence` value plus its Golden Dawn title where one exists, not freely invented.
+The source spreadsheet's `Astrology` column holds full narrative paragraphs per card (not just a short label like its other correspondence fields), written in a voice that suggests derivation from third-party tarot websites (the sheet's `Image Path` column points to `tarotcardmeanings.net`). Per the same content-sourcing principle as Section 1, this prose was **not** copied. Instead, `astrology_note` holds a brief original note synthesizing the correspondence already captured in the structured fields (e.g. *"This card is associated with Leo and the Sun, echoing Strength's connection to warmth, confidence, and steady inner resolve."*) — for Minor Arcana, generated from the card's actual `astrological_influence` value plus its Golden Dawn title where one exists, not freely invented.
+
+**Revised in the Reference Data Enrichment & Normalization pass**: the 20 cards without a numbered-card Golden Dawn title (the 4 Aces and all 16 court cards) originally had a thinner, formulaic note that just restated the raw `astrological_influence` value (flagged in `RAIDIAN_WISE_REFERENCE_DATA_AUDIT_V1.md`, Section 7.2). All 20 were rewritten to explain the relevant qualities of the stated astrological influence (using well-established, generic sign/planet/element associations — not invented history) and connect them to how that influence may color the card's expression, e.g. *"This influence combines Fire's urgency and drive with Air's clarity and speed of thought... Within this card, that combination may be expressed as swift, decisive action..."* (Knight of Swords). Still reflective, non-predictive language throughout; still no attribution beyond what the source data supports.
 
 ## 8.6 Schema
 
@@ -200,4 +202,6 @@ See `RAIDIAN_WISE_CORRESPONDENCE_DATA_PROPOSAL_V1.md` Section 4.2 for the full m
 - `RAIDIAN_WISE_PRODUCT_SPEC_V1.md` — Card, Spread, and theme-taxonomy requirements this content satisfies.
 - `RAIDIAN_WISE_ARCHITECTURE_V1.md` — technical architecture this seed process fits within.
 - `RAIDIAN_WISE_CORRESPONDENCE_DATA_PROPOSAL_V1.md` — full findings, data-quality analysis, and schema proposal behind Section 8.
+- `RAIDIAN_WISE_REFERENCE_DATA_AUDIT_V1.md` — the read-only audit that identified the two issues Section 4.1 and Section 8.5 above address.
+- `RAIDIAN_WISE_THEME_VOCABULARY_V1.md` — the full theme-tag consolidation mapping and rationale behind Section 4.1.
 - `docs/PRINCIPLES.md`, `docs/PROJECT_VISION.md` — governing philosophy (reflection over prediction, humility over certainty) this content's language follows.

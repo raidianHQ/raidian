@@ -173,3 +173,27 @@ def test_correspondence_seeding_is_repeatable(db_session):
     seed_reference_data(db_session)
 
     assert db_session.query(CardCorrespondence).count() == 78
+
+
+# --- Reference Data Enrichment & Normalization pass -----------------------
+
+
+def test_seeded_themes_use_only_the_canonical_vocabulary(db_session):
+    from app.seed.loader import load_theme_vocabulary
+
+    seed_reference_data(db_session)
+    vocabulary = load_theme_vocabulary()
+
+    for card in db_session.query(Card).all():
+        assert set(card.primary_themes).issubset(vocabulary), card.name
+        assert set(card.secondary_themes).issubset(vocabulary), card.name
+
+
+def test_seeded_astrology_notes_were_enriched(db_session):
+    seed_reference_data(db_session)
+
+    knight_of_swords = db_session.query(Card).filter_by(name="Knight of Swords").one()
+    note = knight_of_swords.correspondence.astrology_note
+    assert note is not None
+    assert not note.startswith("In the Golden Dawn tradition, this card is associated with")
+    assert "may be expressed" in note

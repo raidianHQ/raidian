@@ -10,6 +10,7 @@ from app.seed.loader import (
     load_all_spread_definitions,
     load_card_definitions,
     load_correspondence_definitions,
+    load_theme_vocabulary,
     validate_card_definitions,
     validate_correspondence_definitions,
     validate_spread_definition,
@@ -245,13 +246,17 @@ def test_judgement_correspondence_corrected_to_scorpio(correspondences):
 
 def test_astrology_notes_are_original_not_copied_source_prose(correspondences):
     """Guards against ever pasting the source spreadsheet's long narrative
-    paragraphs back in -- our notes should stay short, structured
-    synthesis, not multi-sentence prose (see proposal doc, Section 3).
+    paragraphs back in. The source's shortest non-empty Astrology paragraph
+    is 166 characters and its longest run well past 1000; our notes --
+    including the richer two-sentence notes from the enrichment pass
+    (RAIDIAN_WISE_THEME_VOCABULARY_V1.md) -- top out around 380. 450 stays
+    a comfortable ceiling above our own content while still catching an
+    accidental full-paragraph paste.
     """
     for entry in correspondences:
         note = entry.get("astrology_note")
         if note:
-            assert len(note) < 300, f"{entry['name']}: astrology_note looks too long to be a brief original note"
+            assert len(note) < 450, f"{entry['name']}: astrology_note looks too long to be a brief original note"
 
 
 def test_validation_catches_correspondence_for_unknown_card(cards):
@@ -289,3 +294,149 @@ def test_validation_catches_mismatched_symbol_and_sign_counts(cards, corresponde
     with pytest.raises(ReferenceDataError) as exc_info:
         validate_correspondence_definitions(cards, broken)
     assert any("length" in problem for problem in exc_info.value.problems)
+
+
+# --- Theme vocabulary normalization ---------------------------------------
+# See Documentation/RAIDIAN_WISE_THEME_VOCABULARY_V1.md for the full merge
+# mapping and rationale this section verifies against.
+
+REMOVED_THEME_TAGS = {
+    "surrender", "painful_ending", "perseverance", "moderation",
+    "disruption", "connection", "change", "swift_action",
+    # NOTE: `healing` -> `recovery` was proposed and reverted on review;
+    # `healing` remains a canonical tag (RAIDIAN_WISE_THEME_VOCABULARY_V1.md,
+    # Section 4) and must NOT be in this removed-tags set.
+}
+
+
+@pytest.fixture(scope="module")
+def theme_vocabulary():
+    return load_theme_vocabulary()
+
+
+def test_theme_vocabulary_has_no_duplicates(theme_vocabulary):
+    # load_theme_vocabulary() itself returns a set, so this also exercises
+    # that the underlying YAML list had no duplicate entries to begin with.
+    raw = load_theme_vocabulary()
+    assert len(raw) == len(theme_vocabulary)
+
+
+def test_theme_vocabulary_is_107_canonical_tags(theme_vocabulary):
+    assert len(theme_vocabulary) == 107
+
+
+def test_healing_remains_a_canonical_tag(theme_vocabulary):
+    """healing -> recovery was proposed and reverted on review (Section 4,
+    RAIDIAN_WISE_THEME_VOCABULARY_V1.md): the two name distinct processes
+    (restoration/renewal vs. regaining strength after difficulty).
+    """
+    assert "healing" in theme_vocabulary
+
+
+def test_all_78_cards_present_after_normalization(cards):
+    assert len(cards) == 78
+
+
+def test_all_cards_still_have_populated_themes_after_normalization(cards):
+    for card in cards:
+        assert card["primary_themes"], f"{card['name']}: primary_themes is empty"
+        assert card["secondary_themes"], f"{card['name']}: secondary_themes is empty"
+
+
+def test_every_used_theme_tag_is_in_the_canonical_vocabulary(cards, theme_vocabulary):
+    used = set()
+    for c in cards:
+        used.update(c["primary_themes"])
+        used.update(c["secondary_themes"])
+    assert used.issubset(theme_vocabulary)
+
+
+def test_removed_tags_no_longer_appear_anywhere(cards):
+    used = set()
+    for c in cards:
+        used.update(c["primary_themes"])
+        used.update(c["secondary_themes"])
+    assert used.isdisjoint(REMOVED_THEME_TAGS)
+
+
+def test_no_card_lost_theme_richness_from_merging(cards):
+    """The three cards whose two primary themes merged into one tag were
+    each given a second, accurate replacement (Section 3.1 of the
+    vocabulary doc) -- none should have been left at a single primary
+    theme as a side effect of deduplication.
+    """
+    by_name = {c["name"]: c for c in cards}
+    for name in ("The Hanged Man", "Ten of Swords", "Nine of Wands"):
+        assert len(by_name[name]["primary_themes"]) == 2, name
+
+
+def test_the_star_retains_healing(cards):
+    """healing -> recovery was reverted specifically for The Star; it must
+    carry its original `healing` tag, not `recovery`.
+    """
+    star = next(c for c in cards if c["name"] == "The Star")
+    assert "healing" in star["primary_themes"]
+    assert "recovery" not in star["primary_themes"]
+
+
+def test_no_card_has_overlapping_primary_and_secondary_themes(cards):
+    for c in cards:
+        overlap = set(c["primary_themes"]) & set(c["secondary_themes"])
+        assert not overlap, f"{c['name']}: {overlap}"
+
+
+def test_validation_catches_a_tag_outside_the_vocabulary(cards):
+    broken = [dict(c) for c in cards]
+    broken[0] = dict(broken[0], primary_themes=["not_a_real_canonical_tag"])
+
+    with pytest.raises(ReferenceDataError) as exc_info:
+        validate_card_definitions(broken)
+    assert any("not in the canonical theme vocabulary" in p for p in exc_info.value.problems)
+
+
+def test_real_card_content_passes_vocabulary_validation(cards):
+    validate_card_definitions(cards)  # must not raise
+
+
+# --- Astrology note enrichment (the 20 formerly-formulaic notes) ---------
+
+FORMULAIC_CARDS = [
+    "Ace of Wands", "King of Wands", "Queen of Wands", "Knight of Wands", "Page of Wands",
+    "Ace of Cups", "King of Cups", "Queen of Cups", "Knight of Cups", "Page of Cups",
+    "Ace of Swords", "King of Swords", "Queen of Swords", "Knight of Swords", "Page of Swords",
+    "Ace of Pentacles", "King of Pentacles", "Queen of Pentacles", "Knight of Pentacles", "Page of Pentacles",
+]
+
+OLD_FORMULAIC_PREFIX = "In the Golden Dawn tradition, this card is associated with"
+
+
+def test_exactly_20_cards_were_previously_formulaic():
+    assert len(FORMULAIC_CARDS) == 20
+
+
+def test_all_20_formerly_formulaic_notes_were_rewritten(correspondences):
+    by_name = {c["name"]: c for c in correspondences}
+    for name in FORMULAIC_CARDS:
+        note = by_name[name]["astrology_note"]
+        assert not note.startswith(OLD_FORMULAIC_PREFIX), f"{name}: still has the old formulaic note"
+
+
+def test_revised_notes_explain_qualities_not_just_repeat_the_raw_value(correspondences):
+    """The revised notes must do more than restate astrological_influence
+    verbatim -- they should be substantively longer, reflecting the added
+    explanation of qualities and how they may color the card.
+    """
+    by_name = {c["name"]: c for c in correspondences}
+    for name in FORMULAIC_CARDS:
+        entry = by_name[name]
+        note = entry["astrology_note"]
+        assert len(note) > len(entry["astrological_influence"]) + 100, (
+            f"{name}: revised note doesn't look substantively richer than the raw influence value"
+        )
+
+
+def test_revised_notes_use_reflective_non_predictive_language(correspondences):
+    by_name = {c["name"]: c for c in correspondences}
+    for name in FORMULAIC_CARDS:
+        note = by_name[name]["astrology_note"]
+        assert "may be expressed" in note, f"{name}: missing the reflective 'may be expressed' framing"

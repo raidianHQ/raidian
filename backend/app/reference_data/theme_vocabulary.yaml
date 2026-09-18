@@ -1,0 +1,154 @@
+# Canonical theme vocabulary for Raidian Wise reference-data content.
+#
+# This is the closed, controlled set of tags a card's `primary_themes` and
+# `secondary_themes` may draw from. It is deck-agnostic (not specific to
+# Rider-Waite-Smith) and shared across `primary_themes` and
+# `secondary_themes` -- there is one vocabulary, not two.
+#
+# Produced by the Reference Data Enrichment & Normalization pass. See
+# Documentation/RAIDIAN_WISE_THEME_VOCABULARY_V1.md for the full
+# consolidation mapping (which tags were merged into which, and why) and
+# the reasoning behind tags that look similar but were deliberately kept
+# distinct.
+#
+# Grouped into loose sections below for human readability only -- the
+# loader treats this as one flat, alphabetically-unordered list. Adding a
+# new tag here is a deliberate content decision, not a mechanical one: it
+# should represent a genuinely distinct concept not already covered by an
+# existing tag (see the "kept separate" reasoning in the vocabulary doc
+# before adding near-synonyms of something already listed).
+
+# --- Beginnings, potential, risk ---
+- new_beginnings
+- potential
+- opportunity
+- risk_taking
+- spontaneity
+- exploration
+- curiosity
+- openness
+
+# --- Will, action, momentum ---
+- willpower
+- determination
+- momentum
+- assertiveness
+- focus
+- control
+- ambition
+- breakthrough
+
+# --- Authority, structure, tradition ---
+- authority
+- structure
+- stability
+- discipline
+- tradition
+- belief_systems
+- mentorship
+
+# --- Emotion & connection ---
+- emotional_connection
+- relationships
+- compassion
+- nurturing
+- sensuality
+- idealism
+- romantic_pursuit
+- joy
+- contentment
+- fulfillment
+- vitality
+- grief
+- loss
+
+# --- Intuition & inner knowing ---
+- intuition
+- hidden_knowledge
+- inner_guidance
+- mystery
+- inner_strength
+- courage
+- introspection
+- solitude
+- patience
+
+# --- Balance & integration ---
+- balance
+- integration
+- adaptability
+
+# --- Choice, values, fairness ---
+- choice
+- values_alignment
+- fairness
+- accountability
+- truth
+- honest_communication
+- communication
+- diplomacy
+
+# --- Conflict & difficulty ---
+- conflict
+- strategy
+- evasion
+- entrapment
+- restriction
+- attachment
+- patterns
+- hardship
+- burden
+- exhaustion
+- anxiety
+- fear
+- indecision
+- uncertainty
+- illusion
+
+# --- Endings, transformation, release ---
+- endings
+- transformation
+- transition
+- letting_go
+- upheaval
+- revelation
+- reckoning
+- self_evaluation
+
+# --- Renewal & recovery ---
+- hope
+- renewal
+- healing
+- recovery
+- rest
+- vigilance
+
+# --- Clarity & discernment ---
+- clarity
+- discernment
+
+# --- Completion & wholeness ---
+- completion
+- wholeness
+- legacy
+- cycles
+
+# --- Material & practical ---
+- material_security
+- abundance
+- practicality
+- resourcefulness
+- skill_and_craft
+- diligence
+- reliability
+- self_sufficiency
+- generosity
+- collaboration
+- recognition
+
+# --- Community & identity ---
+- community
+- authenticity
+- memory
+- creativity
+- manifestation

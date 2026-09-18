@@ -21,6 +21,7 @@ from app.models.enums import Arcana, SemanticRole, Suit
 REFERENCE_DATA_DIR = Path(__file__).resolve().parents[1] / "reference_data"
 RWS_DECK_DIR = REFERENCE_DATA_DIR / "rider_waite_smith"
 SPREADS_DIR = REFERENCE_DATA_DIR / "spreads"
+THEME_VOCABULARY_PATH = REFERENCE_DATA_DIR / "theme_vocabulary.yaml"
 
 _MAJOR_RANKS = {str(n) for n in range(22)}
 _MINOR_RANKS = {"ace", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "page", "knight", "queen", "king"}
@@ -58,6 +59,22 @@ def _load_yaml(path: Path) -> Any:
         return yaml.safe_load(f)
 
 
+# --- Theme vocabulary --------------------------------------------------
+#
+# A single, closed, deck-agnostic controlled vocabulary that every card's
+# primary_themes/secondary_themes must draw from -- see
+# Documentation/RAIDIAN_WISE_THEME_VOCABULARY_V1.md for the consolidation
+# that produced it. Enforced here so a future content edit can't silently
+# reintroduce a near-duplicate tag or a typo.
+
+
+def load_theme_vocabulary(path: Path = THEME_VOCABULARY_PATH) -> set[str]:
+    tags = _load_yaml(path)
+    if not isinstance(tags, list):
+        raise ReferenceDataError([f"{path}: expected a YAML list of theme tags"])
+    return set(tags)
+
+
 # --- Deck + Cards -----------------------------------------------------------
 
 
@@ -80,7 +97,14 @@ def load_card_definitions(deck_dir: Path = RWS_DECK_DIR) -> list[dict]:
     return cards
 
 
-def validate_card_definitions(cards: list[dict]) -> None:
+def validate_card_definitions(cards: list[dict], theme_vocabulary: set[str] | None = None) -> None:
+    """`theme_vocabulary` defaults to the real controlled vocabulary
+    (THEME_VOCABULARY_PATH); tests pass a synthetic set to validate that
+    check in isolation without depending on the real content file.
+    """
+    if theme_vocabulary is None:
+        theme_vocabulary = load_theme_vocabulary()
+
     problems: list[str] = []
 
     if len(cards) != 78:
@@ -114,6 +138,16 @@ def validate_card_definitions(cards: list[dict]) -> None:
                 f"{label}: expected at least {_MIN_KEYWORDS} keywords, found {len(keywords)} "
                 "(single generic keywords are not sufficient content)"
             )
+
+        for field in ("primary_themes", "secondary_themes"):
+            tags = card.get(field)
+            if isinstance(tags, list):
+                unknown = [t for t in tags if t not in theme_vocabulary]
+                if unknown:
+                    problems.append(
+                        f"{label}: {field} contains tag(s) not in the canonical theme "
+                        f"vocabulary: {unknown} (see theme_vocabulary.yaml)"
+                    )
 
         name = card.get("name")
         if isinstance(name, str):

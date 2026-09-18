@@ -383,7 +383,7 @@
   color: "red"
   animal: null
   stone: "Diamond"
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Spirit of Fire."
+  astrology_note: "This influence draws on the essential quality of Fire itself -- initiative, passion, and transformative drive not yet directed toward any particular sign or season. Within this card, that undirected fire may be expressed as a spark of creative energy still finding its first form."
 
 - name: "Two of Wands"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -583,7 +583,7 @@
   color: "red"
   animal: null
   stone: "Star Ruby, Turquoise"
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Sagittarius, Scorpio."
+  astrology_note: "This influence spans the final degrees of Scorpio into the early degrees of Sagittarius -- Scorpio's intensity and depth giving way to Sagittarius' expansive, confident vision. Within this card, that combination may be expressed as leadership that is both deeply committed and far-reaching in its aims."
 
 - name: "Queen of Wands"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -603,7 +603,7 @@
   color: "red"
   animal: null
   stone: "Star Sapphire, Pearl"
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Aries, Pisces."
+  astrology_note: "This influence draws on both the final degrees of Pisces and the early degrees of Aries -- Pisces' receptive, intuitive depth meeting Aries' confident, assertive spark. Within this card, that combination may be expressed as a warmth that is both perceptive and self-assured."
 
 - name: "Knight of Wands"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -623,7 +623,7 @@
   color: "red"
   animal: null
   stone: "Topaz, Yellow Diamond"
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Leo, Cancer."
+  astrology_note: "This influence spans the final degrees of Cancer into the early degrees of Leo -- Cancer's protective, feeling-led instinct giving way to Leo's bold, confident self-expression. Within this card, that shift may be expressed as impulsive courage that moves quickly from feeling something to acting on it."
 
 - name: "Page of Wands"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -643,7 +643,7 @@
   color: "red"
   animal: null
   stone: "Rock Crystal"
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Aries, Leo, Sagittarius."
+  astrology_note: "This influence spans the fire trine as a whole -- Aries' initiative, Leo's confident self-expression, and Sagittarius' exploratory optimism -- rather than any single decan within it. Within this card, that broad fire energy may be expressed as eager, still-unfocused enthusiasm reaching in several directions at once."
 
 - name: "Ace of Cups"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -663,7 +663,7 @@
   color: "black"
   animal: null
   stone: "Diamond"
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Cancer, Scorpio, Pisces and Spirit of Water."
+  astrology_note: "This influence draws on the water trine as a whole -- Cancer's nurturing instinct, Scorpio's emotional depth, and Pisces' compassionate receptivity -- together with the essential, undirected quality of Water itself. Within this card, that combination may be expressed as an emotional opening not yet shaped by any single relationship or circumstance."
 
 - name: "Two of Cups"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -863,7 +863,7 @@
   color: "black"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Libra/Scorpio."
+  astrology_note: "This influence spans the final degrees of Libra into the early degrees of Scorpio -- Libra's relational balance meeting Scorpio's emotional depth and intensity. Within this card, that combination may be expressed as a steadiness that holds strong feeling without being destabilized by it."
 
 - name: "Queen of Cups"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -883,7 +883,7 @@
   color: "black"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Water of Water."
+  astrology_note: "This influence is Water in its most concentrated form -- feeling, receptivity, and intuition without another element's tempering. Within this card, that concentrated quality may be expressed as an emotional depth and attunement to others that runs undiluted."
 
 - name: "Knight of Cups"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -903,7 +903,7 @@
   color: "black"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Fire of Water."
+  astrology_note: "This influence combines Fire's active, forward-reaching energy with Water's emotional depth -- movement in pursuit of a feeling rather than a fact. Within this card, that combination may be expressed as an idealistic pursuit carried by passion as much as by patience."
 
 - name: "Page of Cups"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -923,7 +923,7 @@
   color: "black"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with female Earth of Water, Male Air of Water."
+  astrology_note: "This influence combines two sub-elemental attributions within Water -- Earth of Water and Air of Water -- reflecting this court position's traditional association with both a grounding, receptive quality and a more mentally curious one. Within this card, that blend may be expressed as an emotional curiosity still deciding whether to settle into feeling or put itself into words."
 
 - name: "Ace of Swords"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -943,7 +943,7 @@
   color: "yellow"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Spirit of Air."
+  astrology_note: "This influence draws on the essential quality of Air itself -- clarity, intellect, and the movement of thought not yet directed toward any particular sign or season. Within this card, that undirected clarity may be expressed as a sudden, unshaped insight arriving before its implications are fully understood."
 
 - name: "Two of Swords"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1143,7 +1143,7 @@
   color: "yellow"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Taurus/Gemini."
+  astrology_note: "This influence spans the final degrees of Taurus into the early degrees of Gemini -- Taurus' steady groundedness meeting Gemini's quick, communicative intellect. Within this card, that combination may be expressed as judgment that is both carefully considered and clearly articulated."
 
 - name: "Queen of Swords"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1163,7 +1163,7 @@
   color: "yellow"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Virgo/Libra."
+  astrology_note: "This influence spans the final degrees of Virgo into the early degrees of Libra -- Virgo's precise discernment meeting Libra's fairness and relational balance. Within this card, that combination may be expressed as clarity delivered with an instinct for what is just, even when it is difficult to hear."
 
 - name: "Knight of Swords"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1183,7 +1183,7 @@
   color: "yellow"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Fire of Air."
+  astrology_note: "This influence combines Fire's urgency and drive with Air's clarity and speed of thought -- ideas translated immediately into motion. Within this card, that combination may be expressed as swift, decisive action taken as soon as the mind is made up, with little pause in between."
 
 - name: "Page of Swords"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1203,7 +1203,7 @@
   color: "yellow"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Female Earth of Air, Male Air of Air."
+  astrology_note: "This influence combines two sub-elemental attributions within Air -- Earth of Air and Air of Air -- reflecting this court position's traditional association with both a more grounded application of thought and a purely mental, curious one. Within this card, that blend may be expressed as an alert curiosity that hasn't yet decided whether to observe quietly or speak up."
 
 - name: "Ace of Pentacles"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1223,7 +1223,7 @@
   color: "white"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Spirit of Earth."
+  astrology_note: "This influence draws on the essential quality of Earth itself -- groundedness, patience, and the capacity to make something tangible, not yet directed toward any particular sign or season. Within this card, that undirected quality may be expressed as a practical opportunity still taking its first, unshaped form."
 
 - name: "Two of Pentacles"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1423,7 +1423,7 @@
   color: "white"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Aries and Taurus."
+  astrology_note: "This influence spans the final degrees of Aries into the early degrees of Taurus -- Aries' initiating drive meeting Taurus' steady, resource-building patience. Within this card, that combination may be expressed as an authority built through decisive action followed by sustained, careful growth."
 
 - name: "Queen of Pentacles"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1443,7 +1443,7 @@
   color: "white"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Water of Earth."
+  astrology_note: "This influence combines Water's receptivity and care with Earth's groundedness and practicality -- nurturing expressed through tangible, everyday means. Within this card, that combination may be expressed as a resourcefulness that tends to others' wellbeing in concrete, sustaining ways."
 
 - name: "Knight of Pentacles"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1463,7 +1463,7 @@
   color: "white"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Fire of Earth."
+  astrology_note: "This influence combines Fire's drive and initiative with Earth's patience and practicality -- energy applied toward steady, tangible results rather than quick ones. Within this card, that combination may be expressed as a persistence that moves carefully but doesn't stop moving."
 
 - name: "Page of Pentacles"
   source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
@@ -1483,4 +1483,4 @@
   color: "white"
   animal: null
   stone: null
-  astrology_note: "In the Golden Dawn tradition, this card is associated with Female Earth of Earth, Male Air of Earth."
+  astrology_note: "This influence combines two sub-elemental attributions within Earth -- Earth of Earth and Air of Earth -- reflecting this court position's traditional association with both a fully grounded application and a more curious, mentally engaged one. Within this card, that blend may be expressed as a practical curiosity that studies an opportunity carefully before committing to it."
