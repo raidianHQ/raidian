@@ -1,0 +1,342 @@
+# Cups (14 cards) -- traditionally associated with emotion, relationships,
+# and intuition. Original wording; see
+# Documentation/RAIDIAN_WISE_REFERENCE_DATA_V1.md for methodology.
+
+- name: Ace of Cups
+  arcana: minor
+  suit: cups
+  rank: ace
+  image_ref: rws/cups/ace-of-cups.png
+  base_meaning_upright: >
+    The Ace of Cups may point toward an emotional opening -- a new feeling,
+    connection, or capacity for closeness beginning to overflow. It can
+    represent the start of something felt more than reasoned.
+  base_meaning_reversed: >
+    Reversed, this card can suggest emotional openness that feels blocked
+    or held back, or a connection that has not yet found its expression. It
+    may invite reflection on what is making it hard to let feeling flow.
+  keywords:
+    - emotional opening
+    - a new connection
+    - overflowing feeling
+    - capacity for closeness
+  primary_themes:
+    - new_beginnings
+    - emotional_connection
+  secondary_themes:
+    - openness
+
+- name: Two of Cups
+  arcana: minor
+  suit: cups
+  rank: two
+  image_ref: rws/cups/two-of-cups.png
+  base_meaning_upright: >
+    The Two of Cups may represent mutual connection -- two sides meeting
+    each other with reciprocity and genuine attunement. It can point toward
+    partnership built on being truly seen by another.
+  base_meaning_reversed: >
+    Reversed, this card can suggest imbalance in a connection, where
+    reciprocity has broken down or attention flows mostly one way. It may
+    invite reflection on whether a relationship still feels mutual.
+  keywords:
+    - mutual connection
+    - reciprocity
+    - partnership
+    - emotional attunement
+  primary_themes:
+    - emotional_connection
+    - relationships
+  secondary_themes:
+    - balance
+
+- name: Three of Cups
+  arcana: minor
+  suit: cups
+  rank: three
+  image_ref: rws/cups/three-of-cups.png
+  base_meaning_upright: >
+    The Three of Cups may point toward shared joy -- community, friendship,
+    and celebration experienced together rather than alone. It can
+    represent warmth found in gathering with others.
+  base_meaning_reversed: >
+    Reversed, this card can suggest celebration that feels forced, or
+    community that has grown strained. It may invite reflection on where
+    connection with others needs tending.
+  keywords:
+    - shared joy
+    - community
+    - celebration
+    - friendship
+  primary_themes:
+    - community
+    - emotional_connection
+  secondary_themes:
+    - joy
+
+- name: Four of Cups
+  arcana: minor
+  suit: cups
+  rank: four
+  image_ref: rws/cups/four-of-cups.png
+  base_meaning_upright: >
+    The Four of Cups may point toward apathy or contemplation -- a
+    dissatisfaction that lingers even when something worthwhile is being
+    offered. It can represent withdrawal into oneself, weighing what is
+    present against what feels missing.
+  base_meaning_reversed: >
+    Reversed, this card can suggest emerging out of that apathy, noticing an
+    opportunity that had been overlooked. It may invite reflection on
+    whether disengagement has run its course.
+  keywords:
+    - contemplative apathy
+    - dissatisfaction
+    - withdrawal
+    - overlooking what is offered
+  primary_themes:
+    - contentment
+  secondary_themes:
+    - introspection
+
+- name: Five of Cups
+  arcana: minor
+  suit: cups
+  rank: five
+  image_ref: rws/cups/five-of-cups.png
+  base_meaning_upright: >
+    The Five of Cups may point toward loss or regret -- attention caught on
+    what has been spilled rather than what still remains standing. It can
+    represent grief that has not yet turned to notice what is left.
+  base_meaning_reversed: >
+    Reversed, this card can suggest beginning to see what remains, and
+    starting to move forward despite the loss. It may invite reflection on
+    what healing might look like from here.
+  keywords:
+    - loss
+    - regret
+    - grief
+    - focus on what has spilled
+  primary_themes:
+    - grief
+    - loss
+  secondary_themes:
+    - recovery
+
+- name: Six of Cups
+  arcana: minor
+  suit: cups
+  rank: six
+  image_ref: rws/cups/six-of-cups.png
+  base_meaning_upright: >
+    The Six of Cups may point toward nostalgia -- memory, innocence, or a
+    reconnection with something from the past. It can represent comfort
+    found in what is familiar.
+  base_meaning_reversed: >
+    Reversed, this card can suggest being caught in the past rather than
+    drawing gently from it, or an idealized memory that does not match
+    present reality. It may invite reflection on what from the past still
+    serves the present.
+  keywords:
+    - nostalgia
+    - memory
+    - innocence
+    - reconnecting with the past
+  primary_themes:
+    - memory
+  secondary_themes:
+    - emotional_connection
+
+- name: Seven of Cups
+  arcana: minor
+  suit: cups
+  rank: seven
+  image_ref: rws/cups/seven-of-cups.png
+  base_meaning_upright: >
+    The Seven of Cups may point toward many possibilities at once --
+    imagination offering more options than can easily be evaluated. It can
+    represent a need for discernment amid an abundance of choices, some of
+    which may not be what they appear.
+  base_meaning_reversed: >
+    Reversed, this card can suggest choices beginning to narrow, or clarity
+    emerging about which options were illusions to begin with. It may
+    invite reflection on what is genuinely worth pursuing.
+  keywords:
+    - many possibilities
+    - imagination
+    - discernment
+    - illusion versus reality
+  primary_themes:
+    - discernment
+    - illusion
+  secondary_themes:
+    - choice
+
+- name: Eight of Cups
+  arcana: minor
+  suit: cups
+  rank: eight
+  image_ref: rws/cups/eight-of-cups.png
+  base_meaning_upright: >
+    The Eight of Cups may point toward walking away -- leaving something
+    behind, even something of value, in search of deeper meaning
+    elsewhere. It can represent a quiet, deliberate departure rather than
+    an impulsive one.
+  base_meaning_reversed: >
+    Reversed, this card can suggest difficulty leaving a situation that no
+    longer serves, or returning to something already left behind. It may
+    invite reflection on what is making the departure hard to complete.
+  keywords:
+    - walking away
+    - seeking deeper meaning
+    - a deliberate departure
+    - leaving something of value behind
+  primary_themes:
+    - letting_go
+    - transition
+  secondary_themes:
+    - introspection
+
+- name: Nine of Cups
+  arcana: minor
+  suit: cups
+  rank: nine
+  image_ref: rws/cups/nine-of-cups.png
+  base_meaning_upright: >
+    The Nine of Cups may point toward contentment -- a sense of emotional
+    satisfaction, comfort, and having what one has wished for. It can
+    represent enjoyment of the present moment.
+  base_meaning_reversed: >
+    Reversed, this card can suggest satisfaction that feels hollow, or
+    contentment pursued for its own sake rather than genuinely felt. It may
+    invite reflection on whether outward comfort matches inward feeling.
+  keywords:
+    - contentment
+    - emotional satisfaction
+    - comfort
+    - a wish fulfilled
+  primary_themes:
+    - contentment
+    - fulfillment
+  secondary_themes:
+    - joy
+
+- name: Ten of Cups
+  arcana: minor
+  suit: cups
+  rank: ten
+  image_ref: rws/cups/ten-of-cups.png
+  base_meaning_upright: >
+    The Ten of Cups may point toward lasting emotional harmony -- a sense
+    of belonging and fulfillment shared with others rather than experienced
+    alone. It can represent a foundation of connection that feels secure.
+  base_meaning_reversed: >
+    Reversed, this card can suggest harmony that feels incomplete, or a
+    gap between the appearance of belonging and how it is actually felt. It
+    may invite reflection on what genuine fulfillment would require.
+  keywords:
+    - lasting harmony
+    - belonging
+    - shared fulfillment
+    - emotional security
+  primary_themes:
+    - fulfillment
+    - community
+  secondary_themes:
+    - emotional_connection
+
+- name: Page of Cups
+  arcana: minor
+  suit: cups
+  rank: page
+  image_ref: rws/cups/page-of-cups.png
+  base_meaning_upright: >
+    The Page of Cups may point toward emotional curiosity -- a tender new
+    feeling, message, or creative impulse just beginning to form. It can
+    represent openness to what has not yet been fully named.
+  base_meaning_reversed: >
+    Reversed, this card can suggest emotional immaturity, or a feeling kept
+    private out of uncertainty about how it will be received. It may invite
+    reflection on what it would take to express it.
+  keywords:
+    - emotional curiosity
+    - a tender new feeling
+    - creative openness
+    - an unformed message
+  primary_themes:
+    - new_beginnings
+    - emotional_connection
+  secondary_themes:
+    - intuition
+
+- name: Knight of Cups
+  arcana: minor
+  suit: cups
+  rank: knight
+  image_ref: rws/cups/knight-of-cups.png
+  base_meaning_upright: >
+    The Knight of Cups may point toward following the heart -- an offer,
+    invitation, or romantic pursuit guided by feeling and idealism. It can
+    represent movement made in the name of connection.
+  base_meaning_reversed: >
+    Reversed, this card can suggest idealism disconnected from practical
+    reality, or a gesture that promises more than it delivers. It may
+    invite reflection on whether feeling is being matched by follow-through.
+  keywords:
+    - following the heart
+    - romantic pursuit
+    - idealism
+    - an invitation
+  primary_themes:
+    - idealism
+    - romantic_pursuit
+  secondary_themes:
+    - emotional_connection
+
+- name: Queen of Cups
+  arcana: minor
+  suit: cups
+  rank: queen
+  image_ref: rws/cups/queen-of-cups.png
+  base_meaning_upright: >
+    The Queen of Cups may point toward emotional depth -- compassion and
+    intuitive attunement to what others are feeling. It can represent
+    steady empathy that holds space without being overwhelmed by it.
+  base_meaning_reversed: >
+    Reversed, this card can suggest emotional overwhelm, or empathy that
+    has become difficult to separate from one's own feelings. It may invite
+    reflection on where boundaries around feeling are needed.
+  keywords:
+    - emotional depth
+    - compassion
+    - intuitive attunement
+    - steady empathy
+  primary_themes:
+    - compassion
+    - intuition
+  secondary_themes:
+    - emotional_connection
+
+- name: King of Cups
+  arcana: minor
+  suit: cups
+  rank: king
+  image_ref: rws/cups/king-of-cups.png
+  base_meaning_upright: >
+    The King of Cups may point toward emotional mastery -- calm steadiness
+    even amid strong feeling, and diplomacy that comes from having worked
+    through one's own emotions. It can represent measured, compassionate
+    guidance.
+  base_meaning_reversed: >
+    Reversed, this card can suggest feeling suppressed rather than
+    integrated, or calm that masks unresolved emotion underneath. It may
+    invite reflection on what is being held beneath a composed surface.
+  keywords:
+    - emotional mastery
+    - calm steadiness
+    - diplomacy
+    - compassionate guidance
+  primary_themes:
+    - compassion
+    - balance
+  secondary_themes:
+    - diplomacy

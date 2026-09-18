@@ -1,0 +1,341 @@
+# Swords (14 cards) -- traditionally associated with thought, communication,
+# conflict, and truth. Original wording; see
+# Documentation/RAIDIAN_WISE_REFERENCE_DATA_V1.md for methodology.
+
+- name: Ace of Swords
+  arcana: minor
+  suit: swords
+  rank: ace
+  image_ref: rws/swords/ace-of-swords.png
+  base_meaning_upright: >
+    The Ace of Swords may point toward a moment of mental clarity -- an
+    insight or truth that cuts through confusion. It can represent a
+    breakthrough in understanding, sharp and sudden.
+  base_meaning_reversed: >
+    Reversed, this card can suggest clarity that has not yet arrived, or a
+    truth being resisted rather than faced. It may invite reflection on what
+    is clouding otherwise sharp thinking.
+  keywords:
+    - mental clarity
+    - breakthrough insight
+    - truth cutting through confusion
+    - sharp understanding
+  primary_themes:
+    - clarity
+    - breakthrough
+  secondary_themes:
+    - truth
+
+- name: Two of Swords
+  arcana: minor
+  suit: swords
+  rank: two
+  image_ref: rws/swords/two-of-swords.png
+  base_meaning_upright: >
+    The Two of Swords may point toward indecision -- a difficult choice
+    held at a standstill, sometimes deliberately, to avoid an uncomfortable
+    outcome. It can represent a balanced tension that has not yet resolved.
+  base_meaning_reversed: >
+    Reversed, this card can suggest that avoidance is becoming
+    unsustainable, or that new information is forcing a stalemate to break.
+    It may invite reflection on what has been kept unresolved and why.
+  keywords:
+    - indecision
+    - a difficult choice deferred
+    - stalemate
+    - balanced but unresolved tension
+  primary_themes:
+    - indecision
+    - uncertainty
+  secondary_themes:
+    - conflict
+
+- name: Three of Swords
+  arcana: minor
+  suit: swords
+  rank: three
+  image_ref: rws/swords/three-of-swords.png
+  base_meaning_upright: >
+    The Three of Swords may point toward heartbreak -- a painful truth
+    that cuts cleanly rather than gently. It can represent grief that
+    arrives with clarity, even when that clarity hurts.
+  base_meaning_reversed: >
+    Reversed, this card can suggest healing beginning after that pain, or
+    an old hurt resurfacing to finally be addressed. It may invite
+    reflection on where grief is asking to be acknowledged rather than
+    pushed aside.
+  keywords:
+    - heartbreak
+    - painful truth
+    - piercing clarity
+    - grief
+  primary_themes:
+    - grief
+  secondary_themes:
+    - truth
+
+- name: Four of Swords
+  arcana: minor
+  suit: swords
+  rank: four
+  image_ref: rws/swords/four-of-swords.png
+  base_meaning_upright: >
+    The Four of Swords may point toward rest -- a deliberate withdrawal to
+    recover, both mentally and physically, before continuing. It can
+    represent a needed pause rather than a retreat from responsibility.
+  base_meaning_reversed: >
+    Reversed, this card can suggest resuming activity before rest is
+    actually complete, or restlessness that makes recovery difficult. It
+    may invite reflection on whether enough space has truly been given to
+    recuperate.
+  keywords:
+    - rest
+    - recovery
+    - a mental pause
+    - deliberate withdrawal
+  primary_themes:
+    - rest
+    - recovery
+  secondary_themes:
+    - introspection
+
+- name: Five of Swords
+  arcana: minor
+  suit: swords
+  rank: five
+  image_ref: rws/swords/five-of-swords.png
+  base_meaning_upright: >
+    The Five of Swords may point toward conflict with a hollow victory --
+    a win that costs more in relationship or goodwill than it gains. It can
+    represent self-interest pursued at the expense of connection.
+  base_meaning_reversed: >
+    Reversed, this card can suggest a conflict finally being let go of, or
+    the lingering cost of a past dispute becoming clearer. It may invite
+    reflection on whether continuing to contest a point is worth its price.
+  keywords:
+    - conflict
+    - a hollow victory
+    - self-interest
+    - unresolved tension
+  primary_themes:
+    - conflict
+  secondary_themes:
+    - discernment
+
+- name: Six of Swords
+  arcana: minor
+  suit: swords
+  rank: six
+  image_ref: rws/swords/six-of-swords.png
+  base_meaning_upright: >
+    The Six of Swords may point toward transition -- moving away from
+    difficulty, gradually, toward calmer circumstances. It can represent
+    progress that is steady rather than dramatic.
+  base_meaning_reversed: >
+    Reversed, this card can suggest difficulty leaving a troubled situation
+    behind, or a transition that has stalled partway through. It may invite
+    reflection on what is keeping the passage from completing.
+  keywords:
+    - transition
+    - moving toward calmer conditions
+    - gradual passage
+    - steady progress
+  primary_themes:
+    - transition
+  secondary_themes:
+    - recovery
+
+- name: Seven of Swords
+  arcana: minor
+  suit: swords
+  rank: seven
+  image_ref: rws/swords/seven-of-swords.png
+  base_meaning_upright: >
+    The Seven of Swords may point toward strategy -- acting alone, perhaps
+    quietly, to navigate a situation on one's own terms. It can also invite
+    reflection on where subtlety is shading into evasion, whether of
+    oneself or of others.
+  base_meaning_reversed: >
+    Reversed, this card can suggest a strategy or evasion coming to light,
+    or a decision to be more forthright than before. It may invite
+    reflection on what has been left unsaid.
+  keywords:
+    - strategy
+    - acting alone
+    - evasion
+    - operating quietly
+  primary_themes:
+    - strategy
+    - evasion
+  secondary_themes:
+    - discernment
+
+- name: Eight of Swords
+  arcana: minor
+  suit: swords
+  rank: eight
+  image_ref: rws/swords/eight-of-swords.png
+  base_meaning_upright: >
+    The Eight of Swords may point toward feeling trapped -- restricted
+    less by outside circumstances than by a narrowed sense of what is
+    possible. It can represent a self-imposed limitation that feels
+    external.
+  base_meaning_reversed: >
+    Reversed, this card can suggest the first steps out of that
+    restriction, or recognizing that more options exist than it had
+    seemed. It may invite reflection on which limits are real and which
+    are perceived.
+  keywords:
+    - feeling trapped
+    - restricted perception
+    - self-imposed limitation
+    - narrowed possibility
+  primary_themes:
+    - entrapment
+  secondary_themes:
+    - illusion
+
+- name: Nine of Swords
+  arcana: minor
+  suit: swords
+  rank: nine
+  image_ref: rws/swords/nine-of-swords.png
+  base_meaning_upright: >
+    The Nine of Swords may point toward anxiety -- worry and rumination
+    that grow larger in the quiet of night than they do in daylight. It can
+    represent mental anguish that outpaces the situation's actual scale.
+  base_meaning_reversed: >
+    Reversed, this card can suggest anxiety beginning to ease, or facing a
+    fear directly rather than turning it over endlessly. It may invite
+    reflection on separating real concern from imagined worst cases.
+  keywords:
+    - anxiety
+    - worry
+    - rumination
+    - mental anguish
+  primary_themes:
+    - anxiety
+  secondary_themes:
+    - fear
+
+- name: Ten of Swords
+  arcana: minor
+  suit: swords
+  rank: ten
+  image_ref: rws/swords/ten-of-swords.png
+  base_meaning_upright: >
+    The Ten of Swords may point toward a painful ending -- a situation
+    that has run its course completely, leaving little left to salvage. It
+    can represent exhaustion that comes right before release.
+  base_meaning_reversed: >
+    Reversed, this card can suggest recovery beginning after the worst has
+    passed, or resistance to accepting that something has truly ended. It
+    may invite reflection on what comes after rock bottom.
+  keywords:
+    - painful ending
+    - exhaustion
+    - a situation run its course
+    - release after the worst has passed
+  primary_themes:
+    - painful_ending
+    - endings
+  secondary_themes:
+    - recovery
+
+- name: Page of Swords
+  arcana: minor
+  suit: swords
+  rank: page
+  image_ref: rws/swords/page-of-swords.png
+  base_meaning_upright: >
+    The Page of Swords may point toward curiosity and vigilance -- a new
+    idea seeking expression, paired with alertness to what is happening
+    around it. It can represent quick thinking still finding its direction.
+  base_meaning_reversed: >
+    Reversed, this card can suggest scattered thinking, or words spoken
+    before they have been fully considered. It may invite reflection on
+    where more listening might serve better than more speaking.
+  keywords:
+    - curiosity
+    - vigilance
+    - a new idea seeking expression
+    - alertness
+  primary_themes:
+    - curiosity
+    - vigilance
+  secondary_themes:
+    - communication
+
+- name: Knight of Swords
+  arcana: minor
+  suit: swords
+  rank: knight
+  image_ref: rws/swords/knight-of-swords.png
+  base_meaning_upright: >
+    The Knight of Swords may point toward swift, decisive action --
+    single-minded pursuit of a goal, moving quickly once a decision is
+    made. It can represent assertiveness that cuts straight to the point.
+  base_meaning_reversed: >
+    Reversed, this card can suggest action taken too hastily, without
+    enough consideration of its consequences. It may invite reflection on
+    whether speed is serving the goal or working against it.
+  keywords:
+    - swift decisive action
+    - assertiveness
+    - single-minded pursuit
+    - cutting to the point
+  primary_themes:
+    - swift_action
+    - assertiveness
+  secondary_themes:
+    - conflict
+
+- name: Queen of Swords
+  arcana: minor
+  suit: swords
+  rank: queen
+  image_ref: rws/swords/queen-of-swords.png
+  base_meaning_upright: >
+    The Queen of Swords may point toward clear-eyed perception -- honest
+    communication and discernment sharpened by real experience. It can
+    represent seeing a situation as it actually is, without illusion.
+  base_meaning_reversed: >
+    Reversed, this card can suggest clarity that has hardened into
+    coldness, or honesty delivered without enough regard for its impact. It
+    may invite reflection on where directness could be tempered with
+    warmth.
+  keywords:
+    - clear-eyed perception
+    - honest communication
+    - discernment
+    - seeing without illusion
+  primary_themes:
+    - discernment
+    - honest_communication
+  secondary_themes:
+    - clarity
+
+- name: King of Swords
+  arcana: minor
+  suit: swords
+  rank: king
+  image_ref: rws/swords/king-of-swords.png
+  base_meaning_upright: >
+    The King of Swords may point toward intellectual authority -- clarity
+    of judgment applied with structure and fairness. It can represent truth
+    reached through reasoned analysis rather than instinct alone.
+  base_meaning_reversed: >
+    Reversed, this card can suggest judgment that has become rigid, or
+    authority used to win an argument rather than to reach a fair
+    conclusion. It may invite reflection on where reasoning has crowded out
+    empathy.
+  keywords:
+    - intellectual authority
+    - structured judgment
+    - reasoned clarity
+    - fairness through analysis
+  primary_themes:
+    - authority
+    - truth
+  secondary_themes:
+    - discernment

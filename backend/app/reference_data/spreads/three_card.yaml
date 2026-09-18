@@ -1,0 +1,31 @@
+# Classic Recent Past / Present Situation / Near Future spread. Gives the
+# Interpretation Engine's future Trajectory stage a clean temporal arc to
+# work with, distinct in purpose from the Celtic Cross's fuller role set.
+name: Three Card
+description: >
+  A classic three-position spread tracing a simple arc from what has
+  recently passed, through the present situation, to where things may be
+  heading next.
+allow_duplicate_cards: false
+positions:
+  - name: Recent Past
+    description: >
+      What has recently unfolded or receded, and may still be shaping the
+      present situation.
+    position_order: 1
+    semantic_role: recent_past
+    required: true
+  - name: Present Situation
+    description: >
+      The heart of the present situation surrounding the question.
+    position_order: 2
+    semantic_role: situation
+    required: true
+  - name: Near Future
+    description: >
+      What may be approaching in the nearer term, given the current
+      trajectory -- not a fixed prediction, but a direction worth
+      considering.
+    position_order: 3
+    semantic_role: near_future
+    required: true

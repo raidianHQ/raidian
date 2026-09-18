@@ -190,6 +190,8 @@ Deck-independent of any specific Reading.
 - `primary_themes` (structured list — this is what theme-scoring and compound-theme logic key off)
 - `secondary_themes` (structured list)
 
+**Correspondence data** (Element, Zodiac Sign, Astrological Influence, Direction, Color, Animal, Stone, etc.) is deliberately **not** stored on Card. It lives on a related `CardCorrespondence` entity (one-to-one with Card) instead, keeping Raidian Wise's own RWS meanings structurally separate from an external correspondence tradition's attributions. See `Documentation/RAIDIAN_WISE_CORRESPONDENCE_DATA_PROPOSAL_V1.md` and `Documentation/RAIDIAN_WISE_REFERENCE_DATA_V1.md` (Section 8) for the full model and sourcing.
+
 ## 7.5 Reading
 
 The full persisted record of one interpretation event — see [Section 3.2](#32-terminology-conflicts-with-naming_conventionsmd) for the "Reading" vs "Reflection Session" naming question.

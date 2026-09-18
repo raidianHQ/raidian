@@ -1,0 +1,16 @@
+# A single, open reflection card -- no structural positions to relate to one
+# another, so its one position carries no specific semantic role.
+name: Single Card
+description: >
+  A single card drawn for open reflection on the question at hand. With no
+  other positions to relate it to, its meaning is drawn from the card
+  itself in light of the question asked.
+allow_duplicate_cards: false
+positions:
+  - name: The Card
+    description: >
+      An open position for reflection -- not tied to a specific structural
+      role such as past, future, or advice.
+    position_order: 1
+    semantic_role: general
+    required: true

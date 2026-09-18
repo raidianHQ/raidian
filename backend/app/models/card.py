@@ -17,6 +17,7 @@ from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin, str_enum_type
 from app.models.enums import Arcana, Suit
 
 if TYPE_CHECKING:
+    from app.models.card_correspondence import CardCorrespondence
     from app.models.card_draw import CardDraw
     from app.models.deck import Deck
 
@@ -57,3 +58,6 @@ class Card(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     deck: Mapped["Deck"] = relationship(back_populates="cards")
     card_draws: Mapped[list["CardDraw"]] = relationship(back_populates="card")
+    correspondence: Mapped["CardCorrespondence | None"] = relationship(
+        back_populates="card", uselist=False, cascade="all, delete-orphan"
+    )

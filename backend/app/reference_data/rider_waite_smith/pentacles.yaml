@@ -1,0 +1,341 @@
+# Pentacles (14 cards) -- traditionally associated with material life, work,
+# resources, and the body. Original wording; see
+# Documentation/RAIDIAN_WISE_REFERENCE_DATA_V1.md for methodology.
+
+- name: Ace of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: ace
+  image_ref: rws/pentacles/ace-of-pentacles.png
+  base_meaning_upright: >
+    The Ace of Pentacles may point toward a material or practical new
+    beginning -- an opportunity, seed, or resource with real potential to
+    grow. It can represent a tangible foothold for something new.
+  base_meaning_reversed: >
+    Reversed, this card can suggest an opportunity that has not yet been
+    grasped, or a foundation that feels less solid than it appears. It may
+    invite reflection on what practical steps are still missing.
+  keywords:
+    - a material new beginning
+    - tangible opportunity
+    - a seed of prosperity
+    - practical potential
+  primary_themes:
+    - new_beginnings
+    - opportunity
+  secondary_themes:
+    - material_security
+
+- name: Two of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: two
+  image_ref: rws/pentacles/two-of-pentacles.png
+  base_meaning_upright: >
+    The Two of Pentacles may point toward balancing priorities --
+    adapting as circumstances shift and juggling more than one demand at
+    once. It can represent flexibility under everyday pressure.
+  base_meaning_reversed: >
+    Reversed, this card can suggest priorities that have fallen out of
+    balance, or too many demands to juggle well. It may invite reflection
+    on what needs to be set down.
+  keywords:
+    - balancing priorities
+    - adaptability
+    - juggling responsibilities
+    - flexibility under pressure
+  primary_themes:
+    - adaptability
+    - balance
+  secondary_themes:
+    - practicality
+
+- name: Three of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: three
+  image_ref: rws/pentacles/three-of-pentacles.png
+  base_meaning_upright: >
+    The Three of Pentacles may point toward collaboration -- skilled work
+    building toward something that combined effort makes possible. It can
+    represent craftsmanship recognized and supported by others.
+  base_meaning_reversed: >
+    Reversed, this card can suggest collaboration that has broken down, or
+    effort that is not being coordinated well with others. It may invite
+    reflection on where teamwork needs realignment.
+  keywords:
+    - collaboration
+    - skilled work
+    - combined effort
+    - craftsmanship
+  primary_themes:
+    - collaboration
+    - skill_and_craft
+  secondary_themes:
+    - recognition
+
+- name: Four of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: four
+  image_ref: rws/pentacles/four-of-pentacles.png
+  base_meaning_upright: >
+    The Four of Pentacles may point toward security sought through control
+    -- holding tightly to resources, conserving what has been gathered. It
+    can represent caution about loss, expressed as a firm grip.
+  base_meaning_reversed: >
+    Reversed, this card can suggest loosening that grip, whether through
+    generosity or through circumstances that force a release. It may
+    invite reflection on whether control has become more limiting than
+    protective.
+  keywords:
+    - security through control
+    - holding tightly
+    - conservation of resources
+    - caution about loss
+  primary_themes:
+    - material_security
+    - control
+  secondary_themes:
+    - attachment
+
+- name: Five of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: five
+  image_ref: rws/pentacles/five-of-pentacles.png
+  base_meaning_upright: >
+    The Five of Pentacles may point toward hardship -- scarcity, exclusion,
+    or a sense of being left out in the cold, materially or emotionally. It
+    can represent a difficult period that feels isolating.
+  base_meaning_reversed: >
+    Reversed, this card can suggest support becoming available after a
+    hard stretch, or recognizing help that had been overlooked. It may
+    invite reflection on where isolation could be eased by reaching out.
+  keywords:
+    - hardship
+    - scarcity
+    - feeling excluded
+    - material or emotional insecurity
+  primary_themes:
+    - hardship
+  secondary_themes:
+    - loss
+
+- name: Six of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: six
+  image_ref: rws/pentacles/six-of-pentacles.png
+  base_meaning_upright: >
+    The Six of Pentacles may point toward an exchange -- generosity moving
+    between giving and receiving, resources shared in a way that feels
+    balanced. It can represent support offered or accepted with dignity.
+  base_meaning_reversed: >
+    Reversed, this card can suggest an imbalance in that exchange -- giving
+    or receiving that comes with strings attached, or generosity used to
+    hold power over another. It may invite reflection on what fairness
+    would look like here.
+  keywords:
+    - generosity
+    - giving and receiving
+    - balanced exchange
+    - shared resources
+  primary_themes:
+    - generosity
+  secondary_themes:
+    - balance
+
+- name: Seven of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: seven
+  image_ref: rws/pentacles/seven-of-pentacles.png
+  base_meaning_upright: >
+    The Seven of Pentacles may point toward patient assessment -- pausing
+    to evaluate the progress of a long-term investment of effort. It can
+    represent a moment to consider whether the current course is worth
+    continuing.
+  base_meaning_reversed: >
+    Reversed, this card can suggest impatience with slow progress, or
+    effort continued past the point where it is still paying off. It may
+    invite reflection on when to keep tending and when to change course.
+  keywords:
+    - patient assessment
+    - evaluating progress
+    - long-term investment
+    - tending what has been planted
+  primary_themes:
+    - patience
+  secondary_themes:
+    - self_evaluation
+
+- name: Eight of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: eight
+  image_ref: rws/pentacles/eight-of-pentacles.png
+  base_meaning_upright: >
+    The Eight of Pentacles may point toward diligence -- focused
+    craftsmanship and steady effort put toward building real skill. It can
+    represent quiet, disciplined practice more than dramatic achievement.
+  base_meaning_reversed: >
+    Reversed, this card can suggest effort without enough focus, or
+    skill-building stalled through distraction. It may invite reflection on
+    where more consistency could serve the work.
+  keywords:
+    - diligence
+    - skill-building
+    - focused craftsmanship
+    - steady practice
+  primary_themes:
+    - diligence
+    - skill_and_craft
+  secondary_themes:
+    - discipline
+
+- name: Nine of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: nine
+  image_ref: rws/pentacles/nine-of-pentacles.png
+  base_meaning_upright: >
+    The Nine of Pentacles may point toward self-sufficiency -- comfort and
+    refinement enjoyed as the result of one's own sustained effort. It can
+    represent independence that feels earned rather than given.
+  base_meaning_reversed: >
+    Reversed, this card can suggest self-sufficiency that has tipped into
+    isolation, or comfort that depends more on others than it appears to.
+    It may invite reflection on the balance between independence and
+    connection.
+  keywords:
+    - self-sufficiency
+    - earned comfort
+    - refined independence
+    - enjoying the fruits of one's effort
+  primary_themes:
+    - self_sufficiency
+  secondary_themes:
+    - contentment
+
+- name: Ten of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: ten
+  image_ref: rws/pentacles/ten-of-pentacles.png
+  base_meaning_upright: >
+    The Ten of Pentacles may point toward legacy -- long-term stability
+    built over time, often involving family or a lasting foundation. It can
+    represent the culmination of sustained material and relational effort.
+  base_meaning_reversed: >
+    Reversed, this card can suggest instability in a foundation thought to
+    be secure, or tension around legacy, inheritance, or long-term
+    planning. It may invite reflection on what true stability requires.
+  keywords:
+    - legacy
+    - long-term stability
+    - lasting foundation
+    - culmination of effort
+  primary_themes:
+    - legacy
+    - material_security
+  secondary_themes:
+    - community
+
+- name: Page of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: page
+  image_ref: rws/pentacles/page-of-pentacles.png
+  base_meaning_upright: >
+    The Page of Pentacles may point toward practical curiosity -- a new
+    opportunity for growth, study, or skill met with grounded ambition. It
+    can represent careful, deliberate first steps.
+  base_meaning_reversed: >
+    Reversed, this card can suggest an opportunity approached without
+    enough follow-through, or ambition still finding its practical footing.
+    It may invite reflection on what commitment would look like here.
+  keywords:
+    - practical curiosity
+    - a new opportunity for growth
+    - grounded ambition
+    - deliberate first steps
+  primary_themes:
+    - opportunity
+    - new_beginnings
+  secondary_themes:
+    - practicality
+
+- name: Knight of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: knight
+  image_ref: rws/pentacles/knight-of-pentacles.png
+  base_meaning_upright: >
+    The Knight of Pentacles may point toward methodical persistence --
+    reliable, steady progress made through careful, unhurried effort. It
+    can represent trustworthiness built through consistency over time.
+  base_meaning_reversed: >
+    Reversed, this card can suggest progress that has slowed to a stop, or
+    caution that has become reluctance to move at all. It may invite
+    reflection on whether steadiness has become stagnation.
+  keywords:
+    - methodical persistence
+    - reliability
+    - steady progress
+    - careful, unhurried effort
+  primary_themes:
+    - reliability
+    - diligence
+  secondary_themes:
+    - patience
+
+- name: Queen of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: queen
+  image_ref: rws/pentacles/queen-of-pentacles.png
+  base_meaning_upright: >
+    The Queen of Pentacles may point toward nurturing practicality --
+    resourcefulness applied to caring for wellbeing, both one's own and
+    others'. It can represent grounded, generous stewardship.
+  base_meaning_reversed: >
+    Reversed, this card can suggest care that has become overextended, or
+    practical needs neglected while tending to others. It may invite
+    reflection on whether self-care has room in the picture.
+  keywords:
+    - nurturing practicality
+    - resourcefulness
+    - grounded stewardship
+    - caring for wellbeing
+  primary_themes:
+    - nurturing
+    - practicality
+  secondary_themes:
+    - material_security
+
+- name: King of Pentacles
+  arcana: minor
+  suit: pentacles
+  rank: king
+  image_ref: rws/pentacles/king-of-pentacles.png
+  base_meaning_upright: >
+    The King of Pentacles may point toward material mastery -- steady,
+    real-world authority built through sustained effort, generous from a
+    place of genuine abundance. It can represent security shared rather
+    than hoarded.
+  base_meaning_reversed: >
+    Reversed, this card can suggest material success prioritized at the
+    cost of other things that matter, or generosity that has curdled into
+    control. It may invite reflection on what abundance is actually in
+    service of.
+  keywords:
+    - material mastery
+    - real-world authority
+    - generosity from abundance
+    - steady security
+  primary_themes:
+    - material_security
+    - authority
+  secondary_themes:
+    - generosity

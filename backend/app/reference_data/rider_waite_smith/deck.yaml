@@ -1,0 +1,10 @@
+# Deck definition for the MVP's single supported deck.
+# See Documentation/RAIDIAN_WISE_REFERENCE_DATA_V1.md for sourcing and
+# authorship methodology.
+name: Rider-Waite-Smith
+description: >
+  The Rider-Waite-Smith deck, first published in 1909 with artwork by Pamela
+  Colman Smith under the direction of A. E. Waite. Raidian Wise's card
+  interpretations draw on this deck's traditional symbolism, written in
+  original wording for reflective, non-predictive use.
+is_default: true

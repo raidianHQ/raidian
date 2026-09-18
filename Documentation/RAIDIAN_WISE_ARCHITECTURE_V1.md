@@ -189,6 +189,22 @@ card
   primary_themes  (json array)
   secondary_themes (json array)
 
+card_correspondence
+  id (pk)
+  card_id (fk -> card.id, unique)
+  source_reference
+  tradition_name  (nullable)
+  element
+  zodiac_signs    (json array)
+  zodiac_symbols  (json array)
+  astrological_influence
+  elemental_gender (nullable)
+  direction
+  color
+  animal          (nullable)
+  stone           (nullable)
+  astrology_note  (nullable)
+
 reading
   id (pk)
   created_at

@@ -1,0 +1,345 @@
+# Wands (14 cards) -- traditionally associated with action, ambition,
+# creativity, and will. Original wording; see
+# Documentation/RAIDIAN_WISE_REFERENCE_DATA_V1.md for methodology.
+
+- name: Ace of Wands
+  arcana: minor
+  suit: wands
+  rank: ace
+  image_ref: rws/wands/ace-of-wands.png
+  base_meaning_upright: >
+    The Ace of Wands may point toward a fresh spark of inspiration or
+    initiative -- an opening for action before it has taken any particular
+    shape. It can represent raw creative potential, ready to be picked up.
+  base_meaning_reversed: >
+    Reversed, this card can suggest inspiration that has stalled before
+    taking root, or enthusiasm without a clear outlet yet. It may invite
+    reflection on what is holding a new impulse back from becoming action.
+  keywords:
+    - a fresh spark
+    - creative potential
+    - initiative
+    - the start of a new pursuit
+  primary_themes:
+    - new_beginnings
+    - potential
+  secondary_themes:
+    - creativity
+
+- name: Two of Wands
+  arcana: minor
+  suit: wands
+  rank: two
+  image_ref: rws/wands/two-of-wands.png
+  base_meaning_upright: >
+    The Two of Wands may represent an early decision point -- weighing
+    options and beginning to plan beyond the initial spark of an idea. It
+    can suggest a sense of personal power paired with a choice still being
+    considered.
+  base_meaning_reversed: >
+    Reversed, this card can point toward hesitation in committing to a
+    direction, or plans that remain vague. It may invite reflection on what
+    is needed before a choice can be made with confidence.
+  keywords:
+    - early planning
+    - weighing options
+    - a decision at the outset
+    - personal power
+  primary_themes:
+    - choice
+    - determination
+  secondary_themes:
+    - potential
+
+- name: Three of Wands
+  arcana: minor
+  suit: wands
+  rank: three
+  image_ref: rws/wands/three-of-wands.png
+  base_meaning_upright: >
+    The Three of Wands may point toward expansion -- looking outward after
+    a plan has been set into motion, watching for how it develops. It can
+    suggest foresight and anticipation of what comes next.
+  base_meaning_reversed: >
+    Reversed, this card can indicate delays or a lack of the foresight
+    needed to see a plan through. It may invite reflection on whether
+    expectations are matching what is actually unfolding.
+  keywords:
+    - expansion
+    - foresight
+    - awaiting results
+    - looking toward what comes next
+  primary_themes:
+    - momentum
+    - determination
+  secondary_themes:
+    - potential
+
+- name: Four of Wands
+  arcana: minor
+  suit: wands
+  rank: four
+  image_ref: rws/wands/four-of-wands.png
+  base_meaning_upright: >
+    The Four of Wands can represent a milestone reached -- a moment of
+    celebration, stability, or homecoming after sustained effort. It may
+    point toward harmony achieved, worth pausing to acknowledge.
+  base_meaning_reversed: >
+    Reversed, this card may suggest a celebration delayed, or stability
+    that feels incomplete or provisional. It can invite reflection on what
+    is needed for a sense of home or belonging to feel secure.
+  keywords:
+    - celebration
+    - a milestone reached
+    - stability
+    - homecoming
+    - harmony
+  primary_themes:
+    - stability
+    - community
+  secondary_themes:
+    - contentment
+
+- name: Five of Wands
+  arcana: minor
+  suit: wands
+  rank: five
+  image_ref: rws/wands/five-of-wands.png
+  base_meaning_upright: >
+    The Five of Wands may point toward competition or friction -- differing
+    approaches clashing without any of them being clearly wrong. It can
+    represent a minor struggle that tests patience more than it threatens
+    real harm.
+  base_meaning_reversed: >
+    Reversed, this card can suggest conflict avoided rather than resolved,
+    or tension simmering below the surface. It may invite reflection on
+    whether competing approaches could actually be reconciled.
+  keywords:
+    - competition
+    - clashing approaches
+    - minor conflict
+    - friction between differing views
+  primary_themes:
+    - conflict
+  secondary_themes:
+    - determination
+
+- name: Six of Wands
+  arcana: minor
+  suit: wands
+  rank: six
+  image_ref: rws/wands/six-of-wands.png
+  base_meaning_upright: >
+    The Six of Wands may point toward recognition -- progress that has
+    become visible to others, or a success worth acknowledging. It can
+    represent confidence affirmed by real results.
+  base_meaning_reversed: >
+    Reversed, this card can suggest recognition withheld or delayed, or
+    achievement that feels hollow without external validation. It may
+    invite reflection on where self-worth depends too heavily on being
+    seen.
+  keywords:
+    - recognition
+    - visible progress
+    - success acknowledged
+    - affirmed confidence
+  primary_themes:
+    - recognition
+    - momentum
+  secondary_themes:
+    - determination
+
+- name: Seven of Wands
+  arcana: minor
+  suit: wands
+  rank: seven
+  image_ref: rws/wands/seven-of-wands.png
+  base_meaning_upright: >
+    The Seven of Wands may represent holding one's ground -- defending a
+    position or perspective under some pressure. It can suggest
+    perseverance, even when the outcome of that defense is not yet certain.
+  base_meaning_reversed: >
+    Reversed, this card can point toward feeling overwhelmed by opposition,
+    or giving up a position too readily. It may invite reflection on
+    whether the effort to defend is still worth its cost.
+  keywords:
+    - defending a position
+    - standing one's ground
+    - perseverance under pressure
+    - holding steady
+  primary_themes:
+    - determination
+    - conflict
+  secondary_themes:
+    - inner_strength
+
+- name: Eight of Wands
+  arcana: minor
+  suit: wands
+  rank: eight
+  image_ref: rws/wands/eight-of-wands.png
+  base_meaning_upright: >
+    The Eight of Wands may point toward rapid movement -- events, messages,
+    or developments accelerating after a period of buildup. It can suggest
+    momentum and a sense that things are aligning quickly.
+  base_meaning_reversed: >
+    Reversed, this card can indicate delays that frustrate an otherwise
+    fast-moving situation, or momentum scattered in too many directions at
+    once. It may invite reflection on where things have gotten ahead of
+    readiness.
+  keywords:
+    - rapid movement
+    - accelerating developments
+    - swift alignment
+    - momentum
+  primary_themes:
+    - momentum
+  secondary_themes:
+    - determination
+
+- name: Nine of Wands
+  arcana: minor
+  suit: wands
+  rank: nine
+  image_ref: rws/wands/nine-of-wands.png
+  base_meaning_upright: >
+    The Nine of Wands may represent resilience -- continuing on after
+    repeated effort, even while carrying some wariness from what has
+    already been endured. It can point toward guardedness that comes from
+    experience.
+  base_meaning_reversed: >
+    Reversed, this card can suggest exhaustion nearing its limit, or
+    defensiveness that has become harder to set down. It may invite
+    reflection on what rest or support might actually be needed.
+  keywords:
+    - resilience
+    - guardedness
+    - wariness after struggle
+    - near the end of endurance
+  primary_themes:
+    - perseverance
+    - inner_strength
+  secondary_themes:
+    - exhaustion
+
+- name: Ten of Wands
+  arcana: minor
+  suit: wands
+  rank: ten
+  image_ref: rws/wands/ten-of-wands.png
+  base_meaning_upright: >
+    The Ten of Wands may point toward carrying a heavy load --
+    responsibilities accumulated to the point of strain, even close to
+    completion. It can represent burden shouldered out of commitment rather
+    than necessity.
+  base_meaning_reversed: >
+    Reversed, this card can suggest a burden finally being set down, or
+    delegated, or acknowledged as more than one person should carry alone.
+    It may invite reflection on which responsibilities are truly one's own.
+  keywords:
+    - a heavy burden
+    - accumulated responsibility
+    - overextension
+    - strain near completion
+  primary_themes:
+    - burden
+  secondary_themes:
+    - exhaustion
+
+- name: Page of Wands
+  arcana: minor
+  suit: wands
+  rank: page
+  image_ref: rws/wands/page-of-wands.png
+  base_meaning_upright: >
+    The Page of Wands may point toward eager exploration -- a new idea or
+    message met with enthusiasm before it has been fully tested. It can
+    represent curiosity and a readiness to act on a fresh impulse.
+  base_meaning_reversed: >
+    Reversed, this card can suggest enthusiasm without follow-through, or
+    an idea that has not yet found its direction. It may invite reflection
+    on what would help curiosity turn into sustained action.
+  keywords:
+    - eager exploration
+    - a new idea or message
+    - enthusiasm
+    - readiness to act
+  primary_themes:
+    - exploration
+    - new_beginnings
+  secondary_themes:
+    - potential
+
+- name: Knight of Wands
+  arcana: minor
+  suit: wands
+  rank: knight
+  image_ref: rws/wands/knight-of-wands.png
+  base_meaning_upright: >
+    The Knight of Wands may represent bold, energetic pursuit -- moving
+    toward a goal quickly and with confidence, sometimes without waiting
+    for full certainty. It can point toward restless drive and momentum.
+  base_meaning_reversed: >
+    Reversed, this card can suggest impulsiveness that outpaces planning,
+    or restlessness without a clear direction. It may invite reflection on
+    where enthusiasm needs more grounding.
+  keywords:
+    - bold pursuit
+    - restless drive
+    - energetic momentum
+    - confident action
+  primary_themes:
+    - momentum
+    - ambition
+  secondary_themes:
+    - risk_taking
+
+- name: Queen of Wands
+  arcana: minor
+  suit: wands
+  rank: queen
+  image_ref: rws/wands/queen-of-wands.png
+  base_meaning_upright: >
+    The Queen of Wands may point toward confident, warm leadership --
+    creative energy expressed with self-assurance and magnetism. It can
+    represent someone (or some part of oneself) that draws others in
+    through genuine presence.
+  base_meaning_reversed: >
+    Reversed, this card can suggest confidence that has tipped into
+    demanding attention, or warmth that feels withheld. It may invite
+    reflection on where self-assurance and connection to others have grown
+    out of balance.
+  keywords:
+    - confident warmth
+    - creative leadership
+    - magnetism
+    - self-assured presence
+  primary_themes:
+    - authority
+    - creativity
+  secondary_themes:
+    - vitality
+
+- name: King of Wands
+  arcana: minor
+  suit: wands
+  rank: king
+  image_ref: rws/wands/king-of-wands.png
+  base_meaning_upright: >
+    The King of Wands may represent visionary leadership -- decisive
+    direction that inspires others to act rather than commanding them to.
+    It can point toward mature confidence in pursuing a larger goal.
+  base_meaning_reversed: >
+    Reversed, this card can suggest authority used to dominate rather than
+    inspire, or vision that has outpaced practical grounding. It may invite
+    reflection on how leadership is actually being received by others.
+  keywords:
+    - visionary leadership
+    - decisive authority
+    - inspiring others
+    - mature confidence
+  primary_themes:
+    - authority
+    - ambition
+  secondary_themes:
+    - determination

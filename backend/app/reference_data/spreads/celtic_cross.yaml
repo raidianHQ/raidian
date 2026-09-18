@@ -1,0 +1,85 @@
+# Traditional 10-position Celtic Cross, adapted so its final two positions
+# use the Advice / Advice Clarifier semantic roles rather than the classic
+# "Hopes and Fears" / "Final Outcome" framing -- consistent with Raidian
+# Wise's reflection-over-prediction philosophy (see
+# Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md, Section 4). This gives the
+# spread positions covering all six semantic roles the Interpretation
+# Engine's structural-relationship and trajectory stages need to exercise:
+# situation, recent_past, influence_blocker, near_future, advice, and
+# advice_clarifier.
+name: Celtic Cross
+description: >
+  The traditional ten-position Celtic Cross, tracing the present situation,
+  what challenges it, its roots and trajectory, and the guidance it
+  suggests -- without treating any single position as a fixed prediction of
+  what will happen.
+allow_duplicate_cards: false
+positions:
+  - name: Situation
+    description: >
+      The heart of the matter -- the present situation surrounding the
+      question.
+    position_order: 1
+    semantic_role: situation
+    required: true
+  - name: Challenge
+    description: >
+      What crosses or challenges the situation -- a tension, obstacle, or
+      opposing force to weigh alongside it.
+    position_order: 2
+    semantic_role: influence_blocker
+    required: true
+  - name: Foundation
+    description: >
+      The deeper root or foundation beneath the situation -- underlying
+      circumstances or longer-standing patterns.
+    position_order: 3
+    semantic_role: general
+    required: true
+  - name: Recent Past
+    description: >
+      What has recently unfolded or receded, still shaping the present.
+    position_order: 4
+    semantic_role: recent_past
+    required: true
+  - name: Crown
+    description: >
+      A possibility above the situation -- an aspiration, ideal, or
+      conscious direction being considered.
+    position_order: 5
+    semantic_role: general
+    required: true
+  - name: Near Future
+    description: >
+      What may be approaching in the nearer term, given the current
+      trajectory.
+    position_order: 6
+    semantic_role: near_future
+    required: true
+  - name: Approach
+    description: >
+      One's own stance, attitude, or approach to the situation.
+    position_order: 7
+    semantic_role: general
+    required: true
+  - name: External Influences
+    description: >
+      People, circumstances, or environment surrounding the situation from
+      outside.
+    position_order: 8
+    semantic_role: general
+    required: true
+  - name: Advice
+    description: >
+      Guidance to consider in light of everything else in the spread.
+    position_order: 9
+    semantic_role: advice
+    required: true
+  - name: Outcome
+    description: >
+      Adds nuance to the Advice position -- it may qualify, extend, or
+      complicate that guidance rather than serving as a fixed prediction of
+      what will happen.
+    position_order: 10
+    semantic_role: advice_clarifier
+    required: true

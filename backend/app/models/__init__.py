@@ -1,5 +1,6 @@
 from app.db.base import Base
 from app.models.card import Card
+from app.models.card_correspondence import CardCorrespondence
 from app.models.card_draw import CardDraw
 from app.models.deck import Deck
 from app.models.enums import (
@@ -19,6 +20,7 @@ from app.models.spread_position import SpreadPosition
 __all__ = [
     "Base",
     "Card",
+    "CardCorrespondence",
     "CardDraw",
     "Deck",
     "Arcana",

@@ -1,0 +1,1486 @@
+# Astrological / elemental correspondence data for the Rider-Waite-Smith deck.
+#
+# Source: RaidianWiseDeckTemplate_Jenn.xlsm, Card Key worksheet (the project's
+# provided correspondence spreadsheet). This is a DISTINCT layer from the RWS
+# card meanings in major_arcana.yaml / wands.yaml / cups.yaml / swords.yaml /
+# pentacles.yaml -- see Documentation/RAIDIAN_WISE_REFERENCE_DATA_V1.md
+# (Section 8, Correspondence Data) for sourcing, corrections applied, and the
+# astrology_note authorship note.
+
+- name: "The Fool"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "fire"
+  zodiac_signs:
+    - "aquarius"
+  zodiac_symbols:
+    - "♒"
+  astrological_influence: "Uranus"
+  elemental_gender: "masculine"
+  direction: "south"
+  color: "red"
+  animal: "Eagle and Man"
+  stone: "Topaz"
+  astrology_note: "This card is associated with Aquarius and its ruling planet Uranus, echoing themes of independence and unexpected change."
+
+- name: "The Magician"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "air"
+  zodiac_signs:
+    - "aries"
+  zodiac_symbols:
+    - "♈"
+  astrological_influence: "Mercury"
+  elemental_gender: "masculine"
+  direction: "east"
+  color: "yellow"
+  animal: "Swallow, Ibis, and Ape"
+  stone: "Opal and Agate"
+  astrology_note: "This card is associated with Aries and its ruling planet Mercury, echoing the Magician's connection to quick thinking and deliberate action."
+
+- name: "The High Priestess"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "water"
+  zodiac_signs:
+    - "virgo"
+  zodiac_symbols:
+    - "♍"
+  astrological_influence: "Moon"
+  elemental_gender: "feminine"
+  direction: "west"
+  color: "black"
+  animal: "Camel, Dog,  and Stork"
+  stone: "Moonstone, Pearl, and Crystal"
+  astrology_note: "This card is associated with Virgo and the Moon, echoing themes of quiet discernment and inner attentiveness."
+
+- name: "The Empress"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "earth"
+  zodiac_signs:
+    - "taurus"
+  zodiac_symbols:
+    - "♉"
+  astrological_influence: "Venus"
+  elemental_gender: "feminine"
+  direction: "north"
+  color: "white"
+  animal: "Sparrow, Dove, and Sow"
+  stone: "Emerald and Turquoise"
+  astrology_note: "This card is associated with Taurus and Venus, echoing the Empress's connection to sensory abundance and generative care."
+
+- name: "The Emperor"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "fire"
+  zodiac_signs:
+    - "aries"
+  zodiac_symbols:
+    - "♈"
+  astrological_influence: "Mars"
+  elemental_gender: "masculine"
+  direction: "south"
+  color: "red"
+  animal: "Ram and Owl"
+  stone: "Ruby"
+  astrology_note: "This card is associated with Aries and its ruling planet Mars, echoing the Emperor's connection to decisive, structured authority."
+
+- name: "The Hierophant"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "earth"
+  zodiac_signs:
+    - "taurus"
+  zodiac_symbols:
+    - "♉"
+  astrological_influence: "Venus"
+  elemental_gender: "masculine"
+  direction: "north"
+  color: "white"
+  animal: "Bull"
+  stone: "Topaz"
+  astrology_note: "This card is associated with Taurus and Venus, echoing themes of steady, established tradition."
+
+- name: "The Lovers"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+  zodiac_symbols:
+    - "♊"
+  astrological_influence: "Mercury"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: "Magpie"
+  stone: "Alexandrite, Tourmaline, and Iceland spar"
+  astrology_note: "This card is associated with Gemini and its ruling planet Mercury, echoing the Lovers' connection to communication and weighed choices."
+
+- name: "The Chariot"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "water"
+  zodiac_signs:
+    - "cancer"
+  zodiac_symbols:
+    - "♋"
+  astrological_influence: "Moon"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: "Crab, Turtle, Sphinx, and Whale"
+  stone: "Amber"
+  astrology_note: "This card is associated with Cancer and the Moon, echoing the Chariot's blend of instinct and self-protective determination."
+
+- name: "Strength"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "fire"
+  zodiac_signs:
+    - "leo"
+  zodiac_symbols:
+    - "♌"
+  astrological_influence: "Sun"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: "Lion, Cat, Tiger, and Serpent"
+  stone: "Cat's eye"
+  astrology_note: "This card is associated with Leo and the Sun, echoing Strength's connection to warmth, confidence, and steady inner resolve."
+
+- name: "The Hermit"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+  zodiac_symbols:
+    - "♍"
+  astrological_influence: "Mercury"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: "Peridot"
+  astrology_note: "This card is associated with Virgo and its ruling planet Mercury, echoing the Hermit's connection to careful, discerning reflection."
+
+- name: "Wheel of Fortune"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "fire"
+  zodiac_signs:
+    - "taurus"
+    - "scorpio"
+    - "leo"
+    - "aquarius"
+  zodiac_symbols:
+    - "♉"
+    - "♏"
+    - "♌"
+    - "♒"
+  astrological_influence: "Jupiter"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: "Eagle"
+  stone: "Amethyst and Lapis Lazuli"
+  astrology_note: "This card is associated with Jupiter and the four fixed signs traditionally pictured on it -- Taurus, Leo, Scorpio, and Aquarius -- echoing themes of expansion and turning cycles."
+
+- name: "Justice"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "air"
+  zodiac_signs:
+    - "libra"
+  zodiac_symbols:
+    - "♎"
+  astrological_influence: "Venus"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: "Elephant, and Spider"
+  stone: "Emerald"
+  astrology_note: "This card is associated with Libra and its ruling planet Venus, echoing Justice's connection to balance and fair weighing."
+
+- name: "The Hanged Man"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+  zodiac_symbols:
+    - "♓"
+  astrological_influence: "Neptune"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: "Eagle, Snake, and Scorpion"
+  stone: "Beryl and Aquamarine"
+  astrology_note: "This card is associated with Pisces and Neptune, echoing the Hanged Man's connection to surrender and altered perspective."
+
+- name: "Death"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "water"
+  zodiac_signs:
+    - "scorpio"
+  zodiac_symbols:
+    - "♏"
+  astrological_influence: "Pluto"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: "Scorpio, beetle, crayfish, lobster, and wolf"
+  stone: "Snakestone"
+  astrology_note: "This card is associated with Scorpio and Pluto, echoing Death's connection to deep transformation and release."
+
+- name: "Temperance"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+  zodiac_symbols:
+    - "♐"
+  astrological_influence: "Jupiter"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: "Dog, Horse, Centaur, and Hippogriff"
+  stone: "Jacinth"
+  astrology_note: "This card is associated with Sagittarius and its ruling planet Jupiter, echoing Temperance's connection to patient, expansive balance."
+
+- name: "The Devil"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "earth"
+  zodiac_signs:
+    - "capricorn"
+  zodiac_symbols:
+    - "♑"
+  astrological_influence: "Saturn"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: "Goat, Ass, and Oyster"
+  stone: "Black Diamond"
+  astrology_note: "This card is associated with Capricorn and its ruling planet Saturn, echoing the Devil's connection to binding structure and restriction."
+
+- name: "The Tower"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "fire"
+  zodiac_signs:
+    - "aries"
+  zodiac_symbols:
+    - "♈"
+  astrological_influence: "Mars"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: "Horse, bear, wolf, and boar"
+  stone: "Ruby or any red stone"
+  astrology_note: "This card is associated with Aries and its ruling planet Mars, echoing the Tower's connection to sudden, assertive upheaval."
+
+- name: "The Star"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "air"
+  zodiac_signs:
+    - "aquarius"
+  zodiac_symbols:
+    - "♒"
+  astrological_influence: "Uranus"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: "Eagle and Peacock"
+  stone: "Artificial Glass"
+  astrology_note: "This card is associated with Aquarius and its ruling planet Uranus, echoing the Star's connection to hope and unconventional renewal."
+
+- name: "The Moon"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+  zodiac_symbols:
+    - "♓"
+  astrological_influence: "Neptune"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: "Fish, dolphin, dog, and jackal"
+  stone: "Pearl"
+  astrology_note: "This card is associated with Pisces and Neptune, echoing the Moon's connection to intuition and uncertain, dreamlike terrain."
+
+- name: "The Sun"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "fire"
+  zodiac_signs:
+    - "leo"
+  zodiac_symbols:
+    - "♌"
+  astrological_influence: "Sun"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: "Lion, sparrow hawk, and leopard"
+  stone: "Crysolith"
+  astrology_note: "This card is associated with Leo and the Sun, echoing the card's connection to vitality, warmth, and open joy."
+
+- name: "Judgement"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "fire"
+  zodiac_signs:
+    - "scorpio"
+  zodiac_symbols:
+    - "♏"
+  astrological_influence: "Pluto"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: "Lion"
+  stone: "Fire-Opal"
+  astrology_note: "This card is associated with Scorpio and Pluto, echoing Judgement's connection to reckoning, release, and deep renewal."
+
+- name: "The World"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: null
+  element: "earth"
+  zodiac_signs:
+    - "taurus"
+  zodiac_symbols:
+    - "♉"
+  astrological_influence: "Saturn"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: "Crocodile"
+  stone: "Onyx"
+  astrology_note: "This card is associated with Taurus and its ruling planet Saturn, echoing the World's connection to grounded, lasting completion."
+
+- name: "Ace of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Spirit of Fire"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Diamond"
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Spirit of Fire."
+
+- name: "Two of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Mars in Aries"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Star Ruby, and Turquoise"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mars in Aries, traditionally called the Lord of Dominion."
+
+- name: "Three of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Sun in Aries"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Star Sapphire, Pearl"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Sun in Aries, traditionally called the Lord of Established Strength."
+
+- name: "Four of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Venus in Aries"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Amethyst, Sapphire, Lapis Lazuli"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Venus in Aries, traditionally called the Lord of Perfected Work."
+
+- name: "Five of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Saturn in Leo"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Ruby"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Saturn in Leo, traditionally called the Lord of Strife."
+
+- name: "Six of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Jupiter in Leo"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Topaz, Yellow Diamond"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Jupiter in Leo, traditionally called the Lord of Victory."
+
+- name: "Seven of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Mars in Leo"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Emerald"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mars in Leo, traditionally called the Lord of Valour."
+
+- name: "Eight of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Mercury in Sagittarius"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Opal, Fire opal"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mercury in Sagittarius, traditionally called the Lord of Swiftness."
+
+- name: "Nine of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Moon in Sagittarius"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Quartz"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Moon in Sagittarius, traditionally called the Lord of Great Strength."
+
+- name: "Ten of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Saturn in Sagittarius"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Rock Crystal"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Saturn in Sagittarius, traditionally called the Lord of Oppression."
+
+- name: "King of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Sagittarius, Scorpio"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Star Ruby, Turquoise"
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Sagittarius, Scorpio."
+
+- name: "Queen of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Aries, Pisces"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Star Sapphire, Pearl"
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Aries, Pisces."
+
+- name: "Knight of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Leo, Cancer"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Topaz, Yellow Diamond"
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Leo, Cancer."
+
+- name: "Page of Wands"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "fire"
+  zodiac_signs:
+    - "sagittarius"
+    - "aries"
+    - "leo"
+  zodiac_symbols:
+    - "♐"
+    - "♈"
+    - "♌"
+  astrological_influence: "Aries, Leo, Sagittarius"
+  elemental_gender: null
+  direction: "south"
+  color: "red"
+  animal: null
+  stone: "Rock Crystal"
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Aries, Leo, Sagittarius."
+
+- name: "Ace of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Cancer, Scorpio, Pisces and Spirit of Water."
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: "Diamond"
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Cancer, Scorpio, Pisces and Spirit of Water."
+
+- name: "Two of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Venus in Cancer"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: "Star Ruby, Turquoise"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Venus in Cancer, traditionally called the Lord of Love."
+
+- name: "Three of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Mercury in Cancer"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: "Star Sapphire, Pearl"
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mercury in Cancer, traditionally called the Lord of Abundance."
+
+- name: "Four of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Moon in Cancer"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Moon in Cancer, traditionally called the Lord of Blended Pleasure."
+
+- name: "Five of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Mars in Scorpio"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mars in Scorpio, traditionally called the Lord of Loss."
+
+- name: "Six of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Sun in Scorpio"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Sun in Scorpio, traditionally called the Lord of Pleasure."
+
+- name: "Seven of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Venus in Scorpio"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Venus in Scorpio, traditionally called the Lord of Illusionary Success."
+
+- name: "Eight of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Saturn in Pisces"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Saturn in Pisces, traditionally called the Lord of Abandoned Success."
+
+- name: "Nine of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Jupiter in Pisces"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Jupiter in Pisces, traditionally called the Lord of Material Happiness."
+
+- name: "Ten of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Mars in Pisces"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mars in Pisces, traditionally called the Lord of Perfected Success."
+
+- name: "King of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Libra/Scorpio"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Libra/Scorpio."
+
+- name: "Queen of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Water of Water"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Water of Water."
+
+- name: "Knight of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "Fire of Water"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Fire of Water."
+
+- name: "Page of Cups"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "water"
+  zodiac_signs:
+    - "pisces"
+    - "cancer"
+    - "scorpio"
+  zodiac_symbols:
+    - "♓"
+    - "♋"
+    - "♏"
+  astrological_influence: "female Earth of Water, Male Air of Water"
+  elemental_gender: null
+  direction: "west"
+  color: "black"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with female Earth of Water, Male Air of Water."
+
+- name: "Ace of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Spirit of Air"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Spirit of Air."
+
+- name: "Two of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Moon in Libra"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Moon in Libra, traditionally called the Lord of Peace."
+
+- name: "Three of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Saturn in Libra"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Saturn in Libra, traditionally called the Lord of Sorrow."
+
+- name: "Four of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Jupiter in Libra"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Jupiter in Libra, traditionally called the Lord of Truce."
+
+- name: "Five of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Venus in Aquarius"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Venus in Aquarius, traditionally called the Lord of Defeat."
+
+- name: "Six of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Mercury in Aquarius"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mercury in Aquarius, traditionally called the Lord of Earned Success."
+
+- name: "Seven of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Moon in Aquarius"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Moon in Aquarius, traditionally called the Lord of Unstable Effort."
+
+- name: "Eight of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Jupiter in Gemini"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Jupiter in Gemini, traditionally called the Lord of Shortened Force."
+
+- name: "Nine of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Mars in Gemini"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mars in Gemini, traditionally called the Lord of Despair and Cruelty."
+
+- name: "Ten of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Sun in Gemini"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Sun in Gemini, traditionally called the Lord of Ruin."
+
+- name: "King of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Taurus/Gemini"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Taurus/Gemini."
+
+- name: "Queen of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Virgo/Libra"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Virgo/Libra."
+
+- name: "Knight of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Fire of Air"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Fire of Air."
+
+- name: "Page of Swords"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "air"
+  zodiac_signs:
+    - "gemini"
+    - "libra"
+    - "aquarius"
+  zodiac_symbols:
+    - "♊"
+    - "♎"
+    - "♒"
+  astrological_influence: "Female Earth of Air, Male Air of Air"
+  elemental_gender: null
+  direction: "east"
+  color: "yellow"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Female Earth of Air, Male Air of Air."
+
+- name: "Ace of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Spirit of Earth"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Spirit of Earth."
+
+- name: "Two of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Jupiter in Capricorn"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Jupiter in Capricorn, traditionally called the Lord of Harmonious Change."
+
+- name: "Three of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Mars in Capricorn"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mars in Capricorn, traditionally called the Lord of Material Works."
+
+- name: "Four of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Sun in Capricorn"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Sun in Capricorn, traditionally called the Lord of Earthly Power."
+
+- name: "Five of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Mercury in Taurus"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mercury in Taurus, traditionally called the Lord of Material Trouble."
+
+- name: "Six of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Moon in Taurus"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Moon in Taurus, traditionally called the Lord of Material Success."
+
+- name: "Seven of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Saturn in Taurus"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Saturn in Taurus, traditionally called the Lord of Success Unfulfilled."
+
+- name: "Eight of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Sun in Virgo"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Sun in Virgo, traditionally called the Lord of Prudence."
+
+- name: "Nine of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Venus in Virgo"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Venus in Virgo, traditionally called the Lord of Material Gain."
+
+- name: "Ten of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Mercury in Virgo"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn decanic tradition, this card corresponds to Mercury in Virgo, traditionally called the Lord of Wealth."
+
+- name: "King of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Aries and Taurus"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Aries and Taurus."
+
+- name: "Queen of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Water of Earth"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Water of Earth."
+
+- name: "Knight of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Fire of Earth"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Fire of Earth."
+
+- name: "Page of Pentacles"
+  source_reference: "RaidianWiseDeckTemplate_Jenn.xlsm — Card Key worksheet (project-provided source spreadsheet)"
+  tradition_name: "Golden Dawn decanic attribution"
+  element: "earth"
+  zodiac_signs:
+    - "virgo"
+    - "capricorn"
+    - "taurus"
+  zodiac_symbols:
+    - "♍"
+    - "♑"
+    - "♉"
+  astrological_influence: "Female Earth of Earth, Male Air of Earth"
+  elemental_gender: null
+  direction: "north"
+  color: "white"
+  animal: null
+  stone: null
+  astrology_note: "In the Golden Dawn tradition, this card is associated with Female Earth of Earth, Male Air of Earth."

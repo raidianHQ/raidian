@@ -1,0 +1,611 @@
+# Major Arcana (22 cards) for the Rider-Waite-Smith deck.
+#
+# Original wording, grounded in traditional Rider-Waite-Smith symbolism and
+# informed by A. E. Waite's "The Pictorial Key to the Tarot" (1910) as a
+# historical reference. Written in reflective, non-predictive language.
+# See Documentation/RAIDIAN_WISE_REFERENCE_DATA_V1.md for full methodology.
+
+- name: The Fool
+  arcana: major
+  suit: null
+  rank: "0"
+  image_ref: rws/major/00-the-fool.png
+  base_meaning_upright: >
+    The Fool can represent a step taken without full knowledge of what lies
+    ahead -- a willingness to begin before every answer is in hand. It may
+    point toward openness, spontaneity, and unclaimed potential, as if a
+    situation is still unwritten and free to be shaped.
+  base_meaning_reversed: >
+    Reversed, The Fool may suggest hesitation at the edge of a beginning, or
+    a leap taken without enough attention to its consequences. It can invite
+    reflection on where caution has curdled into avoidance, or where
+    enthusiasm has outrun preparation.
+  keywords:
+    - new beginnings
+    - unwritten potential
+    - a leap taken in trust
+    - openness to the unknown
+    - innocence
+    - spontaneous action
+  primary_themes:
+    - new_beginnings
+    - potential
+    - risk_taking
+  secondary_themes:
+    - spontaneity
+    - openness
+
+- name: The Magician
+  arcana: major
+  suit: null
+  rank: "1"
+  image_ref: rws/major/01-the-magician.png
+  base_meaning_upright: >
+    The Magician may point toward a moment when the tools, skills, and
+    resources needed are already present, waiting to be directed with
+    intention. It can represent focused will translated into action -- an
+    idea taking tangible shape through deliberate effort.
+  base_meaning_reversed: >
+    Reversed, The Magician can suggest resources going untapped, or effort
+    scattered rather than aimed. It may also invite reflection on whether
+    intention and action are truly aligned, or whether persuasion has begun
+    to shade into manipulation.
+  keywords:
+    - focused will
+    - resourcefulness
+    - turning intention into action
+    - having what is needed at hand
+    - skillful direction of energy
+  primary_themes:
+    - manifestation
+    - willpower
+    - resourcefulness
+  secondary_themes:
+    - skill_and_craft
+    - focus
+
+- name: The High Priestess
+  arcana: major
+  suit: null
+  rank: "2"
+  image_ref: rws/major/02-the-high-priestess.png
+  base_meaning_upright: >
+    The High Priestess may invite reflection on what is known quietly,
+    beneath conscious reasoning -- intuition, unspoken understanding, or
+    knowledge not yet ready to be put into words. It can represent a season
+    for listening inward rather than acting outward.
+  base_meaning_reversed: >
+    Reversed, this card may point toward a disconnection from one's own
+    intuition, or a withholding of something that wants to surface. It can
+    also suggest secrets coming into tension with a need for openness.
+  keywords:
+    - quiet intuition
+    - unspoken knowledge
+    - the subconscious
+    - receptivity
+    - inner listening
+    - what is not yet said
+  primary_themes:
+    - intuition
+    - hidden_knowledge
+    - inner_guidance
+  secondary_themes:
+    - mystery
+
+- name: The Empress
+  arcana: major
+  suit: null
+  rank: "3"
+  image_ref: rws/major/03-the-empress.png
+  base_meaning_upright: >
+    The Empress can represent abundance that grows through care -- creative,
+    nurturing, or generative energy given room to flourish. It may suggest
+    a connection to the body, to nature, or to whatever a person is quietly
+    bringing into being.
+  base_meaning_reversed: >
+    Reversed, The Empress may point toward a creative block, or nurturing
+    that has tipped into overextension or neglect of one's own needs. It can
+    also invite reflection on dependence, or on abundance withheld.
+  keywords:
+    - nurturing growth
+    - creative abundance
+    - fertility of ideas and projects
+    - connection to the senses
+    - generative care
+  primary_themes:
+    - abundance
+    - nurturing
+    - creativity
+  secondary_themes:
+    - sensuality
+
+- name: The Emperor
+  arcana: major
+  suit: null
+  rank: "4"
+  image_ref: rws/major/04-the-emperor.png
+  base_meaning_upright: >
+    The Emperor may suggest structure, order, and steady authority -- a
+    framework that gives a situation something to stand on. It can point
+    toward discipline exercised in service of stability rather than for its
+    own sake.
+  base_meaning_reversed: >
+    Reversed, this card can indicate a tension involving rigidity or
+    overcontrol, or, at the other extreme, a structure that has become too
+    loose to hold. It may invite reflection on where authority is being
+    used to protect versus to dominate.
+  keywords:
+    - structure and order
+    - steady authority
+    - discipline
+    - stability
+    - a firm framework
+  primary_themes:
+    - structure
+    - authority
+    - stability
+  secondary_themes:
+    - discipline
+
+- name: The Hierophant
+  arcana: major
+  suit: null
+  rank: "5"
+  image_ref: rws/major/05-the-hierophant.png
+  base_meaning_upright: >
+    The Hierophant can represent established tradition, institutions, or
+    shared systems of belief and learning -- the kind of structure passed
+    down rather than invented alone. It may point toward guidance found
+    through mentorship or a recognized body of teaching.
+  base_meaning_reversed: >
+    Reversed, The Hierophant may suggest questioning convention, or seeking
+    a path that does not fit within existing institutions. It can invite
+    reflection on where tradition is offering genuine grounding, and where
+    it may be limiting.
+  keywords:
+    - tradition
+    - shared belief systems
+    - institutional structure
+    - mentorship
+    - established teaching
+  primary_themes:
+    - tradition
+    - belief_systems
+    - mentorship
+  secondary_themes:
+    - structure
+
+- name: The Lovers
+  arcana: major
+  suit: null
+  rank: "6"
+  image_ref: rws/major/06-the-lovers.png
+  base_meaning_upright: >
+    The Lovers may point toward connection, and toward a choice that asks
+    values to be weighed and aligned -- in a relationship, or between paths
+    that reflect different parts of oneself. It can represent harmony
+    reached through honest attunement.
+  base_meaning_reversed: >
+    Reversed, this card can suggest disharmony or misalignment -- values
+    pulling in different directions, or a choice being avoided. It may
+    invite reflection on where connection has become imbalanced.
+  keywords:
+    - meaningful connection
+    - a values-based choice
+    - alignment
+    - relationship
+    - union of differing parts
+  primary_themes:
+    - connection
+    - choice
+    - values_alignment
+  secondary_themes:
+    - relationships
+
+- name: The Chariot
+  arcana: major
+  suit: null
+  rank: "7"
+  image_ref: rws/major/07-the-chariot.png
+  base_meaning_upright: >
+    The Chariot may suggest forward motion achieved by holding opposing
+    forces in balance and directing them toward a single aim. It can
+    represent determination, focus, and a sense of momentum gained through
+    deliberate control.
+  base_meaning_reversed: >
+    Reversed, The Chariot can point toward scattered energy or a loss of
+    direction -- forces pulling apart rather than pulling together. It may
+    invite reflection on where willpower alone is not enough without a
+    clear aim.
+  keywords:
+    - determined forward motion
+    - directed willpower
+    - balancing opposing forces
+    - focus
+    - momentum through control
+  primary_themes:
+    - determination
+    - focus
+    - control
+  secondary_themes:
+    - momentum
+
+- name: Strength
+  arcana: major
+  suit: null
+  rank: "8"
+  image_ref: rws/major/08-strength.png
+  base_meaning_upright: >
+    Strength may point toward a quieter kind of courage -- patience,
+    compassion, and steady inner resolve rather than force. It can suggest
+    that a difficult situation responds better to gentleness sustained over
+    time than to confrontation.
+  base_meaning_reversed: >
+    Reversed, this card can indicate self-doubt, or a tendency to force a
+    situation rather than meet it with patience. It may invite reflection
+    on where insecurity is being mistaken for weakness.
+  keywords:
+    - quiet courage
+    - patience
+    - compassion
+    - gentle influence
+    - inner fortitude
+  primary_themes:
+    - inner_strength
+    - patience
+    - compassion
+  secondary_themes:
+    - courage
+
+- name: The Hermit
+  arcana: major
+  suit: null
+  rank: "9"
+  image_ref: rws/major/09-the-hermit.png
+  base_meaning_upright: >
+    The Hermit may suggest a deliberate withdrawal -- stepping back from
+    noise and company to listen for one's own answers. It can represent
+    introspection undertaken not out of avoidance, but as a genuine search
+    for inner guidance.
+  base_meaning_reversed: >
+    Reversed, The Hermit can point toward isolation that has begun to feel
+    like avoidance, or a resistance to guidance that could actually help.
+    It may invite reflection on the line between solitude and disconnection.
+  keywords:
+    - introspection
+    - solitude
+    - inner guidance
+    - stepping back to reflect
+    - a search for one's own answers
+  primary_themes:
+    - introspection
+    - solitude
+    - inner_guidance
+  secondary_themes:
+    - patience
+
+- name: Wheel of Fortune
+  arcana: major
+  suit: null
+  rank: "10"
+  image_ref: rws/major/10-wheel-of-fortune.png
+  base_meaning_upright: >
+    The Wheel of Fortune can represent cycles turning and circumstances
+    shifting in ways not fully within one's control. It may point toward a
+    turning point -- a reminder that conditions rarely stay fixed for long.
+  base_meaning_reversed: >
+    Reversed, this card may suggest resistance to a change that feels
+    unwelcome, or a sense of being stuck just as the wheel seems to be
+    turning against a person's favor. It can invite reflection on what is
+    within one's influence and what is not.
+  keywords:
+    - cycles and turning points
+    - change beyond direct control
+    - shifting circumstances
+    - the turn of fortune
+  primary_themes:
+    - cycles
+    - change
+  secondary_themes:
+    - uncertainty
+
+- name: Justice
+  arcana: major
+  suit: null
+  rank: "11"
+  image_ref: rws/major/11-justice.png
+  base_meaning_upright: >
+    Justice may point toward fairness, accountability, and the honest
+    weighing of cause and effect. It can suggest a moment when clarity and
+    truth matter more than convenience, and where actions are meeting their
+    natural consequences.
+  base_meaning_reversed: >
+    Reversed, Justice can indicate a tension involving unfairness, avoided
+    accountability, or an imbalance that has gone unaddressed. It may invite
+    reflection on where truth is being softened or postponed.
+  keywords:
+    - fairness
+    - accountability
+    - cause and effect
+    - honest truth
+    - balance restored
+  primary_themes:
+    - fairness
+    - accountability
+    - truth
+  secondary_themes:
+    - balance
+
+- name: The Hanged Man
+  arcana: major
+  suit: null
+  rank: "12"
+  image_ref: rws/major/12-the-hanged-man.png
+  base_meaning_upright: >
+    The Hanged Man may suggest a deliberate pause -- suspending action to
+    see a situation from an entirely different vantage point. It can point
+    toward surrender, not as defeat, but as a willingness to let go of
+    control for a while.
+  base_meaning_reversed: >
+    Reversed, this card can indicate stalling without purpose, or
+    resistance to a surrender that might actually help. It may invite
+    reflection on where self-sacrifice has become martyrdom rather than
+    genuine release.
+  keywords:
+    - a deliberate pause
+    - surrender
+    - new perspective
+    - letting go of control
+    - suspended action
+  primary_themes:
+    - surrender
+    - letting_go
+  secondary_themes:
+    - introspection
+
+- name: Death
+  arcana: major
+  suit: null
+  rank: "13"
+  image_ref: rws/major/13-death.png
+  base_meaning_upright: >
+    Death can represent an ending that makes room for something new --
+    transformation through the release of what no longer fits. It may point
+    toward a transition already underway, even if its shape is not yet
+    clear.
+  base_meaning_reversed: >
+    Reversed, Death may suggest resistance to a necessary ending, or a
+    transition that is dragging on longer than it needs to. It can invite
+    reflection on what is being held onto out of fear rather than genuine
+    need.
+  keywords:
+    - transformation
+    - a necessary ending
+    - release
+    - transition
+    - letting go of what no longer serves
+  primary_themes:
+    - transformation
+    - endings
+    - transition
+  secondary_themes:
+    - letting_go
+
+- name: Temperance
+  arcana: major
+  suit: null
+  rank: "14"
+  image_ref: rws/major/14-temperance.png
+  base_meaning_upright: >
+    Temperance may point toward balance found through patient blending --
+    combining opposites into something workable rather than forcing a
+    choice between them. It can suggest moderation and a steady, integrated
+    approach.
+  base_meaning_reversed: >
+    Reversed, this card can indicate imbalance or excess -- a situation
+    pulled too far in one direction. It may invite reflection on where
+    patience has run short, or where competing needs have gone
+    unreconciled.
+  keywords:
+    - balance
+    - moderation
+    - blending opposites
+    - patient integration
+    - steady equilibrium
+  primary_themes:
+    - moderation
+    - integration
+    - balance
+  secondary_themes:
+    - patience
+
+- name: The Devil
+  arcana: major
+  suit: null
+  rank: "15"
+  image_ref: rws/major/15-the-devil.png
+  base_meaning_upright: >
+    The Devil may point toward attachment, restriction, or a pattern that
+    has quietly become binding -- material fixation, a habit, or a belief
+    that limits more than it protects. It can invite reflection on where
+    something is being tolerated because it feels inevitable.
+  base_meaning_reversed: >
+    Reversed, The Devil can suggest a growing awareness of that pattern, and
+    the first steps toward reclaiming agency from it. It may point toward
+    releasing an attachment that has outlived its usefulness.
+  keywords:
+    - attachment
+    - restriction
+    - binding patterns
+    - material fixation
+    - a sense of powerlessness
+  primary_themes:
+    - attachment
+    - restriction
+    - patterns
+  secondary_themes:
+    - letting_go
+
+- name: The Tower
+  arcana: major
+  suit: null
+  rank: "16"
+  image_ref: rws/major/16-the-tower.png
+  base_meaning_upright: >
+    The Tower can represent sudden upheaval -- a structure built on shaky
+    ground giving way all at once. It may point toward disruption that,
+    however unwelcome, clears space by revealing what was not actually
+    stable to begin with.
+  base_meaning_reversed: >
+    Reversed, The Tower may suggest an upheaval being delayed or absorbed
+    internally rather than expressed outwardly. It can invite reflection on
+    whether avoiding a necessary collapse is only postponing it.
+  keywords:
+    - sudden upheaval
+    - the collapse of false structure
+    - disruptive revelation
+    - a breaking-open
+    - unstable foundations exposed
+  primary_themes:
+    - upheaval
+    - disruption
+    - revelation
+  secondary_themes:
+    - transformation
+
+- name: The Star
+  arcana: major
+  suit: null
+  rank: "17"
+  image_ref: rws/major/17-the-star.png
+  base_meaning_upright: >
+    The Star may point toward quiet renewal after difficulty -- hope,
+    inspiration, and a sense of healing that does not need to be dramatic to
+    be real. It can suggest a gentle trust that things may continue to
+    improve.
+  base_meaning_reversed: >
+    Reversed, this card can indicate discouragement, or a disconnection
+    from hope even when circumstances may be improving. It may invite
+    reflection on where self-doubt has crowded out the possibility of
+    healing.
+  keywords:
+    - quiet hope
+    - renewal
+    - inspiration
+    - gentle healing
+    - trust after difficulty
+  primary_themes:
+    - hope
+    - renewal
+    - healing
+  secondary_themes:
+    - inner_strength
+
+- name: The Moon
+  arcana: major
+  suit: null
+  rank: "18"
+  image_ref: rws/major/18-the-moon.png
+  base_meaning_upright: >
+    The Moon may point toward uncertain terrain -- a situation shaped more
+    by intuition, imagination, or the unconscious than by clear fact. It can
+    represent the discomfort of not yet being able to see a situation
+    plainly.
+  base_meaning_reversed: >
+    Reversed, The Moon can suggest confusion beginning to clear, or fears
+    that are finally being named and faced rather than avoided. It may
+    invite reflection on which parts of the uncertainty are real and which
+    are illusion.
+  keywords:
+    - uncertainty
+    - the unconscious
+    - illusion versus reality
+    - intuitive but unclear terrain
+    - fear of the unknown
+  primary_themes:
+    - uncertainty
+    - illusion
+    - fear
+  secondary_themes:
+    - intuition
+
+- name: The Sun
+  arcana: major
+  suit: null
+  rank: "19"
+  image_ref: rws/major/19-the-sun.png
+  base_meaning_upright: >
+    The Sun may point toward clarity, vitality, and a sense of things being
+    seen plainly and warmly. It can represent authentic self-expression, and
+    a kind of straightforward joy that does not need to be complicated.
+  base_meaning_reversed: >
+    Reversed, this card can suggest joy or recognition that feels delayed
+    or partially clouded, or an optimism that is outpacing what the
+    situation can currently support. It may invite reflection on where
+    clarity is still emerging rather than fully arrived.
+  keywords:
+    - clarity
+    - vitality
+    - authentic joy
+    - warmth
+    - straightforward self-expression
+  primary_themes:
+    - clarity
+    - vitality
+    - joy
+  secondary_themes:
+    - authenticity
+
+- name: Judgement
+  arcana: major
+  suit: null
+  rank: "20"
+  image_ref: rws/major/20-judgement.png
+  base_meaning_upright: >
+    Judgement may point toward a reckoning or awakening -- a moment that
+    calls for honestly reassessing where one stands. It can represent a
+    renewed sense of purpose that comes from evaluating a path clearly
+    rather than avoiding the question.
+  base_meaning_reversed: >
+    Reversed, Judgement can suggest self-doubt in the middle of that
+    evaluation, or harsh self-judgment that makes honest reassessment
+    difficult. It may invite reflection on where a necessary reckoning is
+    being avoided.
+  keywords:
+    - reckoning
+    - awakening
+    - honest reassessment
+    - a renewed sense of purpose
+    - self-evaluation
+  primary_themes:
+    - reckoning
+    - self_evaluation
+  secondary_themes:
+    - clarity
+
+- name: The World
+  arcana: major
+  suit: null
+  rank: "21"
+  image_ref: rws/major/21-the-world.png
+  base_meaning_upright: >
+    The World may point toward completion -- a cycle reaching its natural
+    close and its pieces coming together into something whole. It can
+    represent fulfillment earned through everything that came before it.
+  base_meaning_reversed: >
+    Reversed, The World can suggest a completion that feels incomplete, or
+    loose ends that remain even as a chapter seems to be closing. It may
+    invite reflection on what still needs attention before this cycle can
+    truly rest.
+  keywords:
+    - completion
+    - wholeness
+    - fulfillment
+    - a cycle reaching its close
+    - integration of the journey
+  primary_themes:
+    - completion
+    - wholeness
+    - fulfillment
+  secondary_themes:
+    - integration
