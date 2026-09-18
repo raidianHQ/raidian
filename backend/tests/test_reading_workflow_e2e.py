@@ -154,7 +154,10 @@ def client(api_session_factory):
 def test_full_workflow_trace_interpret_persist_retrieve_narrative(api_seeded_session, client):
     reading = _complete_reading(api_seeded_session)
     api_seeded_session.commit()
-    assert reading.status == ReadingStatus.DRAFTING
+    # A fully-drawn reading auto-advances to SPREAD_COMPLETE the moment its
+    # last required draw is added (Step 16) -- it is no longer DRAFTING by
+    # the time this test can observe it.
+    assert reading.status == ReadingStatus.SPREAD_COMPLETE
 
     # Hop 1: POST .../interpret
     post_response = client.post(f"/readings/{reading.id}/interpret")

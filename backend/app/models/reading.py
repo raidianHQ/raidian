@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin, str_enum_type
 from app.models.enums import DrawMethod, Orientation, ReadingStatus
-from app.models.exceptions import DuplicateCardError
+from app.models.exceptions import DuplicateCardError, ReadingNotDraftingError
 
 if TYPE_CHECKING:
     from app.models.card import Card
@@ -79,9 +79,20 @@ class Reading(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         (Documentation/READING_INTEGRATION_DESIGN.md Section 3). Derived
         rather than stored, so it can never drift (the same "derive, don't
         store-and-risk-drift" precedent as Spread.position_count).
+
+        Reads `d.position.id` (the related SpreadPosition's own primary
+        key, via the already-populated in-memory relationship) rather than
+        `d.position_id` (the raw FK column) deliberately: add_card_draw()
+        (below) evaluates this property immediately after appending a new,
+        not-yet-flushed CardDraw, and SQLAlchemy does not synchronize a
+        pending object's FK columns from its relationship until flush --
+        `d.position_id` would read as None for that draw until then, while
+        `d.position` was set explicitly at construction and is already
+        correct in memory. Equivalent to the FK-based read for every
+        already-flushed draw either way.
         """
         required_position_ids = {p.id for p in self.spread.positions if p.required}
-        drawn_position_ids = {d.position_id for d in self.card_draws}
+        drawn_position_ids = {d.position.id for d in self.card_draws}
         return required_position_ids.issubset(drawn_position_ids)
 
     @validates("question")
@@ -100,12 +111,29 @@ class Reading(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     ) -> "CardDraw":
         """Record a drawn card, enforcing the invariants a raw insert wouldn't:
 
+        - this reading must still be DRAFTING (evidence is immutable once
+          the spread is complete -- RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section
+          17; Documentation/READING_DRAW_LIFECYCLE_IMPLEMENTATION_DESIGN.md
+          Section 5/7)
         - the position must belong to this reading's spread
         - the card must belong to this reading's deck
         - duplicate cards are rejected unless the spread explicitly allows them
+
+        After a successful draw, if every required SpreadPosition now has a
+        drawn card, this reading automatically advances from DRAFTING to
+        SPREAD_COMPLETE (Documentation/READING_DRAW_LIFECYCLE_IMPLEMENTATION_DESIGN.md
+        Section 5) -- is_spread_complete (required-position coverage, not a
+        raw draw count) remains the sole, authoritative completion rule.
+        Does not flush or commit -- the caller controls the transaction,
+        exactly as before this method existed.
         """
         from app.models.card_draw import CardDraw
 
+        if self.status != ReadingStatus.DRAFTING:
+            raise ReadingNotDraftingError(
+                f"reading {self.id} is not DRAFTING (status={self.status.value}); "
+                "card draws can only be recorded while a reading is drafting"
+            )
         if position.spread_id != self.spread_id:
             raise ValueError("position does not belong to this reading's spread")
         if card.deck_id != self.deck_id:
@@ -121,4 +149,8 @@ class Reading(Base, UUIDPrimaryKeyMixin, TimestampMixin):
             position=position, card=card, orientation=orientation, draw_order=draw_order
         )
         self.card_draws.append(draw)
+
+        if self.is_spread_complete:
+            self.status = ReadingStatus.SPREAD_COMPLETE
+
         return draw

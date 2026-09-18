@@ -180,6 +180,13 @@ def test_current_interpretation_is_the_highest_sequence_not_insertion_order(seed
 
 def test_drafting_transitions_to_interpreted(seeded_session):
     reading = _complete_reading(seeded_session)
+    # _complete_reading() now legitimately auto-advances a fully-drawn
+    # reading to SPREAD_COMPLETE (Step 16) -- force it back to DRAFTING so
+    # this test can isolate the DRAFTING -> INTERPRETED transition
+    # specifically, independent of that newer behavior (which its sibling
+    # test below already covers).
+    reading.status = ReadingStatus.DRAFTING
+    seeded_session.flush()
     assert reading.status == ReadingStatus.DRAFTING
     interpret_reading(seeded_session, reading)
     assert reading.status == ReadingStatus.INTERPRETED
@@ -234,7 +241,10 @@ def test_interpret_reading_does_not_commit_the_session(seeded_session):
     seeded_session.rollback()
 
     reloaded = seeded_session.get(Reading, reading_id)
-    assert reloaded.status == ReadingStatus.DRAFTING  # rolled back
+    # Rolled back to its pre-interpretation value -- SPREAD_COMPLETE, not
+    # DRAFTING, since _complete_reading() + commit() already auto-advanced
+    # it there (Step 16) before interpret_reading() was ever called.
+    assert reloaded.status == ReadingStatus.SPREAD_COMPLETE
     assert reloaded.interpretations == []  # rolled back
 
 
