@@ -37,6 +37,7 @@ def test_interpretation_can_be_created_for_a_reading(db_session):
         engine_version="0.1.0-foundation",
         reference_data_version="deadbeef",
         interpretive_model=_minimal_model_dict(),
+        sequence=1,
     )
     db_session.add(interpretation)
     db_session.flush()
@@ -69,14 +70,14 @@ def test_a_reading_can_have_multiple_interpretations_over_time(db_session):
 
     first = Interpretation(
         reading=reading, engine_version="0.1.0", reference_data_version="aaa",
-        interpretive_model=_minimal_model_dict(),
+        interpretive_model=_minimal_model_dict(), sequence=1,
     )
     db_session.add(first)
     db_session.flush()
 
     second = Interpretation(
         reading=reading, engine_version="0.2.0", reference_data_version="bbb",
-        interpretive_model=_minimal_model_dict(),
+        interpretive_model=_minimal_model_dict(), sequence=2,
     )
     db_session.add(second)
     db_session.flush()
@@ -86,28 +87,29 @@ def test_a_reading_can_have_multiple_interpretations_over_time(db_session):
     assert db_session.get(Interpretation, second.id) is not None
 
 
-def test_current_interpretation_is_the_most_recently_created(db_session):
-    """No is_current flag -- "current" is defined as latest created_at
-    (INTERPRETATION_ENGINE_DESIGN.md Section 9, Q1)."""
+def test_current_interpretation_is_the_highest_sequence(db_session):
+    """No is_current flag -- "current" is defined as the highest `sequence`
+    value, not `created_at` (which is not a reliable tiebreak on SQLite --
+    Documentation/READING_INTEGRATION_DESIGN.md Section 7, Resolved Q2)."""
     spread = make_spread(db_session)
     deck = make_deck(db_session)
     reading = make_reading(db_session, spread, deck)
 
     first = Interpretation(
         reading=reading, engine_version="0.1.0", reference_data_version="aaa",
-        interpretive_model=_minimal_model_dict(),
+        interpretive_model=_minimal_model_dict(), sequence=1,
     )
     db_session.add(first)
     db_session.flush()
     second = Interpretation(
         reading=reading, engine_version="0.2.0", reference_data_version="bbb",
-        interpretive_model=_minimal_model_dict(),
+        interpretive_model=_minimal_model_dict(), sequence=2,
     )
     db_session.add(second)
     db_session.flush()
 
-    # relationship is ordered by created_at (model definition) -- the most
-    # recent should be last.
+    # relationship is ordered by sequence (model definition) -- the
+    # highest-sequence row should be last.
     assert reading.interpretations[-1].id == second.id
 
 
@@ -117,7 +119,7 @@ def test_deleting_a_reading_cascades_to_its_interpretations(db_session):
     reading = make_reading(db_session, spread, deck)
     interpretation = Interpretation(
         reading=reading, engine_version="0.1.0", reference_data_version="aaa",
-        interpretive_model=_minimal_model_dict(),
+        interpretive_model=_minimal_model_dict(), sequence=1,
     )
     db_session.add(interpretation)
     db_session.flush()
@@ -137,7 +139,7 @@ def test_interpretive_model_json_round_trips_through_the_database(db_session):
 
     interpretation = Interpretation(
         reading=reading, engine_version="0.1.0-foundation", reference_data_version="deadbeef",
-        interpretive_model=payload,
+        interpretive_model=payload, sequence=1,
     )
     db_session.add(interpretation)
     db_session.commit()

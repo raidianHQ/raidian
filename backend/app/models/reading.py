@@ -67,8 +67,22 @@ class Reading(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     interpretations: Mapped[list["Interpretation"]] = relationship(
         back_populates="reading",
         cascade="all, delete-orphan",
-        order_by="Interpretation.created_at",
+        order_by="Interpretation.sequence",
     )
+
+    @property
+    def is_spread_complete(self) -> bool:
+        """Whether every required SpreadPosition on this Reading's Spread
+        has a drawn card -- the precondition
+        app/services/reading_orchestration.py's interpret_reading() checks
+        before invoking the Interpretation Engine at all
+        (Documentation/READING_INTEGRATION_DESIGN.md Section 3). Derived
+        rather than stored, so it can never drift (the same "derive, don't
+        store-and-risk-drift" precedent as Spread.position_count).
+        """
+        required_position_ids = {p.id for p in self.spread.positions if p.required}
+        drawn_position_ids = {d.position_id for d in self.card_draws}
+        return required_position_ids.issubset(drawn_position_ids)
 
     @validates("question")
     def validate_question(self, _key: str, value: str) -> str:

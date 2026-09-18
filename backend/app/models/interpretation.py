@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, ForeignKey, String
+from sqlalchemy import JSON, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -29,6 +29,22 @@ class Interpretation(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     reference_data_version are duplicated out of that JSON blob into their
     own columns so a specific run's provenance can be queried/filtered
     without deserializing the JSON payload.
+
+    `sequence` is a globally unique, monotonically increasing integer
+    assigned by application code (app/services/interpretation/persistence.py)
+    at insert time -- it is the deterministic "current interpretation for
+    this reading" ordering key (the row with the highest `sequence` for a
+    given `reading_id`), per
+    Documentation/READING_INTEGRATION_DESIGN.md Section 7. It exists
+    because `created_at` alone is not a reliable tiebreak: SQLite's
+    `CURRENT_TIMESTAMP` has only second-level resolution, and the UUID
+    primary key is random (uuid4), not time-ordered, so two rows created
+    within the same wall-clock second on SQLite would otherwise have no
+    deterministic ordering. `unique=True` turns a hypothetical concurrent
+    double-assignment (this project has no locking around the sequence
+    computation -- acceptable for its current single-writer-per-reading
+    usage pattern) into a loud IntegrityError rather than a silent
+    ordering ambiguity.
     """
 
     __tablename__ = "interpretations"
@@ -40,5 +56,6 @@ class Interpretation(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     engine_version: Mapped[str] = mapped_column(String(40), nullable=False)
     reference_data_version: Mapped[str] = mapped_column(String(64), nullable=False)
     interpretive_model: Mapped[dict] = mapped_column(JSON, nullable=False)
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
 
     reading: Mapped["Reading"] = relationship(back_populates="interpretations")
