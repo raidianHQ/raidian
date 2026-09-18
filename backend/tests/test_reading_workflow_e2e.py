@@ -18,6 +18,13 @@ Fixtures are self-contained, mirroring test_api_interpretation.py's own
 rationale: a `client` fixture needs a `get_db` override bound to a
 StaticPool in-memory SQLite engine shared across every request a test
 makes.
+
+Step 22: every route here now requires authentication and Reading
+ownership. The `client` fixture authenticates as a single, fixed `owner`
+User by default, and every Reading this file builds is attached to that
+same owner -- preserving every pre-Step-22 test's original assertions and
+intent unchanged. Cross-user/unauthenticated authorization behavior is
+covered separately, in tests/test_ownership.py.
 """
 
 from __future__ import annotations
@@ -31,14 +38,16 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import app.services.interpretation.engine as engine_module
+from app.core.security import create_access_token
 from app.db.session import get_db
 from app.main import app
-from app.models import Base, Interpretation, Orientation, Reading, ReadingStatus
+from app.models import Base, Interpretation, Orientation, Reading, ReadingStatus, User
 from app.models.enums import Suit
 from app.seed.seed import seed_reference_data
 from app.services import reading_orchestration
 from app.services.interpretation.engine import interpret as engine_interpret
 from app.services.interpretation.relationships import CardRelationships, SuitCluster
+from tests.factories import make_user
 from tests.interpretation_helpers import build_reading
 
 _FULL_CELTIC_CROSS_DRAWS = [
@@ -55,11 +64,11 @@ _FULL_CELTIC_CROSS_DRAWS = [
 ]
 
 
-def _complete_reading(session: Session) -> Reading:
-    return build_reading(session, spread_name="Celtic Cross", draws=_FULL_CELTIC_CROSS_DRAWS)
+def _complete_reading(session: Session, owner: User) -> Reading:
+    return build_reading(session, spread_name="Celtic Cross", draws=_FULL_CELTIC_CROSS_DRAWS, owner=owner)
 
 
-def _incomplete_reading(session: Session) -> Reading:
+def _incomplete_reading(session: Session, owner: User) -> Reading:
     return build_reading(
         session,
         spread_name="Celtic Cross",
@@ -67,6 +76,7 @@ def _incomplete_reading(session: Session) -> Reading:
             ("Situation", "Ace of Swords", Orientation.UPRIGHT),
             ("Challenge", "The Tower", Orientation.UPRIGHT),
         ],
+        owner=owner,
     )
 
 
@@ -130,7 +140,19 @@ def api_seeded_session(api_session_factory):
 
 
 @pytest.fixture()
-def client(api_session_factory):
+def owner(api_seeded_session) -> User:
+    user = make_user(api_seeded_session, email="owner@example.com")
+    api_seeded_session.commit()
+    return user
+
+
+@pytest.fixture()
+def auth_headers(owner) -> dict[str, str]:
+    return {"Authorization": f"Bearer {create_access_token(owner.id)}"}
+
+
+@pytest.fixture()
+def client(api_session_factory, auth_headers):
     def _override_get_db():
         db = api_session_factory()
         try:
@@ -144,6 +166,7 @@ def client(api_session_factory):
 
     app.dependency_overrides[get_db] = _override_get_db
     with TestClient(app) as test_client:
+        test_client.headers.update(auth_headers)
         yield test_client
     app.dependency_overrides.clear()
 
@@ -151,8 +174,8 @@ def client(api_session_factory):
 # --- 1/2/3/4/6: the full chain, traced hop by hop --------------------------------
 
 
-def test_full_workflow_trace_interpret_persist_retrieve_narrative(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_full_workflow_trace_interpret_persist_retrieve_narrative(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     # A fully-drawn reading auto-advances to SPREAD_COMPLETE the moment its
     # last required draw is added (Step 16) -- it is no longer DRAFTING by
@@ -197,8 +220,8 @@ def test_full_workflow_trace_interpret_persist_retrieve_narrative(api_seeded_ses
 # --- 5: retrieved model matches what the engine actually produced ---------------
 
 
-def test_retrieved_interpretive_model_matches_the_engine_output(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_retrieved_interpretive_model_matches_the_engine_output(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     directly_computed = engine_interpret(reading, api_seeded_session)
@@ -215,8 +238,8 @@ def test_retrieved_interpretive_model_matches_the_engine_output(api_seeded_sessi
 # --- 6/9: narrative derives from the current (highest-sequence) Interpretation ---
 
 
-def test_narrative_reflects_the_current_highest_sequence_interpretation(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_narrative_reflects_the_current_highest_sequence_interpretation(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     stale = Interpretation(
@@ -238,8 +261,8 @@ def test_narrative_reflects_the_current_highest_sequence_interpretation(api_seed
     assert central_theme_section["statements"][0]["text"] == "Current Theme"
 
 
-def test_current_endpoint_uses_sequence_not_insertion_order(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_current_endpoint_uses_sequence_not_insertion_order(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     row_a = Interpretation(
@@ -263,8 +286,8 @@ def test_current_endpoint_uses_sequence_not_insertion_order(api_seeded_session, 
 # --- 7: narrative generation writes nothing --------------------------------------
 
 
-def test_narrative_generation_creates_no_rows_and_does_not_mutate_the_reading(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_narrative_generation_creates_no_rows_and_does_not_mutate_the_reading(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
 
@@ -297,8 +320,8 @@ def test_narrative_generation_creates_no_rows_and_does_not_mutate_the_reading(ap
 # --- 8: reinterpretation preserves history ----------------------------------------
 
 
-def test_reinterpretation_creates_a_new_row_and_preserves_history(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_reinterpretation_creates_a_new_row_and_preserves_history(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     first = client.post(f"/readings/{reading.id}/interpret").json()
@@ -316,8 +339,8 @@ def test_reinterpretation_creates_a_new_row_and_preserves_history(api_seeded_ses
 # --- 10: reinterpreting a SAVED reading preserves SAVED --------------------------
 
 
-def test_reinterpreting_a_saved_reading_preserves_saved_status(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_reinterpreting_a_saved_reading_preserves_saved_status(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
 
@@ -337,9 +360,9 @@ def test_reinterpreting_a_saved_reading_preserves_saved_status(api_seeded_sessio
 
 
 def test_incomplete_reading_returns_409_engine_never_invoked_no_row_created(
-    api_seeded_session, client, monkeypatch
+    api_seeded_session, client, owner, monkeypatch
 ):
-    reading = _incomplete_reading(api_seeded_session)
+    reading = _incomplete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     def _fail_if_called(*_args, **_kwargs):
@@ -359,8 +382,8 @@ def test_incomplete_reading_returns_409_engine_never_invoked_no_row_created(
 # --- 12: provenance / reference-data version survive the whole round trip -------
 
 
-def test_provenance_and_reference_data_version_survive_the_full_round_trip(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_provenance_and_reference_data_version_survive_the_full_round_trip(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     posted = client.post(f"/readings/{reading.id}/interpret").json()
@@ -384,7 +407,7 @@ def test_provenance_and_reference_data_version_survive_the_full_round_trip(api_s
 # --- 13: all four routes remain registered and functional ------------------------
 
 
-def test_all_four_routes_are_registered_and_functional(api_seeded_session, client):
+def test_all_four_routes_are_registered_and_functional(api_seeded_session, client, owner):
     schema = client.get("/openapi.json").json()
     paths = schema["paths"]
     assert "post" in paths["/readings/{reading_id}/interpret"]
@@ -392,7 +415,7 @@ def test_all_four_routes_are_registered_and_functional(api_seeded_session, clien
     assert "get" in paths["/readings/{reading_id}/interpretations"]
     assert "get" in paths["/readings/{reading_id}/narrative"]
 
-    reading = _complete_reading(api_seeded_session)
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     assert client.post(f"/readings/{reading.id}/interpret").status_code == 201
@@ -404,7 +427,7 @@ def test_all_four_routes_are_registered_and_functional(api_seeded_session, clien
 # --- No deferred rule (R3/R4) leaks into the output -------------------------------
 
 
-def test_deferred_relationship_rules_cannot_leak_into_the_output(api_seeded_session, client, monkeypatch):
+def test_deferred_relationship_rules_cannot_leak_into_the_output(api_seeded_session, client, owner, monkeypatch):
     """R3 (same-suit clustering) and R4 (Major Arcana density) are DEFERRED
     (Documentation/INTERPRETATION_RULES_DESIGN.md Section 7.1/12.3): the
     underlying evidence (relationships.evaluate_relationships) may be
@@ -422,7 +445,7 @@ def test_deferred_relationship_rules_cannot_leak_into_the_output(api_seeded_sess
     # -- the only thing that should differ is whatever
     # evaluate_relationships() is allowed to influence, which must be
     # nothing.
-    reading = _complete_reading(api_seeded_session)
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     baseline = client.post(f"/readings/{reading.id}/interpret").json()

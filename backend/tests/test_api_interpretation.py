@@ -7,6 +7,15 @@ StaticPool-backed in-memory SQLite engine shared by every request the
 TestClient makes during a test -- distinct from conftest.py's `db_session`,
 which hands a single already-open Session directly to test code with no
 HTTP layer involved.
+
+Step 22: every route here now requires authentication and Reading
+ownership (Documentation/AUTHENTICATION_OWNERSHIP_IMPLEMENTATION_DESIGN.md
+Section 6/9). The `client` fixture authenticates as a single, fixed
+`owner` User by default (its token is attached to every request via
+`client.headers`), and every Reading this file builds is attached to that
+same owner -- preserving every pre-Step-22 test's original assertions and
+intent unchanged. Cross-user/unauthenticated authorization behavior is
+covered separately, in tests/test_ownership.py.
 """
 
 from __future__ import annotations
@@ -20,11 +29,13 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import app.api.interpretation as api_module
+from app.core.security import create_access_token
 from app.db.session import get_db
 from app.main import app
-from app.models import Base, Orientation, ReadingStatus
+from app.models import Base, Orientation, ReadingStatus, User
 from app.models.reading import Reading
 from app.seed.seed import seed_reference_data
+from tests.factories import make_user
 from tests.interpretation_helpers import build_reading
 
 _FULL_CELTIC_CROSS_DRAWS = [
@@ -41,11 +52,11 @@ _FULL_CELTIC_CROSS_DRAWS = [
 ]
 
 
-def _complete_reading(session: Session) -> Reading:
-    return build_reading(session, spread_name="Celtic Cross", draws=_FULL_CELTIC_CROSS_DRAWS)
+def _complete_reading(session: Session, owner: User) -> Reading:
+    return build_reading(session, spread_name="Celtic Cross", draws=_FULL_CELTIC_CROSS_DRAWS, owner=owner)
 
 
-def _incomplete_reading(session: Session) -> Reading:
+def _incomplete_reading(session: Session, owner: User) -> Reading:
     return build_reading(
         session,
         spread_name="Celtic Cross",
@@ -53,6 +64,7 @@ def _incomplete_reading(session: Session) -> Reading:
             ("Situation", "Ace of Swords", Orientation.UPRIGHT),
             ("Challenge", "The Tower", Orientation.UPRIGHT),
         ],
+        owner=owner,
     )
 
 
@@ -99,12 +111,32 @@ def api_seeded_session(api_session_factory):
 
 
 @pytest.fixture()
-def client(api_session_factory):
+def owner(api_seeded_session) -> User:
+    """The single User every Reading in this file is owned by (Step 22) --
+    kept as a dedicated fixture so tests can still assert on its `.id`
+    where needed, distinct from the client's own authentication.
+    """
+    user = make_user(api_seeded_session, email="owner@example.com")
+    api_seeded_session.commit()
+    return user
+
+
+@pytest.fixture()
+def auth_headers(owner) -> dict[str, str]:
+    return {"Authorization": f"Bearer {create_access_token(owner.id)}"}
+
+
+@pytest.fixture()
+def client(api_session_factory, auth_headers):
     """A TestClient whose get_db dependency is overridden to use the same
     engine api_seeded_session is built against -- reproduces production's
     real commit-on-success/rollback-on-exception get_db() (app/db/session.py)
     against a fresh Session per request, instead of the production
     SessionLocal/engine bound to the configured DATABASE_URL.
+
+    Authenticates as `owner` by default (Step 22) -- every existing call
+    site below (none of which passes its own `headers=`) is therefore
+    automatically authorized against Readings built via `owner`.
     """
 
     def _override_get_db():
@@ -120,6 +152,7 @@ def client(api_session_factory):
 
     app.dependency_overrides[get_db] = _override_get_db
     with TestClient(app) as test_client:
+        test_client.headers.update(auth_headers)
         yield test_client
     app.dependency_overrides.clear()
 
@@ -127,8 +160,8 @@ def client(api_session_factory):
 # --- POST /readings/{id}/interpret ----------------------------------------------
 
 
-def test_post_interpret_returns_201_for_a_complete_reading(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_post_interpret_returns_201_for_a_complete_reading(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     response = client.post(f"/readings/{reading.id}/interpret")
@@ -146,8 +179,8 @@ def test_post_interpret_returns_404_for_a_nonexistent_reading(client):
     assert response.status_code == 404
 
 
-def test_post_interpret_returns_409_for_an_incomplete_reading(api_seeded_session, client):
-    reading = _incomplete_reading(api_seeded_session)
+def test_post_interpret_returns_409_for_an_incomplete_reading(api_seeded_session, client, owner):
+    reading = _incomplete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     response = client.post(f"/readings/{reading.id}/interpret")
@@ -159,8 +192,8 @@ def test_post_interpret_returns_409_for_an_incomplete_reading(api_seeded_session
     assert reloaded.interpretations == []
 
 
-def test_repeated_interpretation_creates_history(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_repeated_interpretation_creates_history(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     first = client.post(f"/readings/{reading.id}/interpret")
@@ -172,8 +205,8 @@ def test_repeated_interpretation_creates_history(api_seeded_session, client):
     assert first.json()["sequence"] < second.json()["sequence"]
 
 
-def test_saved_reading_remains_saved_after_interpretation(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_saved_reading_remains_saved_after_interpretation(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     reading.status = ReadingStatus.SAVED
     api_seeded_session.commit()
 
@@ -188,8 +221,8 @@ def test_saved_reading_remains_saved_after_interpretation(api_seeded_session, cl
 # --- GET /readings/{id}/interpretations/current ---------------------------------
 
 
-def test_get_current_interpretation_returns_200(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_get_current_interpretation_returns_200(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
 
@@ -199,8 +232,8 @@ def test_get_current_interpretation_returns_200(api_seeded_session, client):
     assert response.json()["reading_id"] == str(reading.id)
 
 
-def test_get_current_interpretation_returns_404_when_never_interpreted(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_get_current_interpretation_returns_404_when_never_interpreted(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     response = client.get(f"/readings/{reading.id}/interpretations/current")
@@ -213,8 +246,8 @@ def test_get_current_interpretation_returns_404_for_a_nonexistent_reading(client
     assert response.status_code == 404
 
 
-def test_get_current_interpretation_is_the_highest_sequence(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_get_current_interpretation_is_the_highest_sequence(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
     second = client.post(f"/readings/{reading.id}/interpret")
@@ -228,8 +261,8 @@ def test_get_current_interpretation_is_the_highest_sequence(api_seeded_session, 
 # --- GET /readings/{id}/interpretations (history) --------------------------------
 
 
-def test_get_history_returns_200_with_empty_list_when_never_interpreted(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_get_history_returns_200_with_empty_list_when_never_interpreted(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     response = client.get(f"/readings/{reading.id}/interpretations")
@@ -243,8 +276,8 @@ def test_get_history_returns_404_for_a_nonexistent_reading(client):
     assert response.status_code == 404
 
 
-def test_get_history_returns_lightweight_entries_newest_first(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_get_history_returns_lightweight_entries_newest_first(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     first = client.post(f"/readings/{reading.id}/interpret").json()
     second = client.post(f"/readings/{reading.id}/interpret").json()
@@ -260,8 +293,8 @@ def test_get_history_returns_lightweight_entries_newest_first(api_seeded_session
 # --- GET /readings/{id}/narrative -------------------------------------------------
 
 
-def test_get_narrative_returns_200(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_get_narrative_returns_200(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
 
@@ -273,8 +306,8 @@ def test_get_narrative_returns_200(api_seeded_session, client):
     assert any(section["id"] == "central_theme" for section in body["sections"])
 
 
-def test_get_narrative_returns_404_when_never_interpreted(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_get_narrative_returns_404_when_never_interpreted(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     response = client.get(f"/readings/{reading.id}/narrative")
@@ -287,13 +320,13 @@ def test_get_narrative_returns_404_for_a_nonexistent_reading(client):
     assert response.status_code == 404
 
 
-def test_get_narrative_is_generated_on_demand_not_cached(api_seeded_session, client):
+def test_get_narrative_is_generated_on_demand_not_cached(api_seeded_session, client, owner):
     """Two consecutive GETs must independently recompute the same content
     (NarrativeModel is never persisted -- INTERPRETATION_API_DESIGN.md
     Section 9) rather than one call implicitly depending on a side effect
     of the other.
     """
-    reading = _complete_reading(api_seeded_session)
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
 
@@ -308,8 +341,8 @@ def test_get_narrative_is_generated_on_demand_not_cached(api_seeded_session, cli
 # --- API does not bypass orchestration --------------------------------------------
 
 
-def test_post_interpret_calls_the_orchestration_layer(api_seeded_session, client, monkeypatch):
-    reading = _complete_reading(api_seeded_session)
+def test_post_interpret_calls_the_orchestration_layer(api_seeded_session, client, owner, monkeypatch):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     calls = []
@@ -327,8 +360,8 @@ def test_post_interpret_calls_the_orchestration_layer(api_seeded_session, client
     assert calls == [reading.id]
 
 
-def test_get_current_calls_the_orchestration_layer(api_seeded_session, client, monkeypatch):
-    reading = _complete_reading(api_seeded_session)
+def test_get_current_calls_the_orchestration_layer(api_seeded_session, client, owner, monkeypatch):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
 
@@ -347,8 +380,8 @@ def test_get_current_calls_the_orchestration_layer(api_seeded_session, client, m
     assert calls == [reading.id]
 
 
-def test_get_history_calls_the_orchestration_layer(api_seeded_session, client, monkeypatch):
-    reading = _complete_reading(api_seeded_session)
+def test_get_history_calls_the_orchestration_layer(api_seeded_session, client, owner, monkeypatch):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     calls = []
@@ -366,8 +399,8 @@ def test_get_history_calls_the_orchestration_layer(api_seeded_session, client, m
     assert calls == [reading.id]
 
 
-def test_get_narrative_calls_the_orchestration_layer(api_seeded_session, client, monkeypatch):
-    reading = _complete_reading(api_seeded_session)
+def test_get_narrative_calls_the_orchestration_layer(api_seeded_session, client, owner, monkeypatch):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
 
@@ -389,8 +422,8 @@ def test_get_narrative_calls_the_orchestration_layer(api_seeded_session, client,
 # --- Provenance / reference-data version survive API serialization ---------------
 
 
-def test_provenance_survives_api_serialization(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_provenance_survives_api_serialization(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     response = client.post(f"/readings/{reading.id}/interpret")
@@ -404,8 +437,8 @@ def test_provenance_survives_api_serialization(api_seeded_session, client):
             assert citation["card_draw_id"] in real_draw_ids
 
 
-def test_reference_data_version_survives_api_serialization(api_seeded_session, client):
-    reading = _complete_reading(api_seeded_session)
+def test_reference_data_version_survives_api_serialization(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     post_body = client.post(f"/readings/{reading.id}/interpret").json()

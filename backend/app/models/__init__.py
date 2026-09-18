@@ -11,12 +11,17 @@ from app.models.enums import (
     SemanticRole,
     Suit,
 )
-from app.models.exceptions import DuplicateCardError
+from app.models.exceptions import (
+    DuplicateCardError,
+    EmailAlreadyRegisteredError,
+    InvalidCredentialsError,
+)
 from app.models.interpretation import Interpretation
 from app.models.reading import Reading
 from app.models.reflection_session import ReflectionSession
 from app.models.spread import Spread
 from app.models.spread_position import SpreadPosition
+from app.models.user import User
 
 __all__ = [
     "Base",
@@ -31,9 +36,12 @@ __all__ = [
     "SemanticRole",
     "Suit",
     "DuplicateCardError",
+    "EmailAlreadyRegisteredError",
+    "InvalidCredentialsError",
     "Interpretation",
     "Reading",
     "ReflectionSession",
     "Spread",
     "SpreadPosition",
+    "User",
 ]

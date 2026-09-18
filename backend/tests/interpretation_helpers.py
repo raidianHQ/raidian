@@ -9,10 +9,15 @@ compound-theme rules.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Card, Deck, Orientation, Reading, ReflectionSession, Spread, SpreadPosition
+
+if TYPE_CHECKING:
+    from app.models import User
 
 
 def get_default_deck(session: Session) -> Deck:
@@ -34,17 +39,22 @@ def build_reading(
     draws: list[tuple[str, str, Orientation]],
     question: str = "What should I focus on right now?",
     question_domain: str | None = None,
+    owner: "User | None" = None,
 ) -> Reading:
     """`draws` is a list of (position_name, card_name, orientation),
     assigned draw_order 1..N in the order given (which need not match the
     spread's own position_order -- exercising that distinction is the
     point in some tests).
+
+    `owner` (Step 22) attaches the built Reading's ReflectionSession to the
+    given User -- defaults to None (an unowned ReflectionSession), which
+    preserves every pre-Step-22 caller's exact existing behavior unchanged.
     """
     deck = get_default_deck(session)
     spread = get_spread(session, spread_name)
     positions_by_name = {p.name: p for p in spread.positions}
 
-    reflection_session = ReflectionSession()
+    reflection_session = ReflectionSession(owner=owner)
     session.add(reflection_session)
     session.flush()
 

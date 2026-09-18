@@ -1,18 +1,20 @@
-"""HTTP transport layer for Reading interpretation/narrative (Step 11).
+"""HTTP transport layer for Reading interpretation/narrative (Step 11,
+retrofitted for authentication/ownership in Step 22).
 
-Thin routes only. Every route resolves `reading_id` -> `Reading` (the only
-direct query this module performs) and then delegates entirely to
-app/services/reading_orchestration.py -- the API never queries
-Interpretation directly, never constructs InterpretiveModel/NarrativeModel
-by hand, and implements no interpretation or narrative rule of its own.
-See Documentation/INTERPRETATION_API_DESIGN.md Section 2/16.
+Thin routes only. Every route resolves `reading_id` -> an owned `Reading`
+via app.api.dependencies.get_owned_reading (authentication + ownership,
+Documentation/AUTHENTICATION_OWNERSHIP_IMPLEMENTATION_DESIGN.md Section 6)
+and then delegates entirely to app/services/reading_orchestration.py -- the
+API never queries Interpretation directly, never constructs
+InterpretiveModel/NarrativeModel by hand, and implements no interpretation
+or narrative rule of its own. See
+Documentation/INTERPRETATION_API_DESIGN.md Section 2/16.
 
-No authentication or authorization exists anywhere in this codebase yet
-(INTERPRETATION_API_DESIGN.md Sections 4-5) -- every route below is fully
-unauthenticated and performs no ownership check. This is an explicitly
-flagged interim state (acceptable only pre-launch, with no real user
-data), not an oversight, and not something this module invents a stopgap
-for; see that document for the missing infrastructure this depends on.
+Authentication/ownership enforcement happens entirely inside
+get_owned_reading, before any route body below ever runs -- orchestration,
+the Interpretation Engine, and the Narrative Layer remain fully
+ownership-agnostic (Documentation/AUTHENTICATION_OWNERSHIP_IMPLEMENTATION_DESIGN.md
+Section 9), unchanged by this retrofit.
 
 Write-transaction handling (commit on success / rollback on exception) is
 the responsibility of the `get_db` dependency
@@ -23,11 +25,10 @@ call), exactly as that layer's own docstring requires.
 
 from __future__ import annotations
 
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies import get_owned_reading
 from app.db.session import get_db
 from app.models.interpretation import Interpretation
 from app.models.reading import Reading
@@ -44,15 +45,9 @@ from app.services.reading_orchestration import (
 
 router = APIRouter(prefix="/readings/{reading_id}", tags=["interpretation"])
 
+_NOT_AUTHENTICATED = "Not authenticated"
 _READING_NOT_FOUND = "Reading not found"
 _NEVER_INTERPRETED = "Reading has never been interpreted"
-
-
-def _get_reading_or_404(session: Session, reading_id: UUID) -> Reading:
-    reading = session.get(Reading, reading_id)
-    if reading is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=_READING_NOT_FOUND)
-    return reading
 
 
 def _to_summary(interpretation: Interpretation) -> InterpretationSummary:
@@ -96,12 +91,14 @@ def _to_history_entry(interpretation: Interpretation) -> InterpretationHistoryEn
         "Documentation/INTERPRETATION_API_DESIGN.md Section 2, 7, 13."
     ),
     responses={
+        401: {"description": _NOT_AUTHENTICATED},
         404: {"description": _READING_NOT_FOUND},
         409: {"description": "Reading is not spread-complete"},
     },
 )
-def interpret_reading_route(reading_id: UUID, session: Session = Depends(get_db)) -> InterpretationSummary:
-    reading = _get_reading_or_404(session, reading_id)
+def interpret_reading_route(
+    reading: Reading = Depends(get_owned_reading), session: Session = Depends(get_db)
+) -> InterpretationSummary:
     try:
         interpretation = interpret_reading(session, reading)
     except ReadingNotReadyForInterpretationError as exc:
@@ -118,12 +115,14 @@ def interpret_reading_route(reading_id: UUID, session: Session = Depends(get_db)
         "including its full InterpretiveModel. See "
         "Documentation/INTERPRETATION_API_DESIGN.md Section 2, 7."
     ),
-    responses={404: {"description": f"{_READING_NOT_FOUND}, or {_NEVER_INTERPRETED.lower()}"}},
+    responses={
+        401: {"description": _NOT_AUTHENTICATED},
+        404: {"description": f"{_READING_NOT_FOUND}, or {_NEVER_INTERPRETED.lower()}"},
+    },
 )
 def get_current_interpretation_route(
-    reading_id: UUID, session: Session = Depends(get_db)
+    reading: Reading = Depends(get_owned_reading), session: Session = Depends(get_db)
 ) -> InterpretationSummary:
-    reading = _get_reading_or_404(session, reading_id)
     interpretation = get_current_interpretation(session, reading)
     if interpretation is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=_NEVER_INTERPRETED)
@@ -140,12 +139,14 @@ def get_current_interpretation_route(
         "No pagination. See Documentation/INTERPRETATION_API_DESIGN.md "
         "Section 2, 12."
     ),
-    responses={404: {"description": _READING_NOT_FOUND}},
+    responses={
+        401: {"description": _NOT_AUTHENTICATED},
+        404: {"description": _READING_NOT_FOUND},
+    },
 )
 def list_interpretations_route(
-    reading_id: UUID, session: Session = Depends(get_db)
+    reading: Reading = Depends(get_owned_reading), session: Session = Depends(get_db)
 ) -> list[InterpretationHistoryEntry]:
-    reading = _get_reading_or_404(session, reading_id)
     return [_to_history_entry(interpretation) for interpretation in list_interpretations(session, reading)]
 
 
@@ -159,10 +160,14 @@ def list_interpretations_route(
         "recomputed on every call. See "
         "Documentation/INTERPRETATION_API_DESIGN.md Section 2, 9."
     ),
-    responses={404: {"description": f"{_READING_NOT_FOUND}, or {_NEVER_INTERPRETED.lower()}"}},
+    responses={
+        401: {"description": _NOT_AUTHENTICATED},
+        404: {"description": f"{_READING_NOT_FOUND}, or {_NEVER_INTERPRETED.lower()}"},
+    },
 )
-def get_narrative_route(reading_id: UUID, session: Session = Depends(get_db)) -> NarrativeModel:
-    reading = _get_reading_or_404(session, reading_id)
+def get_narrative_route(
+    reading: Reading = Depends(get_owned_reading), session: Session = Depends(get_db)
+) -> NarrativeModel:
     narrative = get_narrative_for_reading(session, reading)
     if narrative is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=_NEVER_INTERPRETED)

@@ -24,3 +24,39 @@ class ReadingNotSaveableError(ValueError):
     SPREAD_COMPLETE or INTERPRETED (both transition to SAVED) or for an
     already-SAVED Reading (mark_saved() is idempotent, not an error).
     """
+
+
+class EmailAlreadyRegisteredError(ValueError):
+    """Raised by app/services/auth_service.py::register_user() when the
+    normalized email already belongs to an existing User -- mapped to 409
+    at the API layer (app/api/auth.py).
+    """
+
+
+class InvalidCredentialsError(ValueError):
+    """Raised by app/services/auth_service.py::authenticate_user() for a
+    nonexistent email, a wrong password, or an inactive account -- all
+    three collapse into this single error deliberately, so login can
+    return one identical 401 response regardless of which is true (no
+    account-existence signal leaked; see
+    Documentation/AUTHENTICATION_OWNERSHIP_IMPLEMENTATION_DESIGN.md
+    Section 5.2).
+    """
+
+
+class SpreadNotFoundError(ValueError):
+    """Raised by app/services/reading_service.py::create_reading() when
+    the client-supplied spread_id does not reference an existing Spread --
+    mapped to 404 at the API layer (app/api/reading.py). Spreads are
+    pre-seeded reference data (app/seed/seed.py); this route never creates
+    one (Documentation/READING_CREATION_API_DESIGN.md Section 10).
+    """
+
+
+class DeckNotFoundError(ValueError):
+    """Raised by app/services/reading_service.py::create_reading() when a
+    client-supplied deck_id does not reference an existing Deck -- mapped
+    to 404 at the API layer. Not raised when deck_id is omitted (that case
+    resolves to the seeded default Deck instead -- see
+    Documentation/READING_CREATION_API_DESIGN.md Section 5/9).
+    """

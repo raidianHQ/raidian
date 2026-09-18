@@ -4,6 +4,7 @@ framework. Each function does the minimum needed to get a valid, flushed row.
 
 from sqlalchemy.orm import Session
 
+from app.core.security import hash_password
 from app.models import (
     Arcana,
     Card,
@@ -15,6 +16,7 @@ from app.models import (
     Spread,
     SpreadPosition,
     Suit,
+    User,
 )
 
 
@@ -73,8 +75,9 @@ def make_reading(
     deck: Deck,
     question: str = "What should I focus on right now?",
     draw_method: DrawMethod = DrawMethod.PHYSICAL,
+    owner: User | None = None,
 ) -> Reading:
-    reflection_session = ReflectionSession()
+    reflection_session = ReflectionSession(owner=owner)
     session.add(reflection_session)
     session.flush()
 
@@ -88,3 +91,15 @@ def make_reading(
     session.add(reading)
     session.flush()
     return reading
+
+
+def make_user(
+    session: Session,
+    email: str = "user@example.com",
+    password: str = "correct horse battery staple",
+    is_active: bool = True,
+) -> User:
+    user = User(email=email, hashed_password=hash_password(password), is_active=is_active)
+    session.add(user)
+    session.flush()
+    return user
