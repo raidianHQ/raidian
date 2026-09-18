@@ -14,3 +14,13 @@ class ReadingNotDraftingError(ValueError):
     Documentation/READING_DRAW_LIFECYCLE_IMPLEMENTATION_DESIGN.md Section
     5/7). This is checked before any other CardDraw validation.
     """
+
+
+class ReadingNotSaveableError(ValueError):
+    """Raised when Reading.mark_saved() is called against a Reading whose
+    status is DRAFTING -- an incomplete spread is not the "completed
+    record" Reading History exists to list
+    (Documentation/SAVE_READING_DESIGN.md Section 5/6). Not raised for
+    SPREAD_COMPLETE or INTERPRETED (both transition to SAVED) or for an
+    already-SAVED Reading (mark_saved() is idempotent, not an error).
+    """

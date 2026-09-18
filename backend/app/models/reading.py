@@ -8,7 +8,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin, str_enum_type
 from app.models.enums import DrawMethod, Orientation, ReadingStatus
-from app.models.exceptions import DuplicateCardError, ReadingNotDraftingError
+from app.models.exceptions import (
+    DuplicateCardError,
+    ReadingNotDraftingError,
+    ReadingNotSaveableError,
+)
 
 if TYPE_CHECKING:
     from app.models.card import Card
@@ -154,3 +158,34 @@ class Reading(Base, UUIDPrimaryKeyMixin, TimestampMixin):
             self.status = ReadingStatus.SPREAD_COMPLETE
 
         return draw
+
+    def mark_saved(self) -> None:
+        """User-initiated retention marker
+        (Documentation/PRODUCT_DECISIONS.md Q3) -- a pure curation signal
+        with no effect on Interpretation or Narrative. Every Interpretation
+        is already durably persisted the moment it is created, independent
+        of this method; mark_saved() never creates a row, queries the
+        database, or touches CardDraw/Interpretation.
+
+        Idempotent: a no-op if already SAVED, not an error. Raises
+        ReadingNotSaveableError if the spread is not yet complete
+        (DRAFTING) -- an incomplete Reading is not the "completed record"
+        Reading History exists to list
+        (Documentation/SAVE_READING_DESIGN.md Section 5/6). Allowed from
+        SPREAD_COMPLETE *or* INTERPRETED, deliberately without requiring
+        an Interpretation to exist first -- SPREAD_COMPLETE + zero
+        Interpretation rows is a valid, supported path to SAVED (Section
+        5's explicit edge case; not a product question this method
+        resolves).
+
+        Does not flush or commit -- the caller controls the transaction,
+        exactly as add_card_draw() and save_interpretation() already do.
+        """
+        if self.status == ReadingStatus.SAVED:
+            return
+        if self.status == ReadingStatus.DRAFTING:
+            raise ReadingNotSaveableError(
+                f"reading {self.id} cannot be saved from status={self.status.value}; "
+                "the spread must be complete before a reading can be saved"
+            )
+        self.status = ReadingStatus.SAVED
