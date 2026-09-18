@@ -12,6 +12,7 @@ from app.models.enums import (
     Suit,
 )
 from app.models.exceptions import DuplicateCardError
+from app.models.interpretation import Interpretation
 from app.models.reading import Reading
 from app.models.reflection_session import ReflectionSession
 from app.models.spread import Spread
@@ -30,6 +31,7 @@ __all__ = [
     "SemanticRole",
     "Suit",
     "DuplicateCardError",
+    "Interpretation",
     "Reading",
     "ReflectionSession",
     "Spread",

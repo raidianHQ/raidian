@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.models.card import Card
     from app.models.card_draw import CardDraw
     from app.models.deck import Deck
+    from app.models.interpretation import Interpretation
     from app.models.reflection_session import ReflectionSession
     from app.models.spread import Spread
     from app.models.spread_position import SpreadPosition
@@ -62,6 +63,11 @@ class Reading(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         back_populates="reading",
         cascade="all, delete-orphan",
         order_by="CardDraw.draw_order",
+    )
+    interpretations: Mapped[list["Interpretation"]] = relationship(
+        back_populates="reading",
+        cascade="all, delete-orphan",
+        order_by="Interpretation.created_at",
     )
 
     @validates("question")

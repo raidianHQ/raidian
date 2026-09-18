@@ -38,15 +38,17 @@ class DrawMethod(str, enum.Enum):
 
 
 class ReadingStatus(str, enum.Enum):
-    """Lifecycle of a Reading's data entry, independent of interpretation.
+    """Lifecycle of a Reading's data entry.
 
-    Interpretation-related statuses (e.g. "interpreted") are intentionally
-    not included yet -- the Interpretation Engine is a later phase. New
-    values can be appended in a future migration without reshaping this table.
+    INTERPRETED is appended here exactly as this enum's own docstring
+    anticipated ("new values can be appended in a future migration without
+    reshaping this table") -- see
+    Documentation/INTERPRETATION_ENGINE_DESIGN.md Section 9, Q1.
     """
 
     DRAFTING = "drafting"
     SPREAD_COMPLETE = "spread_complete"
+    INTERPRETED = "interpreted"
     SAVED = "saved"
 
 
