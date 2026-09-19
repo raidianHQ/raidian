@@ -1,0 +1,76 @@
+# Step 77: minimal GitHub Pages deployment for the Raidian Wise frontend.
+#
+# Deployment mechanism: the currently-supported GitHub Pages Actions flow
+# (actions/configure-pages + actions/upload-pages-artifact +
+# actions/deploy-pages), not the legacy gh-pages-branch approach -- no
+# CNAME/custom-domain step is included because none exists in this
+# repository (Documentation/STEP76... base-path decision).
+#
+# VITE_BASE_PATH is set to /raidian/, matching this repository's actual
+# name (github.com/RaidianHQ/raidian) per Step 76's evidence-based
+# GitHub Pages project-site path determination.
+#
+# This workflow only takes effect once pushed to the repository's
+# default branch on GitHub -- authoring it here does not run or deploy
+# anything.
+
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Matches this project's own @types/node ^24.x convention
+          # (frontend/package.json) and the local development runtime.
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /raidian/
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

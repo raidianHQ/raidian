@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import type { CardSummary } from '../api/cards'
 import { ApiError } from '../api/client'
 import { getNarrative, interpretReading, type InterpretationSummary, type NarrativeModel } from '../api/interpretation'
-import { getReading, type ReadingDetail, type ReadingStatus } from '../api/readings'
+import { getReading, type Orientation, type ReadingDetail, type ReadingStatus } from '../api/readings'
 import { useAuth } from '../auth/useAuth'
 
 /**
@@ -13,14 +14,23 @@ import { useAuth } from '../auth/useAuth'
  * (Documentation/READING_DETAIL_API_DESIGN.md) -- no new backend
  * behavior, no new fields, no new endpoint.
  *
- * Card presentation: per Documentation/CARD_IMAGE_ASSET_DESIGN.md, no
- * approved artwork source/architecture exists yet, and this step does
- * not resolve that question. Each card is rendered as a text-based
- * placeholder tile (name, arcana/suit, orientation) -- never an
- * <img>, never a URL built from `image_ref`. `image_ref` itself is not
- * read anywhere in this file. Swapping the placeholder tile's contents
- * for real artwork later needs no API/contract change, since the tile
- * already receives the same CardSummary the backend returns.
+ * Card presentation (Step 75): OD-1/OD-2/OD-3 are resolved
+ * (Documentation/STEP71_OD1_PRODUCT_DECISION.md,
+ * Documentation/STEP72_OD2_ARTWORK_SOURCE_INVESTIGATION.md,
+ * Documentation/STEP73_OD3_ARTWORK_ARCHITECTURE_DECISION.md) and Step 74
+ * acquired the 78 verified artwork files under `frontend/public/cards/`
+ * (Documentation/STEP74_ARTWORK_ASSET_ACQUISITION.md). Each drawn card
+ * now renders its actual artwork via `resolveCardArtwork()`, which
+ * derives the bundled asset path from the card's existing `image_ref`
+ * (still a `.png`-suffixed logical identifier in the database/seed
+ * data, deliberately unchanged) with only the extension swapped to
+ * `.jpg` -- no new API field, no backend change, no hard-coded 78-card
+ * table. The resolved URL is built from `import.meta.env.BASE_URL`
+ * rather than a hard-coded leading slash, so it keeps resolving
+ * correctly if the app is later deployed under a GitHub Pages subpath
+ * (no Vite `base` is configured yet, so this currently evaluates against
+ * `/`; see STEP73 Section 3 and this step's own final report for that
+ * still-open, artwork-unrelated deployment prerequisite).
  *
  * Status handling: `reading.status` is rendered and branched on
  * verbatim -- this page never counts draws or positions to infer
@@ -35,6 +45,57 @@ const STATUS_LABEL: Record<ReadingStatus, string> = {
   spread_complete: 'Spread complete',
   interpreted: 'Interpreted',
   saved: 'Saved',
+}
+
+/**
+ * `image_ref` (e.g. "rws/wands/four-of-wands.png") stays exactly as the
+ * database/seed data defines it -- this only derives where the already-
+ * acquired bundled asset lives for it, purely a frontend rendering
+ * concern. Step 74's verified files are JPEG, so only the extension is
+ * swapped; every other path segment is the existing logical identifier,
+ * unchanged. `import.meta.env.BASE_URL` (never a bare leading slash) so
+ * the result stays correct under a future GitHub Pages subpath deploy.
+ */
+function resolveCardArtwork(imageRef: string | null): string | null {
+  if (!imageRef) {
+    return null
+  }
+  const bundledPath = imageRef.replace(/\.png$/i, '.jpg')
+  return `${import.meta.env.BASE_URL}cards/${bundledPath}`
+}
+
+function orientationLabel(orientation: Orientation): string {
+  return orientation === 'reversed' ? 'Reversed' : 'Upright'
+}
+
+/**
+ * Renders a drawn card's artwork, upright always -- the source scan
+ * itself is never rotated (Step 75 requirement); reversed orientation
+ * is communicated only via the existing text/badge indicator alongside
+ * it, never by transforming the image. Falls back to a calm, text-only
+ * placeholder (no broken-image icon, no API request) if `image_ref` is
+ * absent or the resolved asset fails to load.
+ */
+function CardArtwork({ card, orientation }: { card: CardSummary; orientation: Orientation }) {
+  const [failed, setFailed] = useState(false)
+  const src = resolveCardArtwork(card.image_ref)
+
+  if (!src || failed) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-md bg-paper-muted px-2 py-3 text-center">
+        <span className="text-xs text-ink-soft">Artwork unavailable</span>
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={src}
+      alt={`${card.name} — ${orientationLabel(orientation)}`}
+      onError={() => setFailed(true)}
+      className="h-full w-full rounded-md object-contain"
+    />
+  )
 }
 
 /**
@@ -277,13 +338,16 @@ export function SpreadReviewPage() {
               </div>
 
               {draw ? (
-                <div className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-accent bg-paper px-2 py-3 text-center shadow-sm">
+                <div className="flex w-full flex-col items-center gap-2 rounded-lg border-2 border-accent bg-paper p-2 text-center shadow-sm">
+                  <div className="aspect-[2/3] w-full overflow-hidden rounded-md bg-paper-muted">
+                    <CardArtwork card={draw.card} orientation={draw.orientation} />
+                  </div>
                   <span className="text-sm font-medium text-ink">{draw.card.name}</span>
                   <span className="text-xs text-ink-soft">
                     {draw.card.arcana === 'major' ? 'Major Arcana' : draw.card.suit}
                   </span>
                   <span
-                    className={`mt-1 rounded-full px-2 py-0.5 text-xs ${
+                    className={`rounded-full px-2 py-0.5 text-xs ${
                       draw.orientation === 'reversed' ? 'bg-error-soft text-error' : 'bg-accent-soft text-ink'
                     }`}
                   >

@@ -32,6 +32,43 @@ const ORIENTATIONS: { value: Orientation; label: string }[] = [
 
 const SUITS: Suit[] = ['wands', 'cups', 'swords', 'pentacles']
 
+/**
+ * Step 67: Roman-numeral and Arabic-numeral rank aliases for the
+ * free-text card search below. Card names already spell ranks out in
+ * full ("Four of Wands"), so typing "IV" (or "IV of Wands", or "4")
+ * would otherwise search for those literal characters instead of the
+ * rank they denote -- the exact MVP-testing gap this step addresses.
+ * Whole-token only (never a partial match inside a longer word), so
+ * ordinary text search is otherwise completely unaffected.
+ *
+ * A few of these tokens (i, v, vi, ix, x, iv) already happen to appear
+ * as raw substrings inside unrelated existing card names today, purely
+ * by coincidence -- e.g. "v" inside "The Lovers"/"The Devil", "vi"
+ * inside "The Devil", "ix"/"x" inside "Six", "iv" inside "Five". That
+ * is not a feature anyone is relying on (nobody searches "iv" hoping to
+ * find "Five of Wands"); this table intentionally supersedes those
+ * accidental matches with the numeral's real, meaningful rank. Digit
+ * tokens ("1".."10") carry no such coincidence at all -- no card name
+ * contains a digit character -- so they are unambiguous additions.
+ */
+const RANK_SEARCH_ALIASES: Record<string, string> = {
+  i: 'ace', ii: 'two', iii: 'three', iv: 'four', v: 'five',
+  vi: 'six', vii: 'seven', viii: 'eight', ix: 'nine', x: 'ten',
+  '1': 'ace', '2': 'two', '3': 'three', '4': 'four', '5': 'five',
+  '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', '10': 'ten',
+}
+
+function normalizeCardSearch(rawQuery: string): string {
+  const trimmed = rawQuery.trim().toLowerCase()
+  if (!trimmed) {
+    return trimmed
+  }
+  return trimmed
+    .split(/\s+/)
+    .map((token) => RANK_SEARCH_ALIASES[token] ?? token)
+    .join(' ')
+}
+
 export function CardEntryPage() {
   const { readingId } = useParams<{ readingId: string }>()
   const { token, clearToken } = useAuth()
@@ -106,7 +143,7 @@ export function CardEntryPage() {
     if (!cards) {
       return []
     }
-    const query = search.trim().toLowerCase()
+    const query = normalizeCardSearch(search)
     return cards.filter((card) => {
       if (query && !card.name.toLowerCase().includes(query)) {
         return false
