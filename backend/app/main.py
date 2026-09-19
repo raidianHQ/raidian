@@ -11,7 +11,7 @@ settings = get_settings()
 
 app = FastAPI(
     title="Raidian API",
-    version="0.1.0"
+    version="0.2.0"
 )
 
 app.add_middleware(
@@ -33,5 +33,5 @@ def root():
     return {
         "application": "Raidian",
         "status": "running",
-        "version": "0.1.0"
+        "version": "0.2.0"
     }

@@ -27,7 +27,7 @@ Raidian is designed to help users ask better questions, explore meaningful insig
 
 ## Current Status
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 
 Current focus:
 
