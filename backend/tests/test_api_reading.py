@@ -1,8 +1,9 @@
 """API tests for the Reading resource: Reading creation (Step 27), Save
-Reading, and Reading History (Step 24,
+Reading, Reading History (Step 24), and CardDraw recording (Step 32,
 Documentation/READING_CREATION_API_DESIGN.md,
 Documentation/SAVE_READING_DESIGN.md,
-Documentation/READING_HISTORY_OWNERSHIP_DESIGN.md).
+Documentation/READING_HISTORY_OWNERSHIP_DESIGN.md,
+Documentation/CARDDRAW_API_DESIGN.md).
 
 Self-contained fixtures, mirroring tests/test_ownership.py's established
 pattern -- no default Authorization header on `client`, since several
@@ -27,6 +28,7 @@ from app.db.session import get_db
 from app.main import app
 from app.models import (
     Base,
+    Card,
     CardDraw,
     Deck,
     Interpretation,
@@ -34,12 +36,13 @@ from app.models import (
     ReadingStatus,
     ReflectionSession,
     Spread,
+    SpreadPosition,
     User,
 )
 from app.models.reading import Reading
 from app.seed.seed import seed_reference_data
-from tests.factories import make_user
-from tests.interpretation_helpers import build_reading
+from tests.factories import make_deck, make_major_card, make_user
+from tests.interpretation_helpers import build_reading, get_card, get_default_deck
 
 _THREE_CARD_DRAWS = [
     ("Recent Past", "The Fool", Orientation.UPRIGHT),
@@ -772,3 +775,1292 @@ def test_created_reading_does_not_appear_in_history_before_being_saved(api_seede
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+# =====================================================================================
+# CardDraw recording -- POST /readings/{reading_id}/draws (Step 32,
+# Documentation/CARDDRAW_API_DESIGN.md)
+# =====================================================================================
+
+
+def _empty_reading(session: Session, owner: User | None = None) -> Reading:
+    """A DRAFTING "Three Card" Reading with zero CardDraw rows -- the
+    starting point for every positive-path draw test.
+    """
+    reading = build_reading(session, spread_name="Three Card", draws=[], owner=owner)
+    session.commit()
+    return reading
+
+
+def _spread_position(session: Session, position_name: str, spread_name: str = "Three Card") -> SpreadPosition:
+    spread = _seeded_spread(session, spread_name)
+    return next(p for p in spread.positions if p.name == position_name)
+
+
+def _draw_payload(
+    session: Session,
+    position_name: str = "Recent Past",
+    card_name: str = "The Fool",
+    **overrides,
+) -> dict:
+    position = _spread_position(session, position_name)
+    card = get_card(session, get_default_deck(session), card_name)
+    payload = {
+        "position_id": str(position.id),
+        "card_id": str(card.id),
+        "orientation": "upright",
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_authenticated_valid_draw_returns_201(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw1@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 201
+
+
+def test_unauthenticated_draw_returns_401(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw2@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws", json=_draw_payload(api_seeded_session))
+
+    assert response.status_code == 401
+
+
+def test_draw_against_nonexistent_reading_returns_404(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw3@example.com")
+    api_seeded_session.commit()
+
+    response = client.post(
+        f"/readings/{uuid.uuid4()}/draws",
+        json=_draw_payload(api_seeded_session),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 404
+
+
+def test_cross_user_draw_returns_404(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw4@example.com")
+    other = make_user(api_seeded_session, email="draw4other@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session),
+        headers=_auth_header(other),
+    )
+
+    assert response.status_code == 404
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(CardDraw).where(CardDraw.reading_id == reading.id)).all() == []
+
+
+def test_draw_against_unowned_reading_fails_closed(api_seeded_session, client):
+    """A Reading whose ReflectionSession.owner_id is None must be
+    inaccessible to every authenticated user for drawing too -- the same
+    fail-closed guarantee already re-verified for /save
+    (test_save_of_an_unowned_reading_fails_closed), now re-verified for
+    this new route specifically.
+    """
+    user = make_user(api_seeded_session, email="draw5@example.com")
+    api_seeded_session.commit()
+    unowned_reading = _empty_reading(api_seeded_session)
+    assert unowned_reading.reflection_session.owner_id is None
+
+    response = client.post(
+        f"/readings/{unowned_reading.id}/draws",
+        json=_draw_payload(api_seeded_session),
+        headers=_auth_header(user),
+    )
+
+    assert response.status_code == 404
+
+
+def test_successful_draw_is_persisted_with_correct_associations(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw6@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    position = _spread_position(api_seeded_session, "Recent Past")
+    card = get_card(api_seeded_session, get_default_deck(api_seeded_session), "The Fool")
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json={"position_id": str(position.id), "card_id": str(card.id), "orientation": "upright"},
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["position_id"] == str(position.id)
+    assert body["card_id"] == str(card.id)
+
+    api_seeded_session.expire_all()
+    draw = api_seeded_session.get(CardDraw, uuid.UUID(body["id"]))
+    assert draw is not None
+    assert draw.reading_id == reading.id
+    assert draw.position_id == position.id
+    assert draw.card_id == card.id
+
+
+def test_upright_orientation_persists(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw7@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, orientation="upright"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["orientation"] == "upright"
+
+
+def test_reversed_orientation_persists(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw8@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, orientation="reversed"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["orientation"] == "reversed"
+
+
+def test_first_draw_order_is_server_computed_as_one(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw9@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session),
+        headers=_auth_header(owner),
+    )
+
+    assert response.json()["draw_order"] == 1
+
+
+def test_subsequent_draw_order_increments(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw10@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Recent Past", card_name="The Fool"),
+        headers=_auth_header(owner),
+    )
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Present Situation", card_name="The Magician"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["draw_order"] == 2
+
+
+def test_client_supplied_draw_order_is_rejected(api_seeded_session, client):
+    """CardDrawCreateRequest has no draw_order field at all, and its
+    shared _Model base forbids unrecognized fields outright
+    (extra="forbid") -- a client attempting to supply one is rejected as
+    a malformed request, never silently accepted or used
+    (Documentation/CARDDRAW_API_DESIGN.md Section 4.1/4.3).
+    """
+    owner = make_user(api_seeded_session, email="draw11@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, draw_order=5),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 422
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(CardDraw).where(CardDraw.reading_id == reading.id)).all() == []
+
+
+def test_client_supplied_owner_id_is_rejected(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw12@example.com")
+    other = make_user(api_seeded_session, email="draw12other@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, owner_id=str(other.id)),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 422
+
+
+def test_duplicate_card_is_rejected_with_409(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw13@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    deck = get_default_deck(api_seeded_session)
+    card = get_card(api_seeded_session, deck, "The Fool")
+    pos1 = _spread_position(api_seeded_session, "Recent Past")
+    pos2 = _spread_position(api_seeded_session, "Present Situation")
+
+    first = client.post(
+        f"/readings/{reading.id}/draws",
+        json={"position_id": str(pos1.id), "card_id": str(card.id), "orientation": "upright"},
+        headers=_auth_header(owner),
+    )
+    assert first.status_code == 201
+
+    second = client.post(
+        f"/readings/{reading.id}/draws",
+        json={"position_id": str(pos2.id), "card_id": str(card.id), "orientation": "reversed"},
+        headers=_auth_header(owner),
+    )
+
+    assert second.status_code == 409
+    api_seeded_session.expire_all()
+    draws = api_seeded_session.execute(
+        select(CardDraw).where(CardDraw.reading_id == reading.id, CardDraw.position_id == pos2.id)
+    ).all()
+    assert draws == []
+
+
+def test_redrawing_an_already_filled_position_is_rejected_with_409(api_seeded_session, client):
+    """Isolates PositionAlreadyDrawnError from DuplicateCardError by using
+    two different cards -- the Reading remains DRAFTING throughout (only
+    1 of 3 required positions is ever filled), so this exercises the
+    in-memory pre-check (Documentation/CARDDRAW_API_DESIGN.md Section
+    3.3/6), not the DRAFTING guard.
+    """
+    owner = make_user(api_seeded_session, email="draw14@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    position = _spread_position(api_seeded_session, "Recent Past")
+    deck = get_default_deck(api_seeded_session)
+    fool = get_card(api_seeded_session, deck, "The Fool")
+    magician = get_card(api_seeded_session, deck, "The Magician")
+
+    first = client.post(
+        f"/readings/{reading.id}/draws",
+        json={"position_id": str(position.id), "card_id": str(fool.id), "orientation": "upright"},
+        headers=_auth_header(owner),
+    )
+    assert first.status_code == 201
+
+    second = client.post(
+        f"/readings/{reading.id}/draws",
+        json={"position_id": str(position.id), "card_id": str(magician.id), "orientation": "reversed"},
+        headers=_auth_header(owner),
+    )
+
+    assert second.status_code == 409
+    api_seeded_session.expire_all()
+    reloaded = api_seeded_session.get(Reading, reading.id)
+    assert reloaded.status == ReadingStatus.DRAFTING
+    draws = api_seeded_session.execute(
+        select(CardDraw).where(CardDraw.reading_id == reading.id, CardDraw.position_id == position.id)
+    ).scalars().all()
+    assert len(draws) == 1
+    assert draws[0].card_id == fool.id
+
+
+def test_draw_against_a_non_drafting_reading_returns_409(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw15@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    assert reading.status == ReadingStatus.SPREAD_COMPLETE
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Recent Past", card_name="The Star"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 409
+
+
+def test_incomplete_spread_remains_drafting_after_a_draw(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw16@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Recent Past", card_name="The Fool"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["reading_status"] == "drafting"
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading.id).status == ReadingStatus.DRAFTING
+
+
+def test_final_required_draw_transitions_to_spread_complete(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw17@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    deck = get_default_deck(api_seeded_session)
+
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json={
+            "position_id": str(_spread_position(api_seeded_session, "Recent Past").id),
+            "card_id": str(get_card(api_seeded_session, deck, "The Fool").id),
+            "orientation": "upright",
+        },
+        headers=_auth_header(owner),
+    )
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json={
+            "position_id": str(_spread_position(api_seeded_session, "Present Situation").id),
+            "card_id": str(get_card(api_seeded_session, deck, "The Magician").id),
+            "orientation": "upright",
+        },
+        headers=_auth_header(owner),
+    )
+    final = client.post(
+        f"/readings/{reading.id}/draws",
+        json={
+            "position_id": str(_spread_position(api_seeded_session, "Near Future").id),
+            "card_id": str(get_card(api_seeded_session, deck, "The Star").id),
+            "orientation": "upright",
+        },
+        headers=_auth_header(owner),
+    )
+
+    assert final.status_code == 201
+    assert final.json()["reading_status"] == "spread_complete"
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading.id).status == ReadingStatus.SPREAD_COMPLETE
+
+
+def test_completion_occurs_exactly_once(api_seeded_session, client):
+    """A fourth draw attempt against an already-SPREAD_COMPLETE Three Card
+    Reading (every position already filled) must be rejected, not
+    silently accepted or re-triggering the transition.
+    """
+    owner = make_user(api_seeded_session, email="draw18@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    assert reading.status == ReadingStatus.SPREAD_COMPLETE
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Recent Past", card_name="The Star"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 409
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading.id).status == ReadingStatus.SPREAD_COMPLETE
+
+
+def test_nonexistent_position_returns_404(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw19@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_id=str(uuid.uuid4())),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 404
+
+
+def test_position_belonging_to_another_spread_returns_404(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw20@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    foreign_position = _spread_position(api_seeded_session, "The Card", spread_name="Single Card")
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_id=str(foreign_position.id)),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 404
+
+
+def test_nonexistent_card_returns_404(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw21@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, card_id=str(uuid.uuid4())),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 404
+
+
+def test_card_belonging_to_another_deck_returns_404(api_seeded_session, client):
+    """The collapsing rule Documentation/CARDDRAW_API_DESIGN.md Section 6
+    applies symmetrically to card_id: a Card that exists but belongs to a
+    different Deck than this Reading's is treated identically to a
+    nonexistent card_id.
+    """
+    owner = make_user(api_seeded_session, email="draw22@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    other_deck = make_deck(api_seeded_session, name="Other Deck", is_default=False)
+    foreign_card = make_major_card(api_seeded_session, other_deck, name="Foreign Card")
+    api_seeded_session.commit()
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, card_id=str(foreign_card.id)),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 404
+
+
+def test_malformed_reading_id_returns_422(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw23@example.com")
+    api_seeded_session.commit()
+
+    response = client.post(
+        "/readings/not-a-uuid/draws",
+        json=_draw_payload(api_seeded_session),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 422
+
+
+def test_malformed_position_id_returns_422(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw24@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_id="not-a-uuid"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 422
+
+
+def test_missing_required_fields_returns_422(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw25@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws", json={}, headers=_auth_header(owner))
+
+    assert response.status_code == 422
+
+
+def test_unknown_request_field_is_rejected(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw26@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, unexpected_field="surprise"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 422
+
+
+def test_invalid_orientation_value_returns_422(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw27@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, orientation="sideways"),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 422
+
+
+def test_transaction_rollback_on_forced_post_flush_failure(api_seeded_session, client, monkeypatch):
+    """Mirrors test_creation_failure_after_flush_leaves_no_partial_persistence:
+    forces a failure after record_card_draw() has already flushed the new
+    CardDraw row, proving get_db()'s single commit point discards it.
+    """
+    owner = make_user(api_seeded_session, email="draw28@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    def _boom(_draw, _reading):
+        raise RuntimeError("simulated post-draw failure")
+
+    monkeypatch.setattr(reading_api_module, "_to_draw_summary", _boom)
+
+    with pytest.raises(RuntimeError):
+        client.post(
+            f"/readings/{reading.id}/draws",
+            json=_draw_payload(api_seeded_session),
+            headers=_auth_header(owner),
+        )
+
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(CardDraw).where(CardDraw.reading_id == reading.id)).all() == []
+    assert api_seeded_session.get(Reading, reading.id).status == ReadingStatus.DRAFTING
+
+
+def test_unrelated_integrity_error_is_not_swallowed(seeded_session):
+    """record_card_draw()'s IntegrityError backstop must only reinterpret
+    the specific position-uniqueness violation as PositionAlreadyDrawnError
+    -- a colliding draw_order (the sibling uq_card_draws_reading_id_draw_order
+    constraint) must propagate unchanged, never be silently reinterpreted
+    as a clean domain 409.
+
+    Exercised as a direct service-function call (not through the HTTP API)
+    because forcing this specific collision requires deterministically
+    reproducing the same concurrent-race window
+    Documentation/READING_DRAW_LIFECYCLE_IMPLEMENTATION_DESIGN.md already
+    accepts as out of scope for locking: every real HTTP request gets a
+    freshly-queried Reading whose card_draws correctly reflects committed
+    state, so a genuine collision cannot occur through the API in a
+    single-threaded test. Here, `reading.card_draws` is deliberately
+    accessed (and cached) *before* a second row is inserted directly at
+    the table level (bypassing the ORM relationship, so the cached
+    collection goes stale) -- exactly simulating what a second, truly
+    concurrent writer would look like to record_card_draw()'s own
+    max()+1 computation.
+    """
+    from sqlalchemy.exc import IntegrityError
+
+    from app.services.reading_service import record_card_draw
+
+    session = seeded_session
+    spread = session.scalars(select(Spread).where(Spread.name == "Three Card")).one()
+    deck = get_default_deck(session)
+    pos_a = next(p for p in spread.positions if p.name == "Recent Past")
+    pos_b = next(p for p in spread.positions if p.name == "Present Situation")
+    card_a = get_card(session, deck, "The Fool")
+    card_b = get_card(session, deck, "The Magician")
+
+    reading = build_reading(session, spread_name="Three Card", draws=[])
+    session.commit()
+
+    _ = reading.card_draws  # cache an empty collection now, deliberately
+
+    session.execute(
+        CardDraw.__table__.insert().values(
+            id=uuid.uuid4(),
+            reading_id=reading.id,
+            position_id=pos_a.id,
+            card_id=card_a.id,
+            orientation=Orientation.UPRIGHT.value,
+            draw_order=1,
+        )
+    )
+    session.commit()
+
+    with pytest.raises(IntegrityError):
+        record_card_draw(
+            session, reading, position_id=pos_b.id, card_id=card_b.id, orientation=Orientation.UPRIGHT
+        )
+
+
+def test_response_contains_reading_status(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="draw30@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert "reading_status" in body
+    assert body["reading_status"] == "drafting"
+    assert set(body.keys()) == {
+        "id",
+        "position_id",
+        "card_id",
+        "orientation",
+        "draw_order",
+        "created_at",
+        "reading_status",
+    }
+
+
+# =====================================================================================
+# Reading retrieval -- GET /readings/{reading_id} (Step 43,
+# Documentation/READING_DETAIL_API_DESIGN.md)
+# =====================================================================================
+
+_DETAIL_TOP_LEVEL_KEYS = {
+    "id",
+    "status",
+    "question",
+    "question_domain",
+    "draw_method",
+    "created_at",
+    "updated_at",
+    "spread_id",
+    "spread",
+    "deck_id",
+    "card_draws",
+}
+_DETAIL_CARD_DRAW_KEYS = {"id", "position", "card", "orientation", "draw_order", "created_at"}
+
+
+# --- Authorization ----------------------------------------------------------------
+
+
+def test_owner_can_retrieve_their_reading(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail1@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert response.json()["id"] == str(reading.id)
+
+
+def test_unauthenticated_retrieval_returns_401(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail2@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}")
+
+    assert response.status_code == 401
+
+
+def test_cross_user_retrieval_returns_404(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail3@example.com")
+    other = make_user(api_seeded_session, email="detail3other@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(other))
+
+    assert response.status_code == 404
+
+
+def test_unowned_reading_retrieval_fails_closed(api_seeded_session, client):
+    user = make_user(api_seeded_session, email="detail4@example.com")
+    api_seeded_session.commit()
+    unowned = _empty_reading(api_seeded_session)
+    assert unowned.reflection_session.owner_id is None
+
+    response = client.get(f"/readings/{unowned.id}", headers=_auth_header(user))
+
+    assert response.status_code == 404
+
+
+def test_nonexistent_reading_retrieval_returns_404(api_seeded_session, client):
+    user = make_user(api_seeded_session, email="detail5@example.com")
+    api_seeded_session.commit()
+
+    response = client.get(f"/readings/{uuid.uuid4()}", headers=_auth_header(user))
+
+    assert response.status_code == 404
+
+
+def test_cross_user_and_nonexistent_retrieval_return_identical_responses(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail6@example.com")
+    other = make_user(api_seeded_session, email="detail6other@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    cross_user = client.get(f"/readings/{reading.id}", headers=_auth_header(other))
+    nonexistent = client.get(f"/readings/{uuid.uuid4()}", headers=_auth_header(other))
+
+    assert cross_user.status_code == nonexistent.status_code == 404
+    assert cross_user.json() == nonexistent.json()
+
+
+def test_malformed_reading_id_returns_422(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail7@example.com")
+    api_seeded_session.commit()
+
+    response = client.get("/readings/not-a-uuid", headers=_auth_header(owner))
+
+    assert response.status_code == 422
+
+
+# --- Basic retrieval ----------------------------------------------------------------
+
+
+def test_retrieval_of_a_reading_with_zero_draws(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail8@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert response.json()["card_draws"] == []
+    assert response.json()["status"] == "drafting"
+
+
+def test_retrieval_of_a_reading_with_one_draw(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail9@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Recent Past", card_name="The Fool"),
+        headers=_auth_header(owner),
+    )
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert len(response.json()["card_draws"]) == 1
+
+
+def test_retrieval_of_a_reading_with_multiple_draws(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail10@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Recent Past", card_name="The Fool"),
+        headers=_auth_header(owner),
+    )
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Present Situation", card_name="The Magician"),
+        headers=_auth_header(owner),
+    )
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert len(response.json()["card_draws"]) == 2
+
+
+def test_retrieval_of_a_partially_completed_reading(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail11@example.com")
+    api_seeded_session.commit()
+    reading = _drafting_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "drafting"
+    assert len(response.json()["card_draws"]) == 1
+
+
+def test_retrieval_of_a_completed_reading(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail12@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "spread_complete"
+    assert len(response.json()["card_draws"]) == 3
+
+
+def test_retrieval_of_a_saved_reading(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail13@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/save", headers=_auth_header(owner))
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "saved"
+
+
+# --- Embedded Spread ----------------------------------------------------------------
+
+
+def test_embedded_spread_matches_the_readings_actual_spread(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail14@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    expected_spread = _seeded_spread(api_seeded_session)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    body = response.json()
+    assert body["spread_id"] == str(expected_spread.id)
+    assert body["spread"]["id"] == str(expected_spread.id)
+    assert body["spread"]["name"] == "Three Card"
+
+
+def test_embedded_spread_includes_all_positions(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail15@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    expected_spread = _seeded_spread(api_seeded_session)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    positions = response.json()["spread"]["positions"]
+    assert len(positions) == len(expected_spread.positions) == 3
+    assert {p["name"] for p in positions} == {p.name for p in expected_spread.positions}
+
+
+def test_embedded_spread_positions_are_ordered_by_position_order(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail16@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    orders = [p["position_order"] for p in response.json()["spread"]["positions"]]
+    assert orders == sorted(orders)
+
+
+def test_embedded_spread_position_count_matches_the_actual_spread(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail17@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    body = response.json()
+    assert body["spread"]["position_count"] == len(body["spread"]["positions"])
+
+
+# --- Embedded CardDraws --------------------------------------------------------------
+
+
+def test_embedded_card_draw_fields_match_the_persisted_row(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail18@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    position = _spread_position(api_seeded_session, "Recent Past")
+    card = get_card(api_seeded_session, get_default_deck(api_seeded_session), "The Fool")
+
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json={"position_id": str(position.id), "card_id": str(card.id), "orientation": "reversed"},
+        headers=_auth_header(owner),
+    )
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    draw = response.json()["card_draws"][0]
+    api_seeded_session.expire_all()
+    persisted = api_seeded_session.execute(
+        select(CardDraw).where(CardDraw.reading_id == reading.id)
+    ).scalar_one()
+
+    assert draw["id"] == str(persisted.id)
+    assert draw["card"]["id"] == str(card.id)
+    assert draw["card"]["name"] == "The Fool"
+    assert draw["position"]["id"] == str(position.id)
+    assert draw["position"]["name"] == "Recent Past"
+    assert draw["orientation"] == "reversed"
+    assert draw["draw_order"] == persisted.draw_order
+    assert draw["created_at"] is not None
+    assert set(draw.keys()) == _DETAIL_CARD_DRAW_KEYS
+
+
+def test_embedded_card_draws_are_ordered_by_draw_order(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail19@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    # Recorded in a different sequence than position_order to prove the
+    # response follows draw_order, not position_order or insertion order.
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Near Future", card_name="The Star"),
+        headers=_auth_header(owner),
+    )
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Recent Past", card_name="The Fool"),
+        headers=_auth_header(owner),
+    )
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    draws = response.json()["card_draws"]
+    assert [d["draw_order"] for d in draws] == [1, 2]
+    assert draws[0]["position"]["name"] == "Near Future"
+    assert draws[1]["position"]["name"] == "Recent Past"
+
+
+# --- Lifecycle ------------------------------------------------------------------------
+
+
+def test_status_accurately_reflects_the_database_across_the_lifecycle(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail20@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    assert client.get(f"/readings/{reading.id}", headers=_auth_header(owner)).json()["status"] == "drafting"
+
+    deck = get_default_deck(api_seeded_session)
+    for position_name, card_name in [
+        ("Recent Past", "The Fool"),
+        ("Present Situation", "The Magician"),
+        ("Near Future", "The Star"),
+    ]:
+        client.post(
+            f"/readings/{reading.id}/draws",
+            json=_draw_payload(api_seeded_session, position_name=position_name, card_name=card_name),
+            headers=_auth_header(owner),
+        )
+    assert (
+        client.get(f"/readings/{reading.id}", headers=_auth_header(owner)).json()["status"]
+        == "spread_complete"
+    )
+
+    client.post(f"/readings/{reading.id}/interpret", headers=_auth_header(owner))
+    assert (
+        client.get(f"/readings/{reading.id}", headers=_auth_header(owner)).json()["status"] == "interpreted"
+    )
+
+    client.post(f"/readings/{reading.id}/save", headers=_auth_header(owner))
+    assert client.get(f"/readings/{reading.id}", headers=_auth_header(owner)).json()["status"] == "saved"
+
+
+def test_optional_position_remains_visible_in_spread_when_undrawn(api_seeded_session, client):
+    """No seeded spread has an optional position (Step 29/33's own
+    finding, unchanged) -- constructed directly, mirroring the same
+    technique those steps used.
+    """
+    owner = make_user(api_seeded_session, email="detail21@example.com")
+    api_seeded_session.commit()
+    deck = get_default_deck(api_seeded_session)
+
+    spread = Spread(name="Optional Position Detail Test", allow_duplicate_cards=False)
+    api_seeded_session.add(spread)
+    api_seeded_session.flush()
+    required_position = SpreadPosition(spread=spread, name="Required", position_order=1, required=True)
+    optional_position = SpreadPosition(spread=spread, name="Optional", position_order=2, required=False)
+    api_seeded_session.add_all([required_position, optional_position])
+    api_seeded_session.flush()
+
+    reflection_session = ReflectionSession(owner=owner)
+    api_seeded_session.add(reflection_session)
+    api_seeded_session.flush()
+    reading = Reading(
+        reflection_session=reflection_session,
+        spread=spread,
+        deck=deck,
+        question="optional position detail probe",
+    )
+    api_seeded_session.add(reading)
+    api_seeded_session.commit()
+
+    fool = get_card(api_seeded_session, deck, "The Fool")
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json={"position_id": str(required_position.id), "card_id": str(fool.id), "orientation": "upright"},
+        headers=_auth_header(owner),
+    )
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    body = response.json()
+    assert body["status"] == "spread_complete"
+    position_names = {p["name"] for p in body["spread"]["positions"]}
+    assert position_names == {"Required", "Optional"}
+    drawn_position_names = {d["position"]["name"] for d in body["card_draws"]}
+    assert drawn_position_names == {"Required"}
+    optional = next(p for p in body["spread"]["positions"] if p["name"] == "Optional")
+    assert optional["required"] is False
+
+
+def test_completed_reading_remains_retrievable(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail22@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+
+
+def test_saved_reading_remains_retrievable(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail23@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/save", headers=_auth_header(owner))
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "saved"
+
+
+# --- Interpretation/narrative separation ----------------------------------------------
+
+
+def test_retrieval_does_not_embed_interpretation_content(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail24@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/interpret", headers=_auth_header(owner))
+    client.post(f"/readings/{reading.id}/interpret", headers=_auth_header(owner))
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    body = response.json()
+    assert set(body.keys()) == _DETAIL_TOP_LEVEL_KEYS
+    assert "interpretation" not in body
+    assert "interpretations" not in body
+    assert "interpretive_model" not in body
+    assert "narrative" not in body
+
+
+def test_retrieval_does_not_invoke_interpretation_orchestration(api_seeded_session, client, monkeypatch):
+    owner = make_user(api_seeded_session, email="detail25@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+
+    calls = []
+    real = orchestration_module.interpret_reading
+
+    def _spy(session, reading_arg):
+        calls.append(reading_arg.id)
+        return real(session, reading_arg)
+
+    monkeypatch.setattr(orchestration_module, "interpret_reading", _spy)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert calls == []
+
+
+def test_retrieval_does_not_invoke_narrative_generation(api_seeded_session, client, monkeypatch):
+    owner = make_user(api_seeded_session, email="detail26@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/interpret", headers=_auth_header(owner))
+
+    calls = []
+    real = orchestration_module.assemble_narrative
+
+    def _spy(model):
+        calls.append(model)
+        return real(model)
+
+    monkeypatch.setattr(orchestration_module, "assemble_narrative", _spy)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 200
+    assert calls == []
+
+
+# --- Security / data exposure ---------------------------------------------------------
+
+
+def test_retrieval_response_exposes_no_sensitive_or_internal_fields(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="detail27@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+
+    response = client.get(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    raw = response.text
+    assert "hashed_password" not in raw
+    assert "owner_id" not in raw
+    assert "reflection_session_id" not in raw
+    assert "access_token" not in raw
+
+    body = response.json()
+    assert set(body.keys()) == _DETAIL_TOP_LEVEL_KEYS
+    assert set(body["spread"].keys()) == {
+        "id",
+        "name",
+        "description",
+        "position_count",
+        "allow_duplicate_cards",
+        "positions",
+    }
+    for position in body["spread"]["positions"]:
+        assert "spread_id" not in position
+    for draw in body["card_draws"]:
+        assert set(draw.keys()) == _DETAIL_CARD_DRAW_KEYS
+        assert "deck_id" not in draw["card"]
+        assert "base_meaning_upright" not in draw["card"]
+        assert "base_meaning_reversed" not in draw["card"]
+
+
+# --- Query behavior ---------------------------------------------------------------------
+
+
+def test_retrieval_of_a_fully_drawn_celtic_cross_does_not_exhibit_n_plus_1(api_seeded_session, client):
+    """Proves the selectinload strategy avoids N+1 behavior for the
+    worst-case seeded spread (10 positions): naive lazy loading would
+    issue roughly 1 (Spread) + 1 (positions) + 1 (card_draws) + 10
+    (each draw's position) + 10 (each draw's card) = ~23 queries for
+    the detail fetch alone, scaling linearly with position count. A
+    single request's query count staying well under that -- a generous,
+    stable ceiling rather than one magic number -- is sufficient to
+    catch a regression back to per-row lazy loading without depending
+    on a fragile exact count or a delicate multi-request comparison
+    (a two-request relative comparison was tried and found to be
+    susceptible to an unrelated duplicate-query artifact on the first
+    request of a fresh TestClient sequence, unrelated to this route's
+    own query behavior -- confirmed by an isolated, non-pytest
+    reproduction showing a stable, identical query count for both a
+    1-draw and a 10-draw Reading).
+    """
+    owner = make_user(api_seeded_session, email="detail28@example.com")
+    api_seeded_session.commit()
+
+    celtic_cross = api_seeded_session.scalars(
+        select(Spread).where(Spread.name == "Celtic Cross")
+    ).one()
+    deck = get_default_deck(api_seeded_session)
+    positions = list(celtic_cross.positions)
+    all_cards = list(
+        api_seeded_session.scalars(select(Card).where(Card.deck_id == deck.id)).all()
+    )
+
+    created = client.post(
+        "/readings",
+        json={"spread_id": str(celtic_cross.id), "question": "query-count probe"},
+        headers=_auth_header(owner),
+    ).json()
+    reading_id = created["id"]
+    for position, card in zip(positions, all_cards):
+        response = client.post(
+            f"/readings/{reading_id}/draws",
+            json={"position_id": str(position.id), "card_id": str(card.id), "orientation": "upright"},
+            headers=_auth_header(owner),
+        )
+        assert response.status_code == 201
+
+    query_log: list[str] = []
+    engine = api_seeded_session.get_bind()
+
+    def _log(conn, cursor, statement, parameters, context, executemany):
+        query_log.append(statement)
+
+    event.listen(engine, "before_cursor_execute", _log)
+    try:
+        response = client.get(f"/readings/{reading_id}", headers=_auth_header(owner))
+    finally:
+        event.remove(engine, "before_cursor_execute", _log)
+
+    assert response.status_code == 200
+    assert len(response.json()["card_draws"]) == 10
+    # A naive per-row lazy-loading implementation would issue at least
+    # ~20 queries for 10 draws (Section 8,
+    # Documentation/READING_DETAIL_API_DESIGN.md); the selectinload
+    # strategy keeps this small and constant regardless of draw count.
+    assert len(query_log) < 15
+
+
+# --- Integration ------------------------------------------------------------------------
+
+
+def test_full_lifecycle_retrieval_reflects_accumulated_state(api_seeded_session, client):
+    """register -> create -> retrieve -> draw -> retrieve -> complete ->
+    interpret -> save -> retrieve, verifying the response accurately
+    reflects state accumulated across the *entire* prior lifecycle, not
+    merely its own isolated write. Also proves another user cannot
+    retrieve it.
+    """
+    register = client.post(
+        "/auth/register", json={"email": "lifecycle@example.com", "password": "correct horse battery staple"}
+    )
+    assert register.status_code == 201
+    login = client.post(
+        "/auth/login", json={"email": "lifecycle@example.com", "password": "correct horse battery staple"}
+    )
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    spread = _seeded_spread(api_seeded_session)
+    created = client.post(
+        "/readings", json={"spread_id": str(spread.id), "question": "Full lifecycle probe"}, headers=headers
+    ).json()
+    reading_id = created["id"]
+
+    detail_empty = client.get(f"/readings/{reading_id}", headers=headers)
+    assert detail_empty.status_code == 200
+    assert detail_empty.json()["card_draws"] == []
+    assert detail_empty.json()["status"] == "drafting"
+
+    deck = get_default_deck(api_seeded_session)
+    draws_plan = [
+        ("Recent Past", "The Fool", "upright"),
+        ("Present Situation", "The Magician", "reversed"),
+        ("Near Future", "The Star", "upright"),
+    ]
+    for position_name, card_name, orientation in draws_plan:
+        position = _spread_position(api_seeded_session, position_name)
+        card = get_card(api_seeded_session, deck, card_name)
+        resp = client.post(
+            f"/readings/{reading_id}/draws",
+            json={"position_id": str(position.id), "card_id": str(card.id), "orientation": orientation},
+            headers=headers,
+        )
+        assert resp.status_code == 201
+
+    detail_drawn = client.get(f"/readings/{reading_id}", headers=headers)
+    assert detail_drawn.status_code == 200
+    body_drawn = detail_drawn.json()
+    assert body_drawn["status"] == "spread_complete"
+    assert len(body_drawn["card_draws"]) == 3
+    drawn_cards = {d["card"]["name"] for d in body_drawn["card_draws"]}
+    assert drawn_cards == {"The Fool", "The Magician", "The Star"}
+    reversed_draws = [d for d in body_drawn["card_draws"] if d["orientation"] == "reversed"]
+    assert len(reversed_draws) == 1
+    assert reversed_draws[0]["card"]["name"] == "The Magician"
+
+    interpret_resp = client.post(f"/readings/{reading_id}/interpret", headers=headers)
+    assert interpret_resp.status_code == 201
+
+    save_resp = client.post(f"/readings/{reading_id}/save", headers=headers)
+    assert save_resp.status_code == 200
+
+    detail_saved = client.get(f"/readings/{reading_id}", headers=headers)
+    assert detail_saved.status_code == 200
+    assert detail_saved.json()["status"] == "saved"
+    assert len(detail_saved.json()["card_draws"]) == 3
+
+    other_register = client.post(
+        "/auth/register", json={"email": "lifecycle_other@example.com", "password": "correct horse battery staple"}
+    )
+    assert other_register.status_code == 201
+    other_login = client.post(
+        "/auth/login", json={"email": "lifecycle_other@example.com", "password": "correct horse battery staple"}
+    )
+    other_token = other_login.json()["access_token"]
+
+    other_detail = client.get(
+        f"/readings/{reading_id}", headers={"Authorization": f"Bearer {other_token}"}
+    )
+    assert other_detail.status_code == 404

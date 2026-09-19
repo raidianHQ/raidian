@@ -20,7 +20,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models.enums import DrawMethod, ReadingStatus
+from app.models.enums import DrawMethod, Orientation, ReadingStatus
+from app.schemas.reference_data_api import CardSummary, SpreadPositionSummary, SpreadSummary
 
 _MAX_QUESTION_LENGTH = 4000
 """An implementation-safety default, not a Product Spec requirement --
@@ -96,3 +97,109 @@ class ReadingCreateRequest(_Model):
         if not value.strip():
             raise ValueError("question must not be blank")
         return value
+
+
+class CardDrawCreateRequest(_Model):
+    """Request body for POST /readings/{reading_id}/draws (Step 32,
+    Documentation/CARDDRAW_API_DESIGN.md Section 4.1).
+
+    Deliberately has no owner/user field (ownership comes exclusively
+    from Depends(get_owned_reading), never from client input) and no
+    draw_order field (computed server-side as
+    max(existing draw_order) + 1 by
+    app/services/reading_service.py::record_card_draw() -- see
+    Documentation/CARDDRAW_API_DESIGN.md Section 4.3). `extra="forbid"`
+    (inherited from _Model) rejects both as 422 if a client attempts to
+    supply either.
+    """
+
+    position_id: UUID
+    card_id: UUID
+    orientation: Orientation
+
+
+class CardDrawSummary(_Model):
+    """The smallest useful representation of a newly recorded CardDraw
+    (Documentation/CARDDRAW_API_DESIGN.md Section 4.2) -- derived
+    directly from CardDraw's own columns, plus one field that does not
+    live on CardDraw itself: reading_status, the owning Reading's status
+    immediately after this draw was recorded. Included because no
+    GET /readings/{reading_id} route exists to check this separately
+    (Section 2.7/4.2 of the same document) -- without it, a client would
+    have no way to learn whether this draw just completed the spread.
+    Deliberately omits card/position display names (e.g. card_name,
+    position_name) -- an explicitly named, deferred question (Section 12
+    of the same document), not decided by adding it here.
+    """
+
+    id: UUID
+    position_id: UUID
+    card_id: UUID
+    orientation: Orientation
+    draw_order: int
+    created_at: datetime
+    reading_status: ReadingStatus
+
+
+class ReadingCardDrawSummary(_Model):
+    """One CardDraw within a Reading's full detail view (Step 43,
+    Documentation/READING_DETAIL_API_DESIGN.md Section 4.3). Embeds the
+    full SpreadPositionSummary/CardSummary (reused verbatim from
+    app/schemas/reference_data_api.py, not duplicated) so the Spread
+    Review screen has everything it needs without a second reference-
+    data round trip.
+
+    Distinct from CardDrawSummary above (the POST
+    /readings/{reading_id}/draws response): that endpoint's caller
+    already knows the position/card it just specified, so it
+    deliberately omits display names; a Reading Detail fetch,
+    reconstructing state after navigation with no such prior knowledge,
+    has no such shortcut available.
+    """
+
+    id: UUID
+    position: SpreadPositionSummary
+    card: CardSummary
+    orientation: Orientation
+    draw_order: int
+    created_at: datetime
+
+
+class ReadingDetail(_Model):
+    """Full Reading state for Reading Detail / Spread Review (Step 43,
+    Documentation/READING_DETAIL_API_DESIGN.md Section 4.4) -- the
+    smallest response that lets the frontend reconstruct a Reading's
+    entire evidence state after navigation or reload, without direct
+    database access.
+
+    Deliberately excludes interpretation and narrative content -- both
+    remain separate resources with their own existing routes (POST
+    /readings/{reading_id}/interpret, GET .../interpretations(/current),
+    GET .../narrative), preserving the evidence-vs-interpretation
+    separation already established by
+    Documentation/INTERPRETATION_ENGINE_DESIGN.md Section 9, Q1. A
+    Reading may have zero, one, or many Interpretation rows (Q4,
+    Documentation/PRODUCT_DECISIONS.md); this schema deliberately has no
+    field that could imply otherwise.
+
+    Excludes reflection_session_id/owner_id -- internal, no frontend
+    meaning, never exposed by ReadingSummary either.
+
+    Includes both `spread_id` (a direct scalar reference, parallel to
+    `deck_id`) and the fully embedded `spread` -- Step 42's own design
+    considered the bare id superseded by the embed; Step 43's
+    implementation contract explicitly requested both, so both are
+    included here rather than silently narrowing that instruction.
+    """
+
+    id: UUID
+    status: ReadingStatus
+    question: str
+    question_domain: str | None
+    draw_method: DrawMethod
+    created_at: datetime
+    updated_at: datetime
+    spread_id: UUID
+    spread: SpreadSummary
+    deck_id: UUID
+    card_draws: list[ReadingCardDrawSummary]

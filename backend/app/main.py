@@ -1,17 +1,31 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
 from app.api.interpretation import router as interpretation_router
 from app.api.reading import router as reading_router
+from app.api.reference_data import router as reference_data_router
+from app.core.config import get_settings
+
+settings = get_settings()
 
 app = FastAPI(
     title="Raidian API",
     version="0.1.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allowed_origins_list,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type"],
+)
+
 app.include_router(auth_router)
 app.include_router(reading_router)
 app.include_router(interpretation_router)
+app.include_router(reference_data_router)
 
 
 @app.get("/")

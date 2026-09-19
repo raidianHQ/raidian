@@ -23,11 +23,25 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
 
+    cors_allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    """Comma-separated list of origins permitted to make cross-origin
+    requests to this API (Access-Control-Allow-Origin). Defaults to the
+    local Vite dev server only (frontend/vite.config.ts's own
+    unoverridden default port) -- any real deployment MUST override this
+    via RAIDIAN_CORS_ALLOWED_ORIGINS to include the deployed frontend's
+    actual origin, mirroring jwt_secret_key's own override-required
+    convention. See Documentation/REFERENCE_DATA_CORS_DESIGN.md Section 3.
+    """
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_prefix="RAIDIAN_",
         extra="ignore",
     )
+
+    @property
+    def cors_allowed_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_allowed_origins.split(",") if origin.strip()]
 
 
 @lru_cache
