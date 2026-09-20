@@ -1,4 +1,5 @@
 from app.db.base import Base
+from app.models.ai_narrative import AINarrative
 from app.models.card import Card
 from app.models.card_correspondence import CardCorrespondence
 from app.models.card_draw import CardDraw
@@ -17,14 +18,17 @@ from app.models.exceptions import (
     InvalidCredentialsError,
 )
 from app.models.interpretation import Interpretation
+from app.models.journal_entry import JournalEntry
 from app.models.reading import Reading
 from app.models.reflection_session import ReflectionSession
+from app.models.scripture import ScriptureReference
 from app.models.spread import Spread
 from app.models.spread_position import SpreadPosition
 from app.models.user import User
 
 __all__ = [
     "Base",
+    "AINarrative",
     "Card",
     "CardCorrespondence",
     "CardDraw",
@@ -39,8 +43,10 @@ __all__ = [
     "EmailAlreadyRegisteredError",
     "InvalidCredentialsError",
     "Interpretation",
+    "JournalEntry",
     "Reading",
     "ReflectionSession",
+    "ScriptureReference",
     "Spread",
     "SpreadPosition",
     "User",

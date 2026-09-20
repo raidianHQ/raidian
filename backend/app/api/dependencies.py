@@ -19,10 +19,13 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
+from app.core.config import Settings, get_settings
 from app.core.security import InvalidTokenError, decode_access_token
 from app.db.session import get_db
 from app.models.reading import Reading
 from app.models.user import User
+from app.services.reflection_engine.anthropic_client import AnthropicReflectionEngineClient
+from app.services.reflection_engine.client import ReflectionEngineClient
 
 # auto_error=False: a missing token is handled explicitly below so it
 # produces the same generic 401 body as every other authentication
@@ -75,3 +78,19 @@ def get_owned_reading(
     if reading is None or reading.reflection_session.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=_READING_NOT_FOUND)
     return reading
+
+
+def get_reflection_engine_client(
+    settings: Settings = Depends(get_settings),
+) -> ReflectionEngineClient:
+    """The sole AI provider gateway (ADR-0005) for every route depending
+    on it -- today, only app/api/ai_narrative.py. Constructing this is
+    cheap and performs no I/O (AnthropicReflectionEngineClient opens no
+    connection until `.complete()` runs, see its own docstring), so it is
+    safe to build fresh per request rather than caching an instance.
+
+    Overridden in tests via `app.dependency_overrides[get_reflection_engine_client]`
+    with a fake implementing ReflectionEngineClient's Protocol -- no test
+    in this project makes a real AI provider call.
+    """
+    return AnthropicReflectionEngineClient(settings)

@@ -13,6 +13,7 @@ import type { SpreadSummary } from './spreads'
 
 export type ReadingStatus = 'drafting' | 'spread_complete' | 'interpreted' | 'saved'
 export type Orientation = 'upright' | 'reversed'
+export type DrawMethod = 'physical' | 'digital'
 
 export interface ReadingSummary {
   id: string
@@ -33,7 +34,7 @@ export interface ReadingCardDrawSummary {
 }
 
 export interface ReadingDetail extends ReadingSummary {
-  draw_method: 'physical' | 'digital'
+  draw_method: DrawMethod
   spread_id: string
   spread: SpreadSummary
   deck_id: string
@@ -57,17 +58,23 @@ export function listSavedReadings(token: string): Promise<ReadingSummary[]> {
 }
 
 /**
- * POST /readings -- `question_domain`/`draw_method`/`deck_id` all have
- * server-side defaults (Step 27); this slice supplies only `spread_id`
- * and `question`, the two fields the backend actually requires
- * (see this step's own POST /readings sequencing note in
- * NewReadingPage.tsx).
+ * POST /readings -- `question_domain`/`deck_id` both have server-side
+ * defaults this slice never overrides. `draw_method` defaults to
+ * 'physical' here too (unchanged for every existing caller), but is now
+ * sent explicitly so NewReadingPage's Use My Deck / Digital Draw choice
+ * reaches the backend (Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md
+ * Section 8.2).
  */
-export function createReading(token: string, spreadId: string, question: string): Promise<ReadingSummary> {
+export function createReading(
+  token: string,
+  spreadId: string,
+  question: string,
+  drawMethod: DrawMethod = 'physical',
+): Promise<ReadingSummary> {
   return request<ReadingSummary>('/readings', {
     method: 'POST',
     token,
-    body: { spread_id: spreadId, question },
+    body: { spread_id: spreadId, question, draw_method: drawMethod },
   })
 }
 
@@ -94,6 +101,20 @@ export function recordCardDraw(
     method: 'POST',
     token,
     body: { position_id: positionId, card_id: cardId, orientation },
+  })
+}
+
+/**
+ * POST /readings/{reading_id}/draws/digital -- draws every position of a
+ * draw_method='digital', DRAFTING, not-yet-drawn Reading at once. Takes
+ * no request body (which cards are drawn is never client-influenced) and
+ * returns one CardDrawSummary per position, the same shape
+ * recordCardDraw() above returns for a single manual draw.
+ */
+export function performDigitalDraw(token: string, readingId: string): Promise<CardDrawSummary[]> {
+  return request<CardDrawSummary[]>(`/readings/${readingId}/draws/digital`, {
+    method: 'POST',
+    token,
   })
 }
 

@@ -19,17 +19,20 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Card, CardCorrespondence, Deck, Spread, SpreadPosition
+from app.models import Card, CardCorrespondence, Deck, ScriptureReference, Spread, SpreadPosition
 from app.models.enums import Arcana, SemanticRole, Suit
 from app.seed.loader import (
     RWS_DECK_DIR,
+    SCRIPTURE_REFERENCES_PATH,
     SPREADS_DIR,
     load_all_spread_definitions,
     load_card_definitions,
     load_correspondence_definitions,
     load_deck_definition,
+    load_scripture_reference_definitions,
     validate_card_definitions,
     validate_correspondence_definitions,
+    validate_scripture_reference_definitions,
     validate_spread_definition,
 )
 
@@ -39,6 +42,7 @@ class SeedSummary:
     deck: Deck
     spreads: list[Spread]
     correspondences: list[CardCorrespondence]
+    scripture_references: list[ScriptureReference]
 
 
 def seed_deck(session: Session, deck_dir: Path = RWS_DECK_DIR) -> Deck:
@@ -117,6 +121,50 @@ def seed_card_correspondences(
     return correspondences
 
 
+def seed_scripture_references(
+    session: Session, path: Path = SCRIPTURE_REFERENCES_PATH
+) -> list[ScriptureReference]:
+    """Seeds the approved Scripture reference dataset for the optional
+    Scriptural Reflection layer (RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section
+    15) -- content entirely separate from the tarot deck/spreads seeded
+    above; keyed by theme, never by Card, so it has no dependency on
+    seed_deck() having run first.
+
+    Upserted by natural key (theme, book, chapter, verse_start,
+    translation), mirroring seed_deck()/seed_spread()'s own
+    re-runnable-by-natural-key discipline.
+    """
+    entries = load_scripture_reference_definitions(path)
+    validate_scripture_reference_definitions(entries)
+
+    existing_by_key = {
+        (row.theme, row.book, row.chapter, row.verse_start, row.translation): row
+        for row in session.scalars(select(ScriptureReference)).all()
+    }
+    references: list[ScriptureReference] = []
+    for entry in entries:
+        key = (entry["theme"], entry["book"], entry["chapter"], entry["verse_start"], entry["translation"])
+        reference = existing_by_key.get(key)
+        if reference is None:
+            reference = ScriptureReference(
+                theme=entry["theme"],
+                book=entry["book"],
+                chapter=entry["chapter"],
+                verse_start=entry["verse_start"],
+                translation=entry["translation"],
+            )
+            session.add(reference)
+
+        reference.verse_end = entry.get("verse_end")
+        reference.reference_display = entry["reference_display"]
+        reference.context_note = entry["context_note"].strip()
+        reference.reflection_connection = entry["reflection_connection"].strip()
+        references.append(reference)
+
+    session.flush()
+    return references
+
+
 def seed_spread(session: Session, spread_def: dict) -> Spread:
     validate_spread_definition(spread_def)
 
@@ -149,7 +197,8 @@ def seed_all_spreads(session: Session, spreads_dir: Path = SPREADS_DIR) -> list[
 
 
 def seed_reference_data(session: Session) -> SeedSummary:
-    """Seeds the MVP deck and its cards, plus the initial MVP spreads.
+    """Seeds the MVP deck and its cards, the initial MVP spreads, and the
+    approved Scripture reference dataset.
 
     Does not commit -- the caller controls the transaction boundary (tests
     typically flush and roll back; the CLI entrypoint below commits).
@@ -157,7 +206,11 @@ def seed_reference_data(session: Session) -> SeedSummary:
     deck = seed_deck(session)
     correspondences = seed_card_correspondences(session, deck)
     spreads = seed_all_spreads(session)
-    return SeedSummary(deck=deck, spreads=spreads, correspondences=correspondences)
+    scripture_references = seed_scripture_references(session)
+    return SeedSummary(
+        deck=deck, spreads=spreads, correspondences=correspondences,
+        scripture_references=scripture_references,
+    )
 
 
 def main() -> None:
@@ -171,6 +224,7 @@ def main() -> None:
         print(f"Seeded {len(summary.correspondences)} card correspondence records")
         for spread in summary.spreads:
             print(f"Seeded spread '{spread.name}' ({len(spread.positions)} positions)")
+        print(f"Seeded {len(summary.scripture_references)} scripture reference records")
 
 
 if __name__ == "__main__":

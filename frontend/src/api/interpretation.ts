@@ -54,12 +54,55 @@ export interface Contradiction {
   sources: Citation[]
 }
 
+/**
+ * One drawn card's individual interpretation, in its position -- mirrors
+ * backend/app/schemas/interpretive_model.py::CardInterpretation. Added
+ * alongside Relationships/ThemeStrength/deterministic_synthesis below for
+ * the guided Reading Result flow's "card by card" and "how the cards
+ * connect" sections -- these fields have existed on the backend schema
+ * since the deterministic-synthesis work, but were not yet surfaced on
+ * this frontend type until now.
+ */
+export interface CardInterpretation {
+  position_name: string
+  semantic_role: string
+  position_order: number
+  card_name: string
+  orientation: 'upright' | 'reversed'
+  meaning_text: string
+  themes: string[]
+  citation: Citation
+}
+
+export interface SuitClusterSummary {
+  suit: 'wands' | 'cups' | 'swords' | 'pentacles'
+  card_names: string[]
+  citations: Citation[]
+}
+
+export interface Relationships {
+  same_suit_clusters: SuitClusterSummary[]
+  major_arcana_count: number
+  minor_arcana_count: number
+}
+
+export interface ThemeStrength {
+  theme: string
+  count: number
+  citations: Citation[]
+}
+
 export interface InterpretiveModel {
   schema_version: string
   engine_version: string
   reference_data_version: string
   generated_at: string
   central_question: string
+  spread_name: string
+  spread_description: string | null
+  card_interpretations: CardInterpretation[]
+  relationships: Relationships
+  theme_strength: ThemeStrength[]
   central_issue: Explained<string>
   primary_tension: Explained<Tension> | null
   supporting_themes: Explained<string>[]
@@ -70,6 +113,7 @@ export interface InterpretiveModel {
   clarification: Explained<string> | null
   contradictions: Contradiction[]
   evidence_strength: EvidenceStrength
+  deterministic_synthesis: Explained<string>
 }
 
 export interface InterpretationSummary {

@@ -1,15 +1,36 @@
-"""The Reading Integration orchestration layer (Step 9; extended Step 11).
+"""The Reading Integration orchestration layer (Step 9; extended Step 11;
+extended again for the optional Scriptural Reflection layer; extended
+again for the AI Narrative Layer).
 
 The only module permitted to combine database access with calls into the
-deterministic Interpretation Engine (app/services/interpretation/) and the
-deterministic, database-free Narrative Layer (app/services/narrative/) --
-mirrors the loader/seed and compute/persist separations already
-established elsewhere in this project. See
-Documentation/READING_INTEGRATION_DESIGN.md Section 13.
+deterministic Interpretation Engine (app/services/interpretation/), the
+deterministic, database-free Narrative Layer (app/services/narrative/),
+the deterministic, database-backed Scripture Layer
+(app/services/scripture/), and the AI Narrative Layer
+(app/services/ai_narrative/, itself the only caller of the Reflection
+Engine, app/services/reflection_engine/, per ADR-0005) -- mirrors the
+loader/seed and compute/persist separations already established elsewhere
+in this project. See Documentation/READING_INTEGRATION_DESIGN.md Section
+13.
+
+Scripture remains conceptually and architecturally separate from tarot
+interpretation (RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 15) despite living
+alongside Narrative in this one orchestration module -- that grouping is
+purely about *where database access is permitted to happen* (this
+module's own charter), not about Scripture being part of the tarot
+engine's source-of-truth meanings. get_scripture_for_reading() below
+never feeds anything back into interpret()/save_interpretation(), and
+Scripture content is never merged into InterpretiveModel. The same is true
+of the AI Narrative Layer, one level further out: generate_ai_narrative_for_reading()
+below reads an already-persisted InterpretiveModel (and, optionally, an
+already-computed ScripturalPerspective) and never feeds its own output
+back into either.
 
 Also the only module the Interpretation API (app/api/interpretation.py,
-Step 11) is permitted to call into for Interpretation/Narrative data --
-the API layer must never query Interpretation directly
+Step 11), the Scripture API (app/api/scripture.py), and the AI Narrative
+API (app/api/ai_narrative.py) are permitted to call into for
+Interpretation/Narrative/Scripture/AINarrative data -- the API layer must
+never query Interpretation directly
 (Documentation/INTERPRETATION_API_DESIGN.md Section 2.1/16).
 
 None of these functions commit or roll back the session -- the caller
@@ -24,13 +45,21 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.models.ai_narrative import AINarrative
 from app.models.interpretation import Interpretation
 from app.models.reading import Reading
+from app.schemas.ai_narrative import AINarrativeResponse
 from app.schemas.interpretive_model import InterpretiveModel
 from app.schemas.narrative_model import NarrativeModel
+from app.schemas.scripture_model import ScripturalPerspective
+from app.services.ai_narrative.context import build_deterministic_reading_context
+from app.services.ai_narrative.generation import generate_ai_narrative
+from app.services.ai_narrative.persistence import save_ai_narrative
 from app.services.interpretation.engine import interpret
 from app.services.interpretation.persistence import save_interpretation
 from app.services.narrative.assembler import assemble_narrative
+from app.services.reflection_engine.client import ReflectionEngineClient
+from app.services.scripture.selection import select_scripture_reflections
 
 
 class ReadingNotReadyForInterpretationError(ValueError):
@@ -139,3 +168,111 @@ def get_narrative_for_reading(session: Session, reading: Reading) -> NarrativeMo
 
     model = InterpretiveModel.model_validate(latest.interpretive_model)
     return assemble_narrative(model)
+
+
+def get_scripture_for_reading(session: Session, reading: Reading) -> ScripturalPerspective | None:
+    """Selects the optional Scriptural Reflection for `reading`'s current
+    interpretation -- the Interpretation row with the highest `sequence`
+    for this `reading_id` -- or None if `reading` has never been
+    interpreted. Mirrors get_narrative_for_reading() above exactly, one
+    layer over: same "reconstruct the persisted InterpretiveModel, hand
+    it to a pure-with-respect-to-tarot-content downstream function" shape.
+
+    Callers decide whether to call this at all -- that decision (never a
+    stored flag, never a request parameter this function reads) is what
+    makes Scripture "optional" at this foundation stage
+    (RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 15.2's three-state user
+    preference is future work; today, simply not calling this function is
+    "Scripture Off").
+
+    ScripturalPerspective is never persisted or cached here (mirrors
+    NarrativeModel's own discipline) -- every call recomputes it fresh
+    from the persisted Interpretation and the current approved
+    ScriptureReference reference data.
+    """
+    latest = get_current_interpretation(session, reading)
+
+    if latest is None:
+        return None
+
+    model = InterpretiveModel.model_validate(latest.interpretive_model)
+    return select_scripture_reflections(session, model)
+
+
+def get_current_ai_narrative(session: Session, interpretation: Interpretation) -> AINarrative | None:
+    """The AINarrative row with the highest `sequence` for `interpretation`,
+    or None if this specific interpretation has never had an AI narrative
+    generated against it -- mirrors get_current_interpretation() above,
+    one layer over. Scoped to `interpretation_id`, not `reading_id` (see
+    AINarrative's own docstring for why): a Reading with a newer
+    Interpretation than the one an AI narrative was generated against
+    correctly reports "no current AI narrative" rather than surfacing a
+    stale one.
+    """
+    return session.execute(
+        select(AINarrative)
+        .where(AINarrative.interpretation_id == interpretation.id)
+        .order_by(AINarrative.sequence.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+
+
+def get_current_ai_narrative_for_reading(session: Session, reading: Reading) -> AINarrative | None:
+    """The current AI narrative for `reading`'s current interpretation, or
+    None if `reading` has never been interpreted, or has been interpreted
+    but has no AI narrative generated against its current interpretation
+    yet. Both cases are indistinguishable to a caller by design -- see
+    app/api/ai_narrative.py, which maps either to 404.
+    """
+    latest = get_current_interpretation(session, reading)
+    if latest is None:
+        return None
+    return get_current_ai_narrative(session, latest)
+
+
+def generate_ai_narrative_for_reading(
+    session: Session,
+    reading: Reading,
+    client: ReflectionEngineClient,
+    *,
+    include_scripture: bool,
+    provider: str,
+    model: str,
+) -> AINarrative | None:
+    """Runs one AI Narrative Layer generation for `reading`'s current
+    interpretation and persists the result, or None if `reading` has never
+    been interpreted (checked before any Reflection Engine call is made,
+    mirroring interpret_reading()'s own precondition-before-work shape).
+
+    `include_scripture` is this call's own, never-stored opt-in -- mirrors
+    get_scripture_for_reading()'s own "callers decide whether to call this
+    at all" contract; there is no persisted per-User/per-Reading
+    preference (SCRIPTURAL_REFLECTION_FOUNDATION_DESIGN.md Section 4).
+    When True, the *already-computed, already-approved* ScripturalPerspective
+    is looked up via select_scripture_reflections() (never a second, AI-driven
+    Scripture lookup) and handed to the AI Narrative Layer alongside the
+    InterpretiveModel; the AI is never given the ability to introduce a
+    Scripture reference this layer did not already select (see
+    generation.py's own validation).
+
+    If generation.generate_ai_narrative() raises (a ReflectionEngineError
+    or a validation failure), that exception propagates unchanged -- this
+    function has performed no database write by that point, so the
+    Reading's Interpretation history is entirely unaffected by a failed AI
+    call (Product Spec's own "a failed AI request does not corrupt or
+    invalidate the deterministic reading" requirement). Persistence
+    (save_ai_narrative) only ever runs after generation has already
+    succeeded.
+    """
+    latest = get_current_interpretation(session, reading)
+    if latest is None:
+        return None
+
+    model_obj = InterpretiveModel.model_validate(latest.interpretive_model)
+    scripture: ScripturalPerspective | None = None
+    if include_scripture:
+        scripture = select_scripture_reflections(session, model_obj)
+
+    context = build_deterministic_reading_context(model_obj, scripture)
+    response: AINarrativeResponse = generate_ai_narrative(client, context, provider=provider, model=model)
+    return save_ai_narrative(session, latest, response)

@@ -22,6 +22,7 @@ REFERENCE_DATA_DIR = Path(__file__).resolve().parents[1] / "reference_data"
 RWS_DECK_DIR = REFERENCE_DATA_DIR / "rider_waite_smith"
 SPREADS_DIR = REFERENCE_DATA_DIR / "spreads"
 THEME_VOCABULARY_PATH = REFERENCE_DATA_DIR / "theme_vocabulary.yaml"
+SCRIPTURE_REFERENCES_PATH = REFERENCE_DATA_DIR / "scripture_references.yaml"
 
 _MAJOR_RANKS = {str(n) for n in range(22)}
 _MINOR_RANKS = {"ace", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "page", "knight", "queen", "king"}
@@ -35,6 +36,29 @@ _ZODIAC_SIGNS = {
 _ELEMENTS = {"fire", "water", "air", "earth"}
 _DIRECTIONS = {"north", "south", "east", "west"}
 _ELEMENTAL_GENDERS = {"masculine", "feminine"}
+
+# The 66 canonical Protestant-canon Bible book names, exactly as they must
+# appear in scripture_references.yaml's own `book` field -- prevents a
+# typo or an invented/non-canonical book name from ever being seeded.
+BIBLE_BOOKS = {
+    "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth",
+    "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra",
+    "Nehemiah", "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes", "Song of Solomon",
+    "Isaiah", "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos",
+    "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah",
+    "Malachi",
+    "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians",
+    "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians",
+    "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James",
+    "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation",
+}
+
+# Only translations already confirmed public-domain (no license needed for
+# quotation) are approved for MVP -- Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md
+# Section 15.1/16 Q5, still open for any other translation. This governs
+# the `translation` *label* only; no translation's passage text is stored
+# or shown by this project today regardless of this list.
+APPROVED_SCRIPTURE_TRANSLATIONS = {"KJV", "WEB", "ASV"}
 
 # Card-meaning files within a deck directory. Explicit allowlist rather than
 # "every *.yaml except deck.yaml" -- deck.yaml, and non-meaning files like
@@ -284,6 +308,95 @@ def validate_correspondence_definitions(cards: list[dict], correspondences: list
     missing_cards = card_names - set(corr_names_seen)
     if missing_cards:
         problems.append(f"cards with no correspondence entry: {sorted(missing_cards)}")
+
+    if problems:
+        raise ReferenceDataError(problems)
+
+
+# --- Scripture References -------------------------------------------------
+#
+# A deliberately separate, optional content layer -- see
+# Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 15. Keyed by theme,
+# never by card; reuses theme_vocabulary.yaml's own closed vocabulary
+# rather than maintaining an independent taxonomy.
+
+
+def load_scripture_reference_definitions(path: Path = SCRIPTURE_REFERENCES_PATH) -> list[dict]:
+    entries = _load_yaml(path)
+    if not isinstance(entries, list):
+        raise ReferenceDataError([f"{path}: expected a YAML list of scripture reference entries"])
+    return entries
+
+
+def validate_scripture_reference_definitions(
+    entries: list[dict], theme_vocabulary: set[str] | None = None
+) -> None:
+    """`theme_vocabulary` defaults to the real controlled vocabulary
+    (THEME_VOCABULARY_PATH), mirroring validate_card_definitions()'s own
+    parameter -- tests pass a synthetic set to validate this check in
+    isolation.
+    """
+    if theme_vocabulary is None:
+        theme_vocabulary = load_theme_vocabulary()
+
+    problems: list[str] = []
+    required_text_fields = (
+        "theme", "book", "reference_display", "translation", "context_note", "reflection_connection",
+    )
+    seen_keys: dict[tuple, int] = {}
+
+    for i, entry in enumerate(entries):
+        label = entry.get("reference_display") or entry.get("theme") or f"<entry {i}>"
+
+        for field in required_text_fields:
+            value = entry.get(field)
+            if not isinstance(value, str) or not value.strip():
+                problems.append(f"{label}: field '{field}' must be a non-empty string")
+
+        theme = entry.get("theme")
+        if isinstance(theme, str) and theme not in theme_vocabulary:
+            problems.append(
+                f"{label}: theme {theme!r} is not in the canonical theme vocabulary "
+                "(see theme_vocabulary.yaml) -- Scripture themes must reuse an existing "
+                "tag, never invent a new one"
+            )
+
+        book = entry.get("book")
+        if isinstance(book, str) and book not in BIBLE_BOOKS:
+            problems.append(f"{label}: book {book!r} is not a recognized Bible book name")
+
+        translation = entry.get("translation")
+        if isinstance(translation, str) and translation not in APPROVED_SCRIPTURE_TRANSLATIONS:
+            problems.append(
+                f"{label}: translation {translation!r} is not an approved, public-domain "
+                f"translation ({sorted(APPROVED_SCRIPTURE_TRANSLATIONS)}) -- "
+                "Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 15.1"
+            )
+
+        chapter = entry.get("chapter")
+        if not isinstance(chapter, int) or isinstance(chapter, bool) or chapter < 1:
+            problems.append(f"{label}: 'chapter' must be a positive integer")
+
+        verse_start = entry.get("verse_start")
+        if not isinstance(verse_start, int) or isinstance(verse_start, bool) or verse_start < 1:
+            problems.append(f"{label}: 'verse_start' must be a positive integer")
+
+        verse_end = entry.get("verse_end")
+        if verse_end is not None:
+            valid_verse_end = isinstance(verse_end, int) and not isinstance(verse_end, bool)
+            if not valid_verse_end or (isinstance(verse_start, int) and verse_end < verse_start):
+                problems.append(f"{label}: 'verse_end' must be null or an integer >= verse_start")
+
+        if (
+            isinstance(theme, str) and isinstance(book, str) and isinstance(chapter, int)
+            and isinstance(verse_start, int) and isinstance(translation, str)
+        ):
+            key = (theme, book, chapter, verse_start, translation)
+            seen_keys[key] = seen_keys.get(key, 0) + 1
+
+    duplicates = [key for key, count in seen_keys.items() if count > 1]
+    if duplicates:
+        problems.append(f"duplicate scripture reference entries (theme, book, chapter, verse_start, translation): {duplicates}")
 
     if problems:
         raise ReferenceDataError(problems)

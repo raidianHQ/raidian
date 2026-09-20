@@ -23,6 +23,24 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
 
+    ai_api_key: str = ""
+    """Credential for the sole AI provider the Reflection Engine (ADR-0005,
+    docs/DECISIONS.md) is permitted to call. Deliberately blank by default
+    -- no real AI call is possible out of the box, mirroring
+    jwt_secret_key's own "insecure but functional by default" stance
+    inverted: here, an unconfigured deployment fails closed (the AI
+    Narrative Layer refuses to run -- see
+    app/services/reflection_engine/client.py::ReflectionEngineNotConfiguredError)
+    rather than silently working with a bad default. Never read by, or
+    exposed to, the frontend -- see
+    Documentation/AI_NARRATIVE_LAYER_DESIGN.md Section 6.
+    """
+    ai_base_url: str = "https://api.anthropic.com"
+    ai_model: str = "claude-sonnet-5"
+    ai_anthropic_version: str = "2023-06-01"
+    ai_request_timeout_seconds: float = 30.0
+    ai_max_output_tokens: int = 2000
+
     cors_allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     """Comma-separated list of origins permitted to make cross-origin
     requests to this API (Access-Control-Allow-Origin). Defaults to the

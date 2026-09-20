@@ -10,10 +10,12 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.schemas.interpretive_model import (
+    CardInterpretation,
     Citation,
     Contradiction,
     Explained,
     InterpretiveModel,
+    Relationships,
     Trajectory,
     TrajectoryStep,
     Tension,
@@ -50,6 +52,20 @@ def _base_model(**overrides) -> InterpretiveModel:
         reference_data_version="a" * 64,
         generated_at=datetime.now(timezone.utc),
         central_question="What should I focus on right now?",
+        spread_name="Situation Only",
+        card_interpretations=(
+            CardInterpretation(
+                position_name="Situation",
+                semantic_role="situation",
+                position_order=1,
+                card_name="Ace of Swords",
+                orientation="upright",
+                meaning_text="A breakthrough moment of mental clarity.",
+                themes=("clarity",),
+                citation=_citation("clarity"),
+            ),
+        ),
+        relationships=Relationships(major_arcana_count=0, minor_arcana_count=1),
         central_issue=Explained(value="clarity", citations=(_citation("clarity"),)),
         primary_tension=None,
         supporting_themes=(),
@@ -60,6 +76,9 @@ def _base_model(**overrides) -> InterpretiveModel:
         clarification=None,
         contradictions=(),
         evidence_strength="unresolved",
+        deterministic_synthesis=Explained(
+            value="Together, the drawn cards center on clarity.", citations=(_citation("clarity"),)
+        ),
     )
     defaults.update(overrides)
     return InterpretiveModel(**defaults)

@@ -24,6 +24,13 @@ Thin routes only, mirroring app/api/interpretation.py's own discipline:
   existence, the already-filled-position check, draw_order computation,
   and the actual lifecycle mutation (via Reading.add_card_draw()) all
   live there, not here.
+- POST /readings/{reading_id}/draws/digital delegates entirely to
+  app/services/reading_service.py::record_digital_draw() -- draw_method/
+  status/already-drawn validation, card selection (via
+  select_digital_cards()), and the actual lifecycle mutation (via the
+  same Reading.add_card_draw() every manual draw already goes through)
+  all live there, not here. See
+  Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 8.2.
 - POST /readings/{reading_id}/save delegates the entire lifecycle
   transition to Reading.mark_saved() (app/models/reading.py) -- the sole
   authoritative domain operation, unchanged since Step 18. This route adds
@@ -58,7 +65,10 @@ from app.models.exceptions import (
     CardNotFoundError,
     DeckNotFoundError,
     DuplicateCardError,
+    InsufficientCardsForDigitalDrawError,
     PositionAlreadyDrawnError,
+    ReadingAlreadyDrawnError,
+    ReadingNotDigitalError,
     ReadingNotDraftingError,
     ReadingNotSaveableError,
     SpreadNotFoundError,
@@ -77,7 +87,7 @@ from app.schemas.reading_api import (
     ReadingSummary,
 )
 from app.schemas.reference_data_api import SpreadPositionSummary
-from app.services.reading_service import create_reading, record_card_draw
+from app.services.reading_service import create_reading, record_card_draw, record_digital_draw
 
 router = APIRouter(prefix="/readings", tags=["reading"])
 
@@ -89,6 +99,9 @@ _CARD_NOT_FOUND = "Card not found"
 _POSITION_ALREADY_DRAWN = "Position has already been drawn in this reading"
 _DUPLICATE_CARD = "Card has already been drawn in this reading"
 _READING_NOT_DRAFTING = "Reading cannot accept card draws from its current status"
+_READING_NOT_DIGITAL = "Reading is not configured for digital draw"
+_READING_ALREADY_DRAWN = "Reading already has card draws recorded"
+_INSUFFICIENT_CARDS = "Deck does not have enough cards to fill this spread"
 
 
 def _to_summary(reading: Reading) -> ReadingSummary:
@@ -270,6 +283,50 @@ def record_card_draw_route(
     except ReadingNotDraftingError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_READING_NOT_DRAFTING) from exc
     return _to_draw_summary(draw, reading)
+
+
+@router.post(
+    "/{reading_id}/draws/digital",
+    response_model=list[CardDrawSummary],
+    status_code=status.HTTP_201_CREATED,
+    summary="Perform a Digital Draw for a Reading",
+    description=(
+        "Randomly draws a card (via a CSPRNG-backed shuffle, respecting "
+        "the spread's allow_duplicate_cards) for every position of an "
+        "owned, DRAFTING, draw_method=digital Reading with no card draws "
+        "yet, in one atomic operation. Persists through the same "
+        "CardDraw architecture and Reading.add_card_draw() lifecycle "
+        "rules as POST /readings/{reading_id}/draws (manual entry) -- if "
+        "this draw fills the last required SpreadPosition, the Reading "
+        "automatically advances to SPREAD_COMPLETE, reflected in each "
+        "returned draw's reading_status field. Takes no request body: "
+        "which cards are drawn is never client-influenced. See "
+        "Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 8.2."
+    ),
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Reading not found"},
+        409: {
+            "description": f"{_READING_NOT_DIGITAL}, {_READING_NOT_DRAFTING.lower()}, "
+            f"{_READING_ALREADY_DRAWN.lower()}, or {_INSUFFICIENT_CARDS.lower()}"
+        },
+    },
+)
+def digital_draw_route(
+    reading: Reading = Depends(get_owned_reading),
+    session: Session = Depends(get_db),
+) -> list[CardDrawSummary]:
+    try:
+        draws = record_digital_draw(session, reading)
+    except ReadingNotDigitalError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_READING_NOT_DIGITAL) from exc
+    except ReadingNotDraftingError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_READING_NOT_DRAFTING) from exc
+    except ReadingAlreadyDrawnError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_READING_ALREADY_DRAWN) from exc
+    except InsufficientCardsForDigitalDrawError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_INSUFFICIENT_CARDS) from exc
+    return [_to_draw_summary(draw, reading) for draw in draws]
 
 
 @router.post(

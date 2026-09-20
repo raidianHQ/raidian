@@ -1,0 +1,144 @@
+# Approved Scripture reference dataset for the optional Scriptural
+# Reflection layer (Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section
+# 15). Deliberately separate content from card meanings/
+# theme_vocabulary.yaml -- see that section's explicit "Card -> God's
+# message" ban: these entries respond to a THEME, never to a card.
+#
+# No passage TEXT is stored here (Section 15.1's licensing constraint --
+# "Do not embed copyrighted Bible translation text in the MVP"). Each
+# entry is only the reference itself (book/chapter/verse) plus short,
+# original commentary written for this project (context_note,
+# reflection_connection) -- never a quotation.
+#
+# `theme` must already exist verbatim in theme_vocabulary.yaml (enforced
+# by app/seed/loader.py) -- Scripture reuses the Interpretation Engine's
+# own vocabulary rather than maintaining an independent taxonomy
+# (RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 15.3's own instruction).
+#
+# `translation` is a citation label only (never resolved to verse text
+# today -- Section 16, Q5 remains open); only public-domain translations
+# are approved (app/seed/loader.py's APPROVED_SCRIPTURE_TRANSLATIONS).
+#
+# Deliberately small: this seeds only the subset of Section 15.3's
+# suggested theme taxonomy (fear, anxiety, wisdom, decisions, patience,
+# waiting, relationships, forgiveness, grief, hope, money/stewardship,
+# work, change, uncertainty, trust, surrender) that already exists
+# verbatim as a tag in theme_vocabulary.yaml today: fear, anxiety,
+# patience, relationships, grief, hope, uncertainty. The rest have no
+# exact tag match in the closed vocabulary -- mapping them would mean
+# guessing which existing tag the brief's words "really" meant, the same
+# invented-mapping judgment compounds.py already refuses to make for its
+# own named compounds, for the same reason. Adding them is future work,
+# gated on a deliberate tag-mapping decision (or new vocabulary content),
+# not something this seed set approximates.
+#
+# One reference per theme for this foundation; a theme may have more than
+# one approved reference in the future without any schema change.
+
+- theme: fear
+  book: "2 Timothy"
+  chapter: 1
+  verse_start: 7
+  verse_end: null
+  reference_display: "2 Timothy 1:7"
+  translation: KJV
+  context_note: >
+    Paul reminds Timothy that the spirit God gives is not one of fear,
+    but of power, love, and a sound mind.
+  reflection_connection: >
+    Where a reading surfaces fear, this passage offers a starting point
+    for reflection on where that fear comes from and what steadier
+    footing might look like -- not a resolution the cards themselves
+    can provide.
+
+- theme: anxiety
+  book: Philippians
+  chapter: 4
+  verse_start: 6
+  verse_end: 7
+  reference_display: "Philippians 4:6-7"
+  translation: KJV
+  context_note: >
+    Paul encourages the Philippian church to bring their concerns
+    forward in prayer rather than carrying them alone, and describes the
+    peace that can follow.
+  reflection_connection: >
+    A reading that names anxiety or uncertainty may invite the same
+    question this passage raises: what it would look like to name a
+    worry directly rather than let it stay formless.
+
+- theme: patience
+  book: James
+  chapter: 1
+  verse_start: 2
+  verse_end: 4
+  reference_display: "James 1:2-4"
+  translation: KJV
+  context_note: >
+    James frames trials as an opportunity for patience to mature into
+    steadiness, rather than something to be resented or rushed through.
+  reflection_connection: >
+    Where a reading points toward patience, this passage offers a
+    different lens on waiting -- not passive delay, but something that
+    can develop character over time.
+
+- theme: relationships
+  book: 1 Corinthians
+  chapter: 13
+  verse_start: 4
+  verse_end: 7
+  reference_display: "1 Corinthians 13:4-7"
+  translation: KJV
+  context_note: >
+    Paul's description of love as patient and kind, offered to the
+    Corinthian church as a standard for how people treat one another.
+  reflection_connection: >
+    A reading centered on relationships may be worth holding alongside
+    this description -- not as a test to pass, but as a set of
+    questions about how a relationship is actually being lived out.
+
+- theme: grief
+  book: Psalms
+  chapter: 34
+  verse_start: 18
+  verse_end: null
+  reference_display: "Psalm 34:18"
+  translation: KJV
+  context_note: >
+    A verse from a psalm of David describing God as near to those who
+    are brokenhearted and crushed in spirit.
+  reflection_connection: >
+    Where a reading surfaces grief or loss, this passage offers
+    companionship rather than an explanation -- it does not claim to
+    resolve grief, only to name that it is not carried alone.
+
+- theme: hope
+  book: Romans
+  chapter: 15
+  verse_start: 13
+  verse_end: null
+  reference_display: "Romans 15:13"
+  translation: KJV
+  context_note: >
+    Paul's closing blessing over the Roman church, naming God as a
+    source of hope, joy, and peace for those who trust.
+  reflection_connection: >
+    A reading that surfaces hope may be worth sitting with alongside
+    this passage's own framing of hope -- as something drawn from
+    beyond oneself, not manufactured by will alone.
+
+- theme: uncertainty
+  book: Proverbs
+  chapter: 3
+  verse_start: 5
+  verse_end: 6
+  reference_display: "Proverbs 3:5-6"
+  translation: KJV
+  context_note: >
+    A well-known proverb urging trust in God rather than reliance on
+    one's own understanding alone, particularly when a path forward is
+    unclear.
+  reflection_connection: >
+    Where a reading names uncertainty, this passage raises a genuine
+    question worth sitting with, not an answer either the cards or this
+    passage can hand over directly.

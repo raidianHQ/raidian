@@ -85,6 +85,41 @@ class CardNotFoundError(ValueError):
     """
 
 
+class ReadingNotDigitalError(ValueError):
+    """Raised by app/services/reading_service.py::record_digital_draw()
+    when the target Reading's draw_method is not DIGITAL -- Digital Draw
+    is only ever valid against a Reading explicitly configured for it at
+    creation time (Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section
+    8.2/8.4: "Draw method is recorded on the Reading ... and is immutable
+    once the spread is complete"). Mapped to 409 at the API layer.
+    """
+
+
+class ReadingAlreadyDrawnError(ValueError):
+    """Raised by app/services/reading_service.py::record_digital_draw()
+    when the target Reading already has one or more CardDraw rows
+    recorded (from a prior digital draw, or from manual entry against a
+    Reading whose draw_method happens to be DIGITAL). Digital Draw fills
+    every position of the Reading's Spread in a single atomic operation --
+    it is not designed to top up a partially-filled Reading, and running
+    it against one would otherwise surface as a raw, unhandled
+    IntegrityError once it reached an already-occupied position. Mapped
+    to 409 at the API layer.
+    """
+
+
+class InsufficientCardsForDigitalDrawError(ValueError):
+    """Raised by app/services/reading_service.py::select_digital_cards()
+    when the Reading's Deck does not contain enough distinct Cards to
+    fill every Spread Position without repeating one, and the Spread does
+    not set allow_duplicate_cards
+    (Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 8.2). Not
+    reachable against any MVP-seeded Deck/Spread combination (78 Cards,
+    at most 10 Positions) -- a defense-in-depth guard for future,
+    smaller custom decks. Mapped to 409 at the API layer.
+    """
+
+
 class PositionAlreadyDrawnError(ValueError):
     """Raised by app/services/reading_service.py::record_card_draw() when
     the requested SpreadPosition already has a CardDraw recorded against

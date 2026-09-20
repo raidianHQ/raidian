@@ -204,7 +204,13 @@ def test_assemble_narrative_accepts_a_hand_built_model_with_no_database_at_all()
     from datetime import datetime, timezone
     from uuid import uuid4
 
-    from app.schemas.interpretive_model import Citation, Explained, InterpretiveModel
+    from app.schemas.interpretive_model import (
+        CardInterpretation,
+        Citation,
+        Explained,
+        InterpretiveModel,
+        Relationships,
+    )
 
     citation = Citation(
         source_type="card_draw", card_draw_id=uuid4(), card_name="The Fool",
@@ -215,8 +221,21 @@ def test_assemble_narrative_accepts_a_hand_built_model_with_no_database_at_all()
         schema_version="1.0", engine_version="0.1.0-foundation",
         reference_data_version="b" * 64, generated_at=datetime.now(timezone.utc),
         central_question="A hand-built, database-free question.",
+        spread_name="Single Card",
+        card_interpretations=(
+            CardInterpretation(
+                position_name="The Card", semantic_role="general", position_order=1,
+                card_name="The Fool", orientation="upright",
+                meaning_text="New beginnings, a leap of faith.",
+                themes=("new_beginnings",), citation=citation,
+            ),
+        ),
+        relationships=Relationships(major_arcana_count=1, minor_arcana_count=0),
         central_issue=Explained(value="new_beginnings", citations=(citation,)),
         evidence_strength="unresolved",
+        deterministic_synthesis=Explained(
+            value="Together, the drawn cards center on new_beginnings.", citations=(citation,)
+        ),
     )
     narrative = assemble_narrative(model)
     assert narrative.sections[1].statements[0].text == "New Beginnings"

@@ -87,6 +87,20 @@ def _minimal_model_dict(central_issue_value: str = "new_beginnings") -> dict:
         "reference_data_version": "deadbeef",
         "generated_at": "2026-09-18T00:00:00Z",
         "central_question": "What should I focus on?",
+        "spread_name": "Single Card",
+        "card_interpretations": [
+            {
+                "position_name": "The Card",
+                "semantic_role": "general",
+                "position_order": 1,
+                "card_name": "The Fool",
+                "orientation": "upright",
+                "meaning_text": "New beginnings, a leap of faith.",
+                "themes": [central_issue_value],
+                "citation": {"source_type": "card_draw"},
+            }
+        ],
+        "relationships": {"same_suit_clusters": [], "major_arcana_count": 1, "minor_arcana_count": 0},
         "central_issue": {
             "value": central_issue_value,
             "citations": [{"source_type": "card_draw"}],
@@ -100,6 +114,10 @@ def _minimal_model_dict(central_issue_value: str = "new_beginnings") -> dict:
         "clarification": None,
         "contradictions": [],
         "evidence_strength": "unresolved",
+        "deterministic_synthesis": {
+            "value": f"Together, the drawn cards center on {central_issue_value}.",
+            "citations": [{"source_type": "card_draw"}],
+        },
     }
 
 
@@ -424,44 +442,51 @@ def test_all_four_routes_are_registered_and_functional(api_seeded_session, clien
     assert client.get(f"/readings/{reading.id}/narrative").status_code == 200
 
 
-# --- No deferred rule (R3/R4) leaks into the output -------------------------------
+# --- Relationships (R1/R2) are exposed, but never feed evidence_strength/supporting_themes (R3/R4) ------
 
 
-def test_deferred_relationship_rules_cannot_leak_into_the_output(api_seeded_session, client, owner, monkeypatch):
-    """R3 (same-suit clustering) and R4 (Major Arcana density) are DEFERRED
-    (Documentation/INTERPRETATION_RULES_DESIGN.md Section 7.1/12.3): the
-    underlying evidence (relationships.evaluate_relationships) may be
-    computed, but must never be used as an interpretive conclusion.
+def test_relationships_are_exposed_but_never_influence_evidence_strength_or_supporting_themes(
+    api_seeded_session, client, owner, monkeypatch
+):
+    """R3 (same-suit clustering as an interpretive conclusion) and R4
+    (Major Arcana density as an evidence-strength signal) remain excluded
+    from `evidence_strength`/`supporting_themes`
+    (Documentation/INTERPRETATION_RULES_DESIGN.md Section 7.1) -- that
+    narrower restriction is unaffected by this project's later decision to
+    expose `relationships.py`'s own output on InterpretiveModel's own
+    dedicated `relationships` field (see
+    app/schemas/interpretive_model.py's `Relationships` docstring for that
+    resolution). Supersedes this file's former
+    `test_deferred_relationship_rules_cannot_leak_into_the_output`, which
+    asserted the now-obsolete stronger claim that the output must be
+    *entirely* unaffected by `evaluate_relationships()`.
 
-    engine.py's own pipeline (Stage 5, engine.py line ~153) calls
-    evaluate_relationships() and discards its return value entirely --
-    this test proves that discard is real, not incidental: even if
-    evaluate_relationships() returned wildly different, obviously-poisoned
-    data, the resulting InterpretiveModel served through the full API is
-    byte-for-byte identical (aside from generated_at/row identity).
+    Proven by feeding `evaluate_relationships()` an obviously-wrong,
+    poisoned `CardRelationships` (built from the reading's own real draws,
+    so it satisfies `SuitClusterSummary`'s own >=2-item structural
+    invariant) and confirming: `evidence_strength` and `supporting_themes`
+    are byte-for-byte unaffected, while the new `relationships` field DOES
+    change -- proving it is genuinely wired, not coincidentally identical.
     """
-    # Reinterpreting the SAME reading twice (rather than two separate
-    # readings) means every card_draw_id cited is identical between runs
-    # -- the only thing that should differ is whatever
-    # evaluate_relationships() is allowed to influence, which must be
-    # nothing.
     reading = _complete_reading(api_seeded_session, owner)
     api_seeded_session.commit()
 
     baseline = client.post(f"/readings/{reading.id}/interpret").json()
+    baseline_model = baseline["interpretive_model"]
+    real_major_arcana_count = baseline_model["relationships"]["major_arcana_count"]
+    assert real_major_arcana_count > 0  # the Celtic Cross fixture is Major-Arcana-heavy
 
-    def _poisoned(_reading_context):
-        return CardRelationships(
-            same_suit_clusters=(SuitCluster(suit=Suit.CUPS, draws=()),) * 5,
-            major_arcana_draws=(object(),) * 999,
-        )
+    def _poisoned(reading_context):
+        fake_cluster = SuitCluster(suit=Suit.CUPS, draws=reading_context.draws[:2])
+        return CardRelationships(same_suit_clusters=(fake_cluster,), major_arcana_draws=())
 
     monkeypatch.setattr(engine_module, "evaluate_relationships", _poisoned)
 
     poisoned = client.post(f"/readings/{reading.id}/interpret").json()
+    poisoned_model = poisoned["interpretive_model"]
 
-    for body in (baseline, poisoned):
-        del body["id"], body["reading_id"], body["created_at"], body["sequence"]
-        del body["interpretive_model"]["generated_at"]
-
-    assert baseline == poisoned
+    assert poisoned_model["evidence_strength"] == baseline_model["evidence_strength"]
+    assert poisoned_model["supporting_themes"] == baseline_model["supporting_themes"]
+    assert poisoned_model["relationships"]["major_arcana_count"] == 0
+    assert poisoned_model["relationships"]["major_arcana_count"] != real_major_arcana_count
+    assert poisoned_model["relationships"]["same_suit_clusters"][0]["suit"] == "cups"

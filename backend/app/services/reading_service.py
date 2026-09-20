@@ -1,8 +1,10 @@
 """Reading creation and CardDraw-recording business logic (Step 27;
-record_card_draw() added Step 32). See
+record_card_draw() added Step 32; select_digital_cards()/
+record_digital_draw() added for Digital Draw). See
 Documentation/READING_CREATION_API_DESIGN.md Section 9,
 Documentation/READING_CREATION_OWNERSHIP_DESIGN.md Section 7.4,
-Documentation/CARDDRAW_API_DESIGN.md Section 7.
+Documentation/CARDDRAW_API_DESIGN.md Section 7,
+Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 8.2.
 
 Narrow service functions -- mirror
 app/services/auth_service.py::register_user()'s exact shape (lookup
@@ -23,6 +25,8 @@ Section 7).
 
 from __future__ import annotations
 
+import secrets
+from random import Random
 from uuid import UUID
 
 from sqlalchemy import select
@@ -36,7 +40,11 @@ from app.models.enums import DrawMethod, Orientation, ReadingStatus
 from app.models.exceptions import (
     CardNotFoundError,
     DeckNotFoundError,
+    InsufficientCardsForDigitalDrawError,
     PositionAlreadyDrawnError,
+    ReadingAlreadyDrawnError,
+    ReadingNotDigitalError,
+    ReadingNotDraftingError,
     SpreadNotFoundError,
     SpreadPositionNotFoundError,
 )
@@ -45,6 +53,8 @@ from app.models.reflection_session import ReflectionSession
 from app.models.spread import Spread
 from app.models.spread_position import SpreadPosition
 from app.models.user import User
+
+_ORIENTATIONS: tuple[Orientation, ...] = (Orientation.UPRIGHT, Orientation.REVERSED)
 
 
 def create_reading(
@@ -219,3 +229,139 @@ def record_card_draw(
             f"position {position_id} has already been drawn in reading {reading.id}"
         ) from exc
     return draw
+
+
+def select_digital_cards(
+    session: Session,
+    *,
+    deck_id: UUID,
+    spread_id: UUID,
+    rng: Random | None = None,
+) -> list[tuple[SpreadPosition, Card, Orientation]]:
+    """Pure Digital Draw card selection -- a Fisher-Yates shuffle (via
+    `rng.shuffle`) of `deck_id`'s Cards, sampled without replacement and
+    assigned one per `spread_id`'s Positions in position_order (or, if
+    the Spread's `allow_duplicate_cards` is set, sampled independently
+    with replacement instead).
+
+    Deliberately takes only `deck_id`/`spread_id` -- no Reading, no
+    question, no interpretation output -- so there is no parameter
+    through which reading content could bias, or be biased by, this
+    selection, by construction
+    (Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 8.2: "the
+    digital-draw service function's signature should take only deck_id
+    and layout_id ... and nothing else"). Orientation (upright/reversed)
+    is determined here too, independently per position -- Digital Draw
+    replaces the physical act of drawing entirely, including the
+    orientation a physical draw would have produced; unlike Physical
+    (Section 8.1, "the app is a recorder, not a participant in the
+    draw"), here the app is the participant.
+
+    `rng` defaults to `secrets.SystemRandom()` -- a CSPRNG-backed source,
+    not the default Mersenne Twister -- per the same Section 8.2
+    requirement ("a standard unbiased CSPRNG-backed shuffle ... not a
+    naive repeated-random-choice loop susceptible to bias at scale").
+    Overridable only for deterministic tests.
+
+    Raises SpreadNotFoundError/DeckNotFoundError if either id is
+    invalid (unreachable through the current API, since
+    record_digital_draw() below always calls this with an
+    already-resolved Reading's own spread_id/deck_id; kept as
+    defense-in-depth, the same discipline Reading.validate_question()
+    applies behind its own schema-level guard). Raises
+    InsufficientCardsForDigitalDrawError if the Deck has fewer Cards
+    than the Spread has Positions and duplicates are not allowed.
+    """
+    spread = session.get(Spread, spread_id)
+    if spread is None:
+        raise SpreadNotFoundError(f"spread {spread_id} does not exist")
+
+    deck = session.get(Deck, deck_id)
+    if deck is None:
+        raise DeckNotFoundError(f"deck {deck_id} does not exist")
+
+    positions = list(spread.positions)
+    cards = list(deck.cards)
+
+    if not spread.allow_duplicate_cards and len(cards) < len(positions):
+        raise InsufficientCardsForDigitalDrawError(
+            f"deck {deck_id} has {len(cards)} card(s), fewer than the "
+            f"{len(positions)} position(s) required by spread {spread_id}, "
+            "and this spread does not allow duplicate cards"
+        )
+
+    active_rng: Random = rng if rng is not None else secrets.SystemRandom()
+
+    if spread.allow_duplicate_cards:
+        selected_cards = [active_rng.choice(cards) for _ in positions]
+    else:
+        shuffled = list(cards)
+        active_rng.shuffle(shuffled)
+        selected_cards = shuffled[: len(positions)]
+
+    orientations = [active_rng.choice(_ORIENTATIONS) for _ in positions]
+
+    return list(zip(positions, selected_cards, orientations))
+
+
+def record_digital_draw(
+    session: Session,
+    reading: Reading,
+    *,
+    rng: Random | None = None,
+) -> list[CardDraw]:
+    """Performs a complete Digital Draw against `reading`: selects a card
+    (and orientation) for every position of its Spread via
+    select_digital_cards() above, then records all of them via
+    Reading.add_card_draw() -- the same lifecycle mutation (DRAFTING
+    guard, duplicate-card rule, auto-advance to SPREAD_COMPLETE) manual
+    entry already goes through, reused here without duplication.
+
+    `reading` is already-resolved and already-owned (the caller passes
+    the object app.api.dependencies.get_owned_reading produced), exactly
+    mirroring record_card_draw()'s own contract above.
+
+    Raises ReadingNotDigitalError if reading.draw_method is not DIGITAL.
+    Raises ReadingNotDraftingError if reading.status is not DRAFTING.
+    Raises ReadingAlreadyDrawnError if reading already has one or more
+    CardDraw rows -- Digital Draw is whole-spread and atomic, never a
+    top-up of a partially-filled reading. All three checks run before any
+    card is selected or any row is added, so a rejected call leaves
+    `reading` and the session completely untouched.
+
+    All Positions are drawn in one pass, entirely in memory, before a
+    single `session.flush()` call -- either every CardDraw is created
+    together or (on any error, including a duplicate-card violation from
+    an allow_duplicate_cards=False spread that happens to reshuffle a
+    repeat -- structurally impossible here since selection already
+    samples without replacement, but guarded via the same
+    Reading.add_card_draw() rule regardless) none is, matching
+    record_card_draw()'s own "never commits or rolls back; the caller
+    controls the transaction" discipline.
+    """
+    if reading.draw_method != DrawMethod.DIGITAL:
+        raise ReadingNotDigitalError(
+            f"reading {reading.id} has draw_method={reading.draw_method.value}; "
+            "digital draw requires draw_method=digital"
+        )
+    if reading.status != ReadingStatus.DRAFTING:
+        raise ReadingNotDraftingError(
+            f"reading {reading.id} is not DRAFTING (status={reading.status.value}); "
+            "digital draw can only be performed while a reading is drafting"
+        )
+    if reading.card_draws:
+        raise ReadingAlreadyDrawnError(
+            f"reading {reading.id} already has {len(reading.card_draws)} card draw(s) recorded; "
+            "digital draw can only be performed against a reading with none"
+        )
+
+    assignments = select_digital_cards(
+        session, deck_id=reading.deck_id, spread_id=reading.spread_id, rng=rng
+    )
+
+    draws = [
+        reading.add_card_draw(position=position, card=card, orientation=orientation, draw_order=order)
+        for order, (position, card, orientation) in enumerate(assignments, start=1)
+    ]
+    session.flush()
+    return draws

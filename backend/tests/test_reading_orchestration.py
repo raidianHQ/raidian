@@ -53,6 +53,20 @@ def _minimal_model_dict(central_issue_value: str = "new_beginnings") -> dict:
         "reference_data_version": "deadbeef",
         "generated_at": "2026-09-17T00:00:00Z",
         "central_question": "What should I focus on?",
+        "spread_name": "Single Card",
+        "card_interpretations": [
+            {
+                "position_name": "The Card",
+                "semantic_role": "general",
+                "position_order": 1,
+                "card_name": "The Fool",
+                "orientation": "upright",
+                "meaning_text": "New beginnings, a leap of faith.",
+                "themes": [central_issue_value],
+                "citation": {"source_type": "card_draw"},
+            }
+        ],
+        "relationships": {"same_suit_clusters": [], "major_arcana_count": 1, "minor_arcana_count": 0},
         "central_issue": {
             "value": central_issue_value,
             "citations": [{"source_type": "card_draw"}],
@@ -66,6 +80,10 @@ def _minimal_model_dict(central_issue_value: str = "new_beginnings") -> dict:
         "clarification": None,
         "contradictions": [],
         "evidence_strength": "unresolved",
+        "deterministic_synthesis": {
+            "value": f"Together, the drawn cards center on {central_issue_value}.",
+            "citations": [{"source_type": "card_draw"}],
+        },
     }
 
 

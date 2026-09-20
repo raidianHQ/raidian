@@ -31,6 +31,7 @@ from app.models import (
     Card,
     CardDraw,
     Deck,
+    DrawMethod,
     Interpretation,
     Orientation,
     ReadingStatus,
@@ -41,7 +42,7 @@ from app.models import (
 )
 from app.models.reading import Reading
 from app.seed.seed import seed_reference_data
-from tests.factories import make_deck, make_major_card, make_user
+from tests.factories import make_deck, make_major_card, make_spread, make_user
 from tests.interpretation_helpers import build_reading, get_card, get_default_deck
 
 _THREE_CARD_DRAWS = [
@@ -2064,3 +2065,346 @@ def test_full_lifecycle_retrieval_reflects_accumulated_state(api_seeded_session,
         f"/readings/{reading_id}", headers={"Authorization": f"Bearer {other_token}"}
     )
     assert other_detail.status_code == 404
+
+
+# =====================================================================================
+# Digital Draw -- POST /readings/{reading_id}/draws/digital
+# (Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 8.2)
+# =====================================================================================
+
+
+def _build_digital_reading(
+    session: Session, spread: Spread, deck: Deck, owner: User | None = None
+) -> Reading:
+    """A DRAFTING, draw_method=DIGITAL Reading against the given Spread/
+    Deck, with zero CardDraw rows -- built directly (mirrors
+    tests/interpretation_helpers.py::build_reading(), which has no
+    draw_method parameter) rather than extending that shared helper for
+    a single call site.
+    """
+    reflection_session = ReflectionSession(owner=owner)
+    session.add(reflection_session)
+    session.flush()
+    reading = Reading(
+        reflection_session=reflection_session,
+        spread=spread,
+        deck=deck,
+        question="What should I focus on right now?",
+        draw_method=DrawMethod.DIGITAL,
+    )
+    session.add(reading)
+    session.commit()
+    return reading
+
+
+def _empty_digital_reading(session: Session, owner: User | None = None, spread_name: str = "Three Card") -> Reading:
+    """A DRAFTING, draw_method=DIGITAL "Three Card" Reading against the
+    real seeded Spread/Deck -- the starting point for every positive-path
+    digital-draw test, mirroring _empty_reading above.
+    """
+    return _build_digital_reading(session, _seeded_spread(session, spread_name), get_default_deck(session), owner)
+
+
+def test_digital_draw_returns_201(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital1@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert response.status_code == 201
+
+
+def test_digital_draw_returns_the_correct_number_of_card_draws(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital2@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert len(response.json()) == 3
+
+
+def test_digital_draw_fills_every_spread_position_exactly_once(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital3@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+    expected_position_ids = {str(p.id) for p in _seeded_spread(api_seeded_session).positions}
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    drawn_position_ids = [draw["position_id"] for draw in response.json()]
+    assert set(drawn_position_ids) == expected_position_ids
+    assert len(drawn_position_ids) == len(set(drawn_position_ids))
+
+
+def test_digital_draw_cards_belong_to_the_readings_deck(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital4@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+    deck_card_ids = {str(c.id) for c in get_default_deck(api_seeded_session).cards}
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    drawn_card_ids = {draw["card_id"] for draw in response.json()}
+    assert drawn_card_ids.issubset(deck_card_ids)
+
+
+def test_digital_draw_order_is_sequential_from_one(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital5@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert sorted(draw["draw_order"] for draw in response.json()) == [1, 2, 3]
+
+
+def test_digital_draw_transitions_reading_to_spread_complete(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital6@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert all(draw["reading_status"] == "spread_complete" for draw in response.json())
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading.id).status == ReadingStatus.SPREAD_COMPLETE
+
+
+def test_digital_draw_persists_through_the_same_card_draw_table(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital7@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    api_seeded_session.expire_all()
+    persisted = api_seeded_session.execute(
+        select(CardDraw).where(CardDraw.reading_id == reading.id)
+    ).scalars().all()
+    assert len(persisted) == 3
+
+
+def test_digital_draw_orientation_values_are_valid(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital8@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert all(draw["orientation"] in ("upright", "reversed") for draw in response.json())
+
+
+def test_digital_draw_no_duplicate_cards_when_spread_disallows_them(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital9@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+    assert _seeded_spread(api_seeded_session).allow_duplicate_cards is False
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    card_ids = [draw["card_id"] for draw in response.json()]
+    assert len(card_ids) == len(set(card_ids))
+
+
+def test_digital_draw_allows_duplicate_cards_when_spread_permits_it(api_seeded_session, client):
+    """No seeded Spread allows duplicates (test_optional_position_remains_
+    visible_in_spread_when_undrawn above notes the same gap for optional
+    positions) -- a custom single-card Deck + a duplicate-permitting
+    Spread makes a duplicate the only possible outcome, deterministically.
+    """
+    owner = make_user(api_seeded_session, email="digital10@example.com")
+    deck = make_deck(api_seeded_session, name="Single Card Deck", is_default=False)
+    card = make_major_card(api_seeded_session, deck, name="The Fool")
+    spread = make_spread(
+        api_seeded_session,
+        name="Duplicate-Friendly Spread",
+        allow_duplicate_cards=True,
+        position_names=("First", "Second", "Third"),
+    )
+    api_seeded_session.commit()
+    reading = _build_digital_reading(api_seeded_session, spread, deck, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert response.status_code == 201
+    card_ids = {draw["card_id"] for draw in response.json()}
+    assert card_ids == {str(card.id)}
+
+
+def test_digital_draw_with_insufficient_cards_returns_409(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital11@example.com")
+    deck = make_deck(api_seeded_session, name="Too Small Deck", is_default=False)
+    make_major_card(api_seeded_session, deck, name="The Fool")
+    make_major_card(api_seeded_session, deck, name="The Magician")
+    spread = make_spread(
+        api_seeded_session, name="Three Slot Spread", allow_duplicate_cards=False, position_names=("A", "B", "C")
+    )
+    api_seeded_session.commit()
+    reading = _build_digital_reading(api_seeded_session, spread, deck, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert response.status_code == 409
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(CardDraw).where(CardDraw.reading_id == reading.id)).all() == []
+
+
+def test_digital_draw_against_a_physical_reading_returns_409(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital12@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+    assert reading.draw_method == DrawMethod.PHYSICAL
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert response.status_code == 409
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(CardDraw).where(CardDraw.reading_id == reading.id)).all() == []
+
+
+def test_digital_draw_against_an_already_spread_complete_reading_returns_409(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital13@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+    first = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+    assert first.status_code == 201
+
+    second = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert second.status_code == 409
+    api_seeded_session.expire_all()
+    assert len(api_seeded_session.get(Reading, reading.id).card_draws) == 3  # unchanged, not doubled
+
+
+def test_digital_draw_against_a_reading_with_an_existing_manual_draw_returns_409(api_seeded_session, client):
+    """A DIGITAL, still-DRAFTING reading that already has one manually-
+    recorded CardDraw -- reachable only because the manual /draws endpoint
+    does not itself check draw_method -- is rejected: Digital Draw is
+    whole-spread and atomic, never a top-up.
+    """
+    owner = make_user(api_seeded_session, email="digital14@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+    client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session, position_name="Recent Past", card_name="The Fool"),
+        headers=_auth_header(owner),
+    )
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading.id).status == ReadingStatus.DRAFTING
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert response.status_code == 409
+
+
+def test_digital_draw_unauthenticated_returns_401(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital15@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital")
+
+    assert response.status_code == 401
+
+
+def test_digital_draw_against_nonexistent_reading_returns_404(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital16@example.com")
+    api_seeded_session.commit()
+
+    response = client.post(f"/readings/{uuid.uuid4()}/draws/digital", headers=_auth_header(owner))
+
+    assert response.status_code == 404
+
+
+def test_digital_draw_cross_user_returns_404(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital17@example.com")
+    other = make_user(api_seeded_session, email="digital17other@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(other))
+
+    assert response.status_code == 404
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(CardDraw).where(CardDraw.reading_id == reading.id)).all() == []
+
+
+def test_digital_draw_against_unowned_reading_fails_closed(api_seeded_session, client):
+    user = make_user(api_seeded_session, email="digital18@example.com")
+    api_seeded_session.commit()
+    unowned = _empty_digital_reading(api_seeded_session)
+    assert unowned.reflection_session.owner_id is None
+
+    response = client.post(f"/readings/{unowned.id}/draws/digital", headers=_auth_header(user))
+
+    assert response.status_code == 404
+
+
+def test_digital_draw_malformed_reading_id_returns_422(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital19@example.com")
+    api_seeded_session.commit()
+
+    response = client.post("/readings/not-a-uuid/draws/digital", headers=_auth_header(owner))
+
+    assert response.status_code == 422
+
+
+def test_digital_draw_response_item_shape(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="digital20@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    response = client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    assert response.status_code == 201
+    for draw in response.json():
+        assert set(draw.keys()) == {
+            "id", "position_id", "card_id", "orientation", "draw_order", "created_at", "reading_status",
+        }
+
+
+def test_digital_draw_transaction_rollback_on_forced_post_flush_failure(api_seeded_session, client, monkeypatch):
+    """Mirrors test_transaction_rollback_on_forced_post_flush_failure for
+    manual draws: forces a failure after record_digital_draw() has
+    already flushed all three CardDraw rows, proving get_db()'s single
+    commit point discards them together -- atomicity of the request as a
+    whole, not merely within record_digital_draw() itself.
+    """
+    owner = make_user(api_seeded_session, email="digital21@example.com")
+    api_seeded_session.commit()
+    reading = _empty_digital_reading(api_seeded_session, owner)
+
+    def _boom(_draw, _reading):
+        raise RuntimeError("simulated post-draw failure")
+
+    monkeypatch.setattr(reading_api_module, "_to_draw_summary", _boom)
+
+    with pytest.raises(RuntimeError):
+        client.post(f"/readings/{reading.id}/draws/digital", headers=_auth_header(owner))
+
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(CardDraw).where(CardDraw.reading_id == reading.id)).all() == []
+    assert api_seeded_session.get(Reading, reading.id).status == ReadingStatus.DRAFTING
+
+
+def test_manual_draw_endpoint_is_unaffected_by_digital_draw(api_seeded_session, client):
+    """Sanity check that adding the digital-draw route/service did not
+    alter manual entry's own behavior -- the full pre-existing suite
+    above already re-verifies this in depth; this is a single, direct
+    regression probe alongside the new tests.
+    """
+    owner = make_user(api_seeded_session, email="digital22@example.com")
+    api_seeded_session.commit()
+    reading = _empty_reading(api_seeded_session, owner)
+
+    response = client.post(
+        f"/readings/{reading.id}/draws",
+        json=_draw_payload(api_seeded_session),
+        headers=_auth_header(owner),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["reading_status"] == "drafting"
