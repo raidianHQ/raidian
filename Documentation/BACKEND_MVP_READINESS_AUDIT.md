@@ -90,7 +90,7 @@ claims registration also logs the user in).
 
 `POST /auth/login` — request `{email, password}`; response
 `{access_token, token_type: "bearer"}`. Token is a signed JWT
-(`sub`=user id, `iat`, `exp`), `HS256`, 30-minute expiry
+(`sub`=user id, `iat`, `exp`), `HS256`, 24-hour expiry
 (`jwt_access_token_expire_minutes`, `app/core/config.py`), no refresh
 token (an explicit, already-approved decision, not a gap — Section 4).
 Wrong credentials, nonexistent email, and inactive account all
@@ -264,7 +264,7 @@ attempted).
   confirmed via `OAuth2PasswordBearer(tokenUrl="/auth/login",
   auto_error=False)` in `app/api/dependencies.py`, unchanged since Step
   22.
-- **Token lifetime:** 30 minutes (`jwt_access_token_expire_minutes`),
+- **Token lifetime:** 24 hours (`jwt_access_token_expire_minutes`),
   confirmed in `app/core/config.py`. No refresh mechanism —
   `AUTHENTICATION_OWNERSHIP_IMPLEMENTATION_DESIGN.md` Section 7.11
   already named "no refresh tokens" as a considered, explicit decision,

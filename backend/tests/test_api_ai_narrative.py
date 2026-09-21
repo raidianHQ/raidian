@@ -48,6 +48,20 @@ def _complete_reading(session: Session, owner: User) -> Reading:
     return build_reading(session, spread_name="Celtic Cross", draws=_FULL_CELTIC_CROSS_DRAWS, owner=owner)
 
 
+def _matched_reading(session: Session, owner: User) -> Reading:
+    """A Single Card reading of The Star -- its own first authored theme
+    is "hope", which has a real approved Scripture mapping (Romans
+    15:13) in the seeded dataset. See tests/test_api_scripture.py's own
+    _matched_reading() docstring for why _complete_reading()'s Celtic
+    Cross fixture no longer produces a match (its central_issue,
+    "inner_guidance", has no approved mapping under the single-theme,
+    no-cross-theme-fallback selection rule).
+    """
+    return build_reading(
+        session, spread_name="Single Card", draws=[("The Card", "The Star", Orientation.UPRIGHT)], owner=owner
+    )
+
+
 # --- Fixtures ------------------------------------------------------------------
 
 
@@ -176,23 +190,22 @@ def test_generate_route_defaults_to_no_scripture(api_seeded_session, client, own
 def test_generate_route_include_scripture_true_supplies_scripture_and_allows_it_in_the_response(
     api_seeded_session, client, owner, fake_ai_client
 ):
-    """The rich Celtic Cross fixture's own real theme_strength includes
-    "patience" (see tests/test_api_scripture.py's own docstring for the
-    same fixture proving this), which the real seed data maps to James
-    1:2-4 -- proving the full pipeline (engine -> theme_strength ->
-    Scripture selection -> AI Narrative input) connects end to end.
+    """The Star's own first authored theme, "hope", has a real approved
+    mapping in the seed data -- proving the full pipeline (engine ->
+    single-theme selection -> Scripture selection -> AI Narrative input)
+    connects end to end.
     """
-    reading = _complete_reading(api_seeded_session, owner)
+    reading = _matched_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
     fake_ai_client.response_text = json.dumps(
-        valid_content_with(scriptural_reflection="James speaks to patience in this reading.")
+        valid_content_with(scriptural_reflection="Romans speaks to hope in this reading.")
     )
 
     response = client.post(f"/readings/{reading.id}/ai-narrative", params={"include_scripture": "true"})
 
     assert response.status_code == 201
-    assert response.json()["ai_narrative"]["scriptural_reflection"] == "James speaks to patience in this reading."
+    assert response.json()["ai_narrative"]["scriptural_reflection"] == "Romans speaks to hope in this reading."
     payload = json.loads(fake_ai_client.calls[0]["user_prompt"].split("READING DATA (JSON):\n\n")[1])
     assert payload["scripture"] is not None
     assert payload["scripture"]["reflections"]

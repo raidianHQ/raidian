@@ -13,7 +13,7 @@ import {
 } from '../api/interpretation'
 import { createJournalEntry, listJournalEntries, type JournalEntry } from '../api/journal'
 import { getReading, saveReading, type ReadingDetail, type ReadingStatus } from '../api/readings'
-import { getScripture, type ScripturalPerspective } from '../api/scripture'
+import { getCurrentScripture, getScripture, type ScripturalPerspective } from '../api/scripture'
 import { useAuth } from '../auth/useAuth'
 import { CardArtwork } from '../components/CardArtwork'
 
@@ -38,13 +38,21 @@ import { CardArtwork } from '../components/CardArtwork'
  * the first call means "not yet interpreted" -- handled explicitly, never
  * treated as an error and never triggers POST /interpret automatically.
  *
- * Three further, independent reads always run regardless of mode (each
+ * Four further, independent reads always run regardless of mode (each
  * degrades gracefully on its own if it fails -- none of them can block
  * the deterministic reading above from rendering):
  * - GET /readings/{id} for the spread/cards/artwork.
  * - GET /readings/{id}/ai-narrative/current -- a safe, free, read-only
  *   check for an AI reflection already generated in a prior visit (never
  *   triggers generation itself); a 404 just means "not generated yet."
+ *   AiNarrativeState starts at 'checking', not 'idle', specifically so
+ *   the "Generate AI Reflection" action cannot render -- and be clicked,
+ *   firing a needless/possibly-failing new Anthropic request -- before
+ *   this check has actually resolved.
+ * - GET /readings/{id}/scripture/current -- the same safe, read-only
+ *   check, one layer over, for a Scriptural Reflection snapshot already
+ *   persisted in a prior visit; mirrors the AI Narrative check exactly,
+ *   including its own 'checking' initial phase (ScriptureState).
  * - GET /readings/{id}/journal-entries -- this reading's own private
  *   journal, always available independent of interpretation/AI/Scripture.
  *
@@ -168,15 +176,25 @@ type SaveState =
   | { phase: 'error'; error: string }
 
 /**
- * Scripture is opt-in, never auto-fetched (Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md
- * Section 15.2 -- "Scripture Off" is the state where this simply stays
- * 'idle' forever): the user must explicitly click "Show Scriptural
- * Reflection" before GET /scripture is ever called. A persisted per-
- * Reading/per-User preference (Section 15.2's three-state setting) is
- * future work -- this local, request-scoped toggle is the minimal UI
- * this foundation adds.
+ * *Generating a new* Scripture selection is opt-in, never auto-triggered
+ * (Documentation/RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 15.2 --
+ * "Scripture Off" is the state where this simply stays 'idle' forever):
+ * the user must explicitly click "Show Scriptural Reflection" before GET
+ * /scripture is ever called. A persisted per-Reading/per-User preference
+ * (Section 15.2's three-state setting) is future work -- this local,
+ * request-scoped toggle is the minimal UI this foundation adds.
+ *
+ * Loading an *already-persisted* snapshot (GET .../scripture/current)
+ * *is* automatic (a free, safe, read-only check on mount, mirroring
+ * AiNarrativeState's own 'checking' phase above exactly) -- a
+ * saved/reopened reading whose Scriptural Reflection was already shown
+ * once displays it immediately, without the user re-clicking "Show
+ * Scriptural Reflection". 'checking' is the true initial state; 'idle'
+ * means "checked, no snapshot exists yet", offering the normal
+ * click-to-select action.
  */
 type ScriptureState =
+  | { phase: 'checking' }
   | { phase: 'idle' }
   | { phase: 'loading' }
   | { phase: 'loaded'; perspective: ScripturalPerspective }
@@ -189,8 +207,19 @@ type ScriptureState =
  * mount), so a saved/reopened reading shows its prior AI reflection
  * immediately rather than making the user regenerate it -- see this
  * page's own module docstring.
+ *
+ * 'checking' is the true initial state (not 'idle') and is what the
+ * existence-check effect below starts in and stays in until GET
+ * .../ai-narrative/current actually resolves -- 'idle' means "checked,
+ * confirmed none exists yet", not "haven't looked". Collapsing those two
+ * into one 'idle' state previously let the "Generate AI Reflection" CTA
+ * render (and be clickable) during the initial check itself: on a slow
+ * connection/cold backend, a user could click it and trigger a brand new
+ * (and possibly failing) AI generation request even though a narrative
+ * from a prior visit already existed and was about to load.
  */
 type AiNarrativeState =
+  | { phase: 'checking' }
   | { phase: 'idle' }
   | { phase: 'loading' }
   | { phase: 'loaded'; result: AINarrativeResponse }
@@ -218,8 +247,8 @@ export function ReadingResultPage() {
   const [readingDetail, setReadingDetail] = useState<ReadingDetail | null>(null)
 
   const [saveState, setSaveState] = useState<SaveState>({ phase: 'idle' })
-  const [scriptureState, setScriptureState] = useState<ScriptureState>({ phase: 'idle' })
-  const [aiNarrativeState, setAiNarrativeState] = useState<AiNarrativeState>({ phase: 'idle' })
+  const [scriptureState, setScriptureState] = useState<ScriptureState>({ phase: 'checking' })
+  const [aiNarrativeState, setAiNarrativeState] = useState<AiNarrativeState>({ phase: 'checking' })
   const [includeScriptureInAiNarrative, setIncludeScriptureInAiNarrative] = useState(false)
 
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([])
@@ -318,10 +347,42 @@ export function ReadingResultPage() {
         if (cancelled) return
         if (err instanceof ApiError && err.status === 401) {
           clearToken()
+          return
         }
-        // 404 or any other failure: stays 'idle', offering the "Generate
-        // AI Reflection" action below -- never surfaced as an error the
-        // user didn't cause.
+        // 404 ("not generated yet") or any other failure checking for an
+        // existing narrative: move to 'idle', offering the "Generate AI
+        // Reflection" action below -- never surfaced as an error the user
+        // didn't cause. Explicit (rather than leaving the prior state)
+        // so the CTA cannot render before this check has actually
+        // resolved -- see AiNarrativeState's own docstring.
+        setAiNarrativeState({ phase: 'idle' })
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [token, readingId, clearToken])
+
+  // A previously-persisted Scriptural Reflection snapshot, if one
+  // exists -- a free, read-only check, never a selection trigger. 404
+  // ("no snapshot yet") is the ordinary, expected case and moves this to
+  // 'idle', offering the normal "Show Scriptural Reflection" action.
+  // Mirrors the AI Narrative existence-check effect above exactly.
+  useEffect(() => {
+    if (!token || !readingId) {
+      return
+    }
+    let cancelled = false
+    getCurrentScripture(token, readingId)
+      .then((perspective) => {
+        if (!cancelled) setScriptureState({ phase: 'loaded', perspective })
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        if (err instanceof ApiError && err.status === 401) {
+          clearToken()
+          return
+        }
+        setScriptureState({ phase: 'idle' })
       })
     return () => {
       cancelled = true
@@ -596,6 +657,10 @@ export function ReadingResultPage() {
           </>
         )}
 
+        {aiNarrativeState.phase === 'checking' && (
+          <p className="text-sm text-ink-soft">Checking for a previously generated AI reflection…</p>
+        )}
+
         {/* AI generation entry point lives here, at the top of the flow it
             opens -- see AiNarrativeState's own docstring for why this is
             opt-in/not automatic. */}
@@ -603,7 +668,7 @@ export function ReadingResultPage() {
           <div className="rounded-lg border border-dashed border-border bg-paper-muted p-3">
             <p className="mb-2 text-xs text-ink-soft">
               Generate an AI-written reflection woven through this reading -- optional, and always secondary to
-              the deterministic analysis below.
+              the structured analysis below.
             </p>
             <label className="mb-2 flex items-center gap-2 text-xs text-ink-soft">
               <input
@@ -631,7 +696,7 @@ export function ReadingResultPage() {
               {aiNarrativeState.error}
             </p>
             <p className="mt-1 text-xs text-ink-soft">
-              Your reading is still complete without it -- see the deterministic reading below.
+              Your reading is still complete without it -- see the structured reading below.
             </p>
             <button
               type="button"
@@ -728,9 +793,9 @@ export function ReadingResultPage() {
           the engine concluded, and (collapsed by default) the full
           evidence behind it. */}
       <section className="mb-8 flex flex-col gap-4 rounded-lg border border-border p-4">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">The Deterministic Reading</h2>
+        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">The Structured Reading</h2>
         <p className="text-xs text-ink-soft">
-          A deterministic analysis of your cards and positions -- no AI is used to produce this reading.
+          A structured analysis of your cards and positions -- no AI is used to produce this reading.
         </p>
 
         <p className="text-ink">{model.deterministic_synthesis.value}</p>
@@ -858,6 +923,10 @@ export function ReadingResultPage() {
         <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">
           Scriptural Reflection (Optional)
         </h2>
+
+        {scriptureState.phase === 'checking' && (
+          <p className="text-sm text-ink-soft">Checking for a previously shown Scriptural Reflection…</p>
+        )}
 
         {scriptureState.phase === 'idle' && (
           <>

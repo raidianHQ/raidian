@@ -7,8 +7,8 @@
  * already-approved "no refresh tokens" decision
  * (AUTHENTICATION_OWNERSHIP_IMPLEMENTATION_DESIGN.md Section 7.11),
  * which makes a pure in-memory token impractical (it would force a
- * full re-login on every page reload, not merely after the 30-minute
- * expiry).
+ * full re-login on every page reload, not merely after the token's
+ * own expiry).
  *
  * The backend gives no distinct signal for "expired" vs. any other
  * invalid-token condition (every failure collapses into an identical

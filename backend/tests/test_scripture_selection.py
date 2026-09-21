@@ -1,9 +1,18 @@
 """Unit tests for the deterministic theme -> Scripture selection service
 (app/services/scripture/selection.py), against hand-constructed
 InterpretiveModel fixtures and directly-inserted ScriptureReference rows
--- independent of the real seeded reference-data content (except for one
-explicit integration test at the bottom), so most of these tests remain
+-- independent of the real seeded reference-data content (except for the
+explicit integration tests at the bottom), so most of these tests remain
 stable even if that seed content changes.
+
+Scripture Theme-Selection Design Audit, Option 2 (approved): Scripture
+selection reads exactly ONE theme -- a Single Card reading's own
+first-listed authored theme, or a multi-card reading's already-computed
+central_issue -- and never falls back to a different, lower-ranked theme
+even when that other theme has an approved mapping. `_model()` below
+builds a two-card fixture by default so most tests exercise the
+central_issue path (mirroring their pre-existing intent); `_single_card_model()`
+builds a genuine one-card fixture for the Single Card-specific tests.
 """
 
 from __future__ import annotations
@@ -34,7 +43,64 @@ def _citation(theme: str = "clarity", card_name: str = "Ace of Swords") -> Citat
 
 
 def _model(theme_strength: tuple[ThemeStrength, ...] = (), **overrides) -> InterpretiveModel:
+    """A two-card fixture: `card_interpretations` has 2 entries, so
+    _theme_for_scripture() takes the central_issue path (never the
+    Single Card path) -- central_issue.value tracks `theme_strength[0]`
+    exactly as it did before this theme's selection became single-theme
+    only, so every test below that only cares about the
+    lookup/limit/no-fallback mechanics (not about which of the two paths
+    is chosen) needs no further change.
+    """
     central_theme = theme_strength[0].theme if theme_strength else "clarity"
+    defaults: dict = dict(
+        schema_version="1.0",
+        engine_version="0.1.0-foundation",
+        reference_data_version="a" * 64,
+        generated_at=datetime.now(timezone.utc),
+        central_question="What should I focus on?",
+        spread_name="Three Card",
+        card_interpretations=(
+            CardInterpretation(
+                position_name="Card One", semantic_role="general", position_order=1,
+                card_name="Ace of Swords", orientation="upright",
+                meaning_text="A breakthrough moment of mental clarity.",
+                themes=(central_theme,), citation=_citation(central_theme),
+            ),
+            CardInterpretation(
+                position_name="Card Two", semantic_role="general", position_order=2,
+                card_name="Two of Cups", orientation="upright",
+                meaning_text="A meeting of hearts and mutual regard.",
+                themes=("connection",), citation=_citation("connection", card_name="Two of Cups"),
+            ),
+        ),
+        relationships=Relationships(major_arcana_count=0, minor_arcana_count=2),
+        theme_strength=theme_strength,
+        central_issue=Explained(value=central_theme, citations=(_citation(central_theme),)),
+        evidence_strength="unresolved",
+        deterministic_synthesis=Explained(
+            value=f"Together, the drawn cards center on {central_theme}.", citations=(_citation(central_theme),)
+        ),
+    )
+    defaults.update(overrides)
+    return InterpretiveModel(**defaults)
+
+
+def _single_card_model(
+    themes: tuple[str, ...] = ("hope", "renewal", "healing"), card_name: str = "The Star", **overrides
+) -> InterpretiveModel:
+    """A genuine one-card fixture -- `card_interpretations` has exactly 1
+    entry, so _theme_for_scripture() takes the Single Card path
+    (`themes[0]`), never central_issue.
+
+    `central_issue` here mirrors the real engine's own behavior for a
+    Single Card reading: every theme ties at count=1, so central_issue
+    resolves to whichever theme sorts alphabetically first -- NOT
+    `themes[0]`. Deliberately kept different from `themes[0]` by default
+    (`themes` defaults to The Star's own real authored order, where
+    "healing" sorts before "hope") so a test using this fixture actually
+    proves Scripture follows `themes[0]`, not central_issue.
+    """
+    alphabetical_first = sorted(themes)[0]
     defaults: dict = dict(
         schema_version="1.0",
         engine_version="0.1.0-foundation",
@@ -45,17 +111,23 @@ def _model(theme_strength: tuple[ThemeStrength, ...] = (), **overrides) -> Inter
         card_interpretations=(
             CardInterpretation(
                 position_name="The Card", semantic_role="general", position_order=1,
-                card_name="Ace of Swords", orientation="upright",
-                meaning_text="A breakthrough moment of mental clarity.",
-                themes=("clarity",), citation=_citation(),
+                card_name=card_name, orientation="upright",
+                meaning_text="A quiet renewal after difficulty.",
+                themes=themes, citation=_citation(themes[0], card_name=card_name),
             ),
         ),
-        relationships=Relationships(major_arcana_count=0, minor_arcana_count=1),
-        theme_strength=theme_strength,
-        central_issue=Explained(value=central_theme, citations=(_citation(central_theme),)),
+        relationships=Relationships(major_arcana_count=1, minor_arcana_count=0),
+        theme_strength=tuple(
+            ThemeStrength(theme=t, count=1, citations=(_citation(t, card_name=card_name),))
+            for t in sorted(themes)
+        ),
+        central_issue=Explained(
+            value=alphabetical_first, citations=(_citation(alphabetical_first, card_name=card_name),)
+        ),
         evidence_strength="unresolved",
         deterministic_synthesis=Explained(
-            value=f"Together, the drawn cards center on {central_theme}.", citations=(_citation(central_theme),)
+            value=f"Together, the drawn cards center on {alphabetical_first}.",
+            citations=(_citation(alphabetical_first, card_name=card_name),),
         ),
     )
     defaults.update(overrides)
@@ -120,26 +192,45 @@ def test_a_theme_can_have_more_than_one_approved_reference(db_session):
     assert {r.reference_display for r in perspective.reflections} == {"Romans 15:13", "Jeremiah 29:11"}
 
 
-def test_respects_theme_strength_order_and_the_reflections_limit(db_session):
-    for theme in ("hope", "grief", "fear", "patience"):
+def test_the_reflections_limit_still_applies_within_a_single_theme(db_session):
+    """_MAX_REFLECTIONS now bounds one theme's own approved references,
+    not how many different themes can contribute -- the sibling test
+    below proves the cross-theme cascade this used to exercise is gone.
+    """
+    for book, chapter, verse in [("Psalms", 1, 1), ("Psalms", 23, 1), ("Proverbs", 3, 5), ("Isaiah", 41, 10)]:
         _reference(
-            db_session, theme, book="Psalms", chapter=1, verse_start=1,
-            reference_display=f"Psalm 1:1 ({theme})",
+            db_session, "hope", book=book, chapter=chapter, verse_start=verse, verse_end=None,
+            reference_display=f"{book} {chapter}:{verse}",
         )
-    theme_strength = tuple(
-        ThemeStrength(theme=theme, count=count, citations=(_citation(theme),))
-        for theme, count in [("hope", 4), ("grief", 3), ("fear", 2), ("patience", 1)]
-    )
-    model = _model(theme_strength=theme_strength)
+    model = _model(theme_strength=(ThemeStrength(theme="hope", count=4, citations=(_citation("hope"),)),))
     assert _MAX_REFLECTIONS == 3  # this test's own assumption, made explicit
 
     perspective = select_scripture_reflections(db_session, model)
 
     assert len(perspective.reflections) == 3
-    assert [r.theme for r in perspective.reflections] == ["hope", "grief", "fear"]
+    assert {r.theme for r in perspective.reflections} == {"hope"}
 
 
-# --- No Scripture returned when no approved mapping exists ----------------------
+# --- No cross-theme fallback -----------------------------------------------------
+
+
+def test_no_fallback_to_a_lower_ranked_theme_even_when_it_has_an_approved_mapping(db_session):
+    """Mirrors the Scripture Theme-Selection Design Audit's own concrete
+    example: central theme "ambition" has no mapping, a lower-ranked
+    theme "hope" does -- the result must still be empty, never "hope"'s
+    references.
+    """
+    _reference(db_session, "hope")  # mapped, but not the central theme
+    theme_strength = (
+        ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),  # central theme, unmapped
+        ThemeStrength(theme="hope", count=1, citations=(_citation("hope"),)),  # lower-ranked, mapped
+    )
+    model = _model(theme_strength=theme_strength)
+    assert model.central_issue.value == "ambition"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert perspective.reflections == ()
 
 
 def test_no_reflection_when_no_approved_mapping_exists_for_the_themes_present(db_session):
@@ -150,13 +241,27 @@ def test_no_reflection_when_no_approved_mapping_exists_for_the_themes_present(db
     assert perspective.reflections == ()
 
 
-def test_only_themes_with_a_mapping_contribute_a_reflection(db_session):
-    _reference(db_session, "hope")
-    theme_strength = (
-        ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),  # no mapping
-        ThemeStrength(theme="hope", count=1, citations=(_citation("hope"),)),  # mapped
-    )
-    model = _model(theme_strength=theme_strength)
+def test_empty_theme_strength_produces_no_reflections(db_session):
+    model = _model(theme_strength=())
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert perspective.reflections == ()
+
+
+# --- Single Card: the card's own first authored theme, not central_issue --------
+
+
+def test_single_card_reading_uses_the_cards_first_authored_theme_not_central_issue(db_session):
+    _reference(db_session, "hope", book="Romans", chapter=15, verse_start=13, verse_end=None, reference_display="Romans 15:13")
+    model = _single_card_model(themes=("hope", "renewal", "healing"), card_name="The Star")
+
+    # This fixture's own central_issue intentionally differs from
+    # themes[0] (mirroring the real engine's alphabetical tie-break among
+    # The Star's count=1 themes) -- proving Scripture is NOT driven by
+    # central_issue for a Single Card reading.
+    assert model.central_issue.value == "healing"
+    assert model.card_interpretations[0].themes[0] == "hope"
 
     perspective = select_scripture_reflections(db_session, model)
 
@@ -164,8 +269,12 @@ def test_only_themes_with_a_mapping_contribute_a_reflection(db_session):
     assert perspective.reflections[0].theme == "hope"
 
 
-def test_empty_theme_strength_produces_no_reflections(db_session):
-    model = _model(theme_strength=())
+def test_single_card_reading_returns_no_reflection_when_its_first_theme_is_unmapped(db_session):
+    # No ScriptureReference rows seeded at all in this isolated test
+    # session -- themes[0] ("hope") is unmapped here, and there must be
+    # no fallback to "renewal" or "healing" even though they're also
+    # this card's own themes.
+    model = _single_card_model(themes=("hope", "renewal", "healing"), card_name="The Star")
 
     perspective = select_scripture_reflections(db_session, model)
 
@@ -213,7 +322,36 @@ def test_disclaimer_is_always_present_and_disclaims_divine_endorsement(db_sessio
 # --- Real end-to-end integration (real engine + real seeded scripture data) ----
 
 
-def test_integration_with_the_real_engine_and_real_seeded_scripture_data(seeded_session):
+def test_integration_single_card_uses_the_stars_own_first_theme(seeded_session):
+    """The Star's real authored themes are hope/renewal/healing
+    (primary_themes) then inner_strength (secondary) -- all tied at
+    count=1 for a Single Card reading, so central_issue resolves to
+    "healing" (alphabetically first). Scripture must still use "hope"
+    (themes[0]), which has a real approved mapping in the seeded dataset.
+    """
+    from app.services.interpretation.engine import interpret
+
+    reading = build_reading(
+        seeded_session, spread_name="Single Card",
+        draws=[("The Card", "The Star", Orientation.UPRIGHT)],
+    )
+    model = interpret(reading, seeded_session)
+
+    assert model.central_issue.value == "healing"
+    assert model.card_interpretations[0].themes[0] == "hope"
+
+    perspective = select_scripture_reflections(seeded_session, model)
+
+    assert {r.theme for r in perspective.reflections} == {"hope"}
+
+
+def test_integration_multi_card_does_not_fall_back_to_a_mapped_lower_ranked_theme(seeded_session):
+    """The real Celtic Cross fixture used throughout this project's own
+    test suite computes central_issue="inner_guidance", which has no
+    approved Scripture mapping -- even though this same reading's
+    theme_strength includes "patience" (a lower-ranked, mapped theme).
+    Scripture must return no reflections, never "patience"'s.
+    """
     from app.services.interpretation.engine import interpret
 
     reading = build_reading(
@@ -233,11 +371,9 @@ def test_integration_with_the_real_engine_and_real_seeded_scripture_data(seeded_
     )
     model = interpret(reading, seeded_session)
 
+    assert model.central_issue.value == "inner_guidance"
+    assert any(t.theme == "patience" for t in model.theme_strength)  # mapped, but must not be used
+
     perspective = select_scripture_reflections(seeded_session, model)
 
-    themes_returned = {r.theme for r in perspective.reflections}
-    theme_strength_tags = {t.theme for t in model.theme_strength}
-    assert themes_returned  # this real fixture's own themes include at least one seeded mapping ("patience")
-    assert themes_returned.issubset(theme_strength_tags)
-    for reflection in perspective.reflections:
-        assert len(reflection.theme_citations) >= 1
+    assert perspective.reflections == ()

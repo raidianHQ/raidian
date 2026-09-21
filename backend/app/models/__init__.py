@@ -22,6 +22,7 @@ from app.models.journal_entry import JournalEntry
 from app.models.reading import Reading
 from app.models.reflection_session import ReflectionSession
 from app.models.scripture import ScriptureReference
+from app.models.scriptural_reflection import ScripturalReflection
 from app.models.spread import Spread
 from app.models.spread_position import SpreadPosition
 from app.models.user import User
@@ -47,6 +48,7 @@ __all__ = [
     "Reading",
     "ReflectionSession",
     "ScriptureReference",
+    "ScripturalReflection",
     "Spread",
     "SpreadPosition",
     "User",

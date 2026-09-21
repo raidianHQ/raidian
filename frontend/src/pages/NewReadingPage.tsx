@@ -41,7 +41,7 @@ const DRAW_METHODS: { value: DrawMethod; label: string; description: string }[] 
 ]
 
 export function NewReadingPage() {
-  const { token } = useAuth()
+  const { token, clearToken } = useAuth()
   const navigate = useNavigate()
 
   const [spreads, setSpreads] = useState<SpreadSummary[] | null>(null)
@@ -85,6 +85,10 @@ export function NewReadingPage() {
         navigate(`/readings/${reading.id}/draw`, { replace: true })
       }
     } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        clearToken()
+        return
+      }
       setSubmitError(err instanceof ApiError ? err.message : 'Could not create the reading. Please try again.')
       setIsSubmitting(false)
     }

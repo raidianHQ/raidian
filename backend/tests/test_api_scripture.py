@@ -14,14 +14,14 @@ import uuid
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.security import create_access_token
 from app.db.session import get_db
 from app.main import app
-from app.models import Base, Orientation, User
+from app.models import Base, Orientation, ScripturalReflection, ScriptureReference, User
 from app.models.reading import Reading
 from app.seed.seed import seed_reference_data
 from tests.factories import make_user
@@ -43,6 +43,27 @@ _FULL_CELTIC_CROSS_DRAWS = [
 
 def _complete_reading(session: Session, owner: User) -> Reading:
     return build_reading(session, spread_name="Celtic Cross", draws=_FULL_CELTIC_CROSS_DRAWS, owner=owner)
+
+
+def _matched_reading(session: Session, owner: User) -> Reading:
+    """A Single Card reading of The Star -- its own first authored theme
+    is "hope" (primary_themes: [hope, renewal, healing]), which has a
+    real approved Scripture mapping (Romans 15:13) in the seeded
+    dataset. Used wherever a test needs a genuine, non-empty Scripture
+    match through the full pipeline.
+
+    `_complete_reading()`'s own Celtic Cross fixture no longer serves
+    this purpose: its central_issue resolves to "inner_guidance", which
+    has no approved mapping under the single-theme, no-cross-theme-
+    fallback selection rule (Scripture Theme-Selection Design Audit,
+    Option 2) -- even though this same fixture's theme_strength also
+    includes "patience" (mapped), Scripture correctly returns no
+    reflections for it now (see test_scripture_selection.py's own
+    test_integration_multi_card_does_not_fall_back_to_a_mapped_lower_ranked_theme).
+    """
+    return build_reading(
+        session, spread_name="Single Card", draws=[("The Card", "The Star", Orientation.UPRIGHT)], owner=owner
+    )
 
 
 # --- Fixtures ------------------------------------------------------------------
@@ -142,15 +163,12 @@ def test_scripture_response_disclaims_divine_endorsement(api_seeded_session, cli
 
 
 def test_scripture_reflection_shape_when_a_mapping_exists(api_seeded_session, client, owner):
-    """The rich Celtic Cross fixture's own real theme_strength includes
-    "patience" (count 2 -- test_interpretation_engine.py's own
-    test_theme_strength_entries_with_count_2_or_more_are_reinforced_themes
-    confirms this fixture has real >=2-count themes), and the real seed
-    data maps "patience" to James 1:2-4 -- proving the full pipeline
-    (engine -> theme_strength -> ScriptureReference lookup -> API)
-    connects end to end, not just at the service-test level.
+    """The Star's own first authored theme, "hope", has a real approved
+    mapping in the seed data -- proving the full pipeline (engine ->
+    single-theme selection -> ScriptureReference lookup -> API) connects
+    end to end, not just at the service-test level.
     """
-    reading = _complete_reading(api_seeded_session, owner)
+    reading = _matched_reading(api_seeded_session, owner)
     api_seeded_session.commit()
     client.post(f"/readings/{reading.id}/interpret")
 
@@ -188,6 +206,158 @@ def test_scripture_reflections_empty_but_200_when_no_theme_has_an_approved_mappi
     # Scripture themes (fear/anxiety/patience/relationships/grief/hope/
     # uncertainty) -- an empty list is the correct, non-error outcome.
     assert response.json()["reflections"] == []
+
+
+# --- Persisted snapshot behavior (ScripturalReflection) --------------------------
+
+
+def test_first_scripture_call_persists_a_snapshot_row(api_seeded_session, client, owner):
+    reading = _matched_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+
+    response = client.get(f"/readings/{reading.id}/scripture")
+    assert response.status_code == 200
+    assert len(response.json()["reflections"]) >= 1
+
+    rows = api_seeded_session.execute(select(ScripturalReflection)).scalars().all()
+    assert len(rows) == 1
+    assert rows[0].scriptural_perspective["reflections"] == response.json()["reflections"]
+
+
+def test_second_scripture_call_returns_the_persisted_snapshot_without_requerying(
+    api_seeded_session, client, owner
+):
+    """Deletes the underlying "hope" ScriptureReference row(s) between
+    the first and second call -- if GET /scripture re-queried
+    ScriptureReference on the second call (rather than returning the
+    persisted snapshot), "hope" would now find nothing and the response
+    would differ (or lose that reflection entirely). Getting the exact
+    same response back proves the snapshot, not a live requery, is what
+    was returned.
+    """
+    reading = _matched_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+
+    first = client.get(f"/readings/{reading.id}/scripture")
+    assert first.status_code == 200
+    assert len(first.json()["reflections"]) >= 1
+
+    for row in api_seeded_session.execute(
+        select(ScriptureReference).where(ScriptureReference.theme == "hope")
+    ).scalars().all():
+        api_seeded_session.delete(row)
+    api_seeded_session.commit()
+
+    second = client.get(f"/readings/{reading.id}/scripture")
+
+    assert second.status_code == 200
+    assert second.json() == first.json()
+    # Still exactly one snapshot row -- the second call did not create a
+    # duplicate/second snapshot either.
+    rows = api_seeded_session.execute(select(ScripturalReflection)).scalars().all()
+    assert len(rows) == 1
+
+
+def test_current_scripture_route_returns_404_before_any_snapshot_exists(
+    api_seeded_session, client, owner
+):
+    reading = _complete_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+
+    response = client.get(f"/readings/{reading.id}/scripture/current")
+
+    assert response.status_code == 404
+
+
+def test_current_scripture_route_returns_the_persisted_snapshot_after_first_call(
+    api_seeded_session, client, owner
+):
+    reading = _matched_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+
+    first = client.get(f"/readings/{reading.id}/scripture")
+    current = client.get(f"/readings/{reading.id}/scripture/current")
+
+    assert current.status_code == 200
+    assert current.json() == first.json()
+
+
+def test_current_scripture_route_never_selects_or_persists_anything_itself(
+    api_seeded_session, client, owner
+):
+    """A free, read-only check -- calling it before any GET /scripture
+    call must never create a snapshot row, mirroring GET
+    /ai-narrative/current's own "never triggers generation" contract.
+    """
+    reading = _complete_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+
+    client.get(f"/readings/{reading.id}/scripture/current")
+
+    rows = api_seeded_session.execute(select(ScripturalReflection)).scalars().all()
+    assert rows == []
+
+
+def test_no_matching_scripture_does_not_create_a_misleading_snapshot(api_seeded_session, client, owner):
+    thin_reading = build_reading(
+        api_seeded_session, spread_name="Single Card",
+        draws=[("The Card", "Four of Wands", Orientation.UPRIGHT)],
+        owner=owner,
+    )
+    api_seeded_session.commit()
+    client.post(f"/readings/{thin_reading.id}/interpret")
+
+    response = client.get(f"/readings/{thin_reading.id}/scripture")
+
+    assert response.status_code == 200
+    assert response.json()["reflections"] == []
+    rows = api_seeded_session.execute(select(ScripturalReflection)).scalars().all()
+    assert rows == []
+    # /current must still 404 -- nothing was ever persisted to return.
+    current = client.get(f"/readings/{thin_reading.id}/scripture/current")
+    assert current.status_code == 404
+
+
+def test_no_match_does_not_block_a_later_addition_to_the_approved_dataset(
+    api_seeded_session, client, owner
+):
+    """Directly proves the audit's own requirement: an empty result must
+    never be frozen, or a reading viewed before a theme's Scripture
+    reference was added would be permanently stuck at "no reference"
+    even after the dataset grows.
+    """
+    thin_reading = build_reading(
+        api_seeded_session, spread_name="Single Card",
+        draws=[("The Card", "Four of Wands", Orientation.UPRIGHT)],
+        owner=owner,
+    )
+    api_seeded_session.commit()
+    client.post(f"/readings/{thin_reading.id}/interpret")
+
+    first = client.get(f"/readings/{thin_reading.id}/scripture")
+    assert first.json()["reflections"] == []
+
+    # Four of Wands' own real primary theme (wands.yaml) -- newly approved
+    # after the fact.
+    api_seeded_session.add(
+        ScriptureReference(
+            theme="stability", book="Psalm", chapter=118, verse_start=24, verse_end=None,
+            reference_display="Psalm 118:24", translation="KJV",
+            context_note="A note.", reflection_connection="A connection.",
+        )
+    )
+    api_seeded_session.commit()
+
+    second = client.get(f"/readings/{thin_reading.id}/scripture")
+
+    assert len(second.json()["reflections"]) >= 1
+    rows = api_seeded_session.execute(select(ScripturalReflection)).scalars().all()
+    assert len(rows) == 1
 
 
 # --- Scripture is optional: never triggered by, or required for, other routes ----
@@ -304,5 +474,42 @@ def test_scripture_route_cross_user_returns_404(api_seeded_session, client, owne
 
 def test_scripture_route_nonexistent_reading_returns_404(client):
     response = client.get(f"/readings/{uuid.uuid4()}/scripture")
+
+    assert response.status_code == 404
+
+
+# --- Ownership / authentication (GET .../scripture/current) ----------------------
+
+
+def test_current_scripture_route_requires_authentication(api_seeded_session, client, owner):
+    reading = _complete_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+    client.get(f"/readings/{reading.id}/scripture")
+
+    with TestClient(app) as unauthenticated_client:
+        response = unauthenticated_client.get(f"/readings/{reading.id}/scripture/current")
+
+    assert response.status_code == 401
+
+
+def test_current_scripture_route_cross_user_returns_404(api_seeded_session, client, owner):
+    other = make_user(api_seeded_session, email="other-current@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+    client.get(f"/readings/{reading.id}/scripture")
+
+    response = client.get(
+        f"/readings/{reading.id}/scripture/current",
+        headers={"Authorization": f"Bearer {create_access_token(other.id)}"},
+    )
+
+    assert response.status_code == 404
+
+
+def test_current_scripture_route_nonexistent_reading_returns_404(client):
+    response = client.get(f"/readings/{uuid.uuid4()}/scripture/current")
 
     assert response.status_code == 404

@@ -212,7 +212,7 @@ export function SpreadReviewPage() {
             <div className="mt-3 flex flex-col gap-1">
               <p className="text-sm text-ink">Interpreting your reading…</p>
               <p className="text-xs text-ink-soft">
-                Raidian Wise is deterministically analyzing your spread -- no AI is involved in this step.
+                Raidian Wise is building a structured analysis of your spread -- no AI is involved in this step.
               </p>
             </div>
           )}

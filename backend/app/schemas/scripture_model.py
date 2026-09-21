@@ -71,15 +71,22 @@ class ScriptureReflection(_Model):
 
 class ScripturalPerspective(_Model):
     """The complete, deterministic Scriptural Reflection for one
-    Interpretation -- entirely optional and additional to it. Never
-    persisted or cached (mirrors NarrativeModel's own "recomputed fresh on
-    every call" discipline, Documentation/NARRATIVE_LAYER_DESIGN.md
-    Section 9) -- there is no ScripturalPerspective table.
+    Interpretation -- entirely optional and additional to it. This shape
+    itself is still just data (no computation lives here) -- selection
+    logic remains in app/services/scripture/selection.py.
 
-    An empty `reflections` tuple is a valid, expected outcome, not an
-    error -- most readings will surface at least one theme with no
-    approved Scripture mapping yet (this foundation seeds only a small
-    subset of the Interpretation Engine's own theme vocabulary).
+    Once selected for a given Interpretation and found to contain at
+    least one reflection, this is persisted as a
+    app.models.scriptural_reflection.ScripturalReflection snapshot (see
+    app/services/reading_orchestration.py::get_scripture_for_reading) so
+    a saved/reopened reading shows the same Scriptural Reflection it
+    originally displayed, rather than silently re-deriving it from a
+    Scripture reference dataset that may have changed since. An empty
+    `reflections` tuple is a valid, expected outcome, not an error --
+    it is deliberately never persisted, so a reading whose themes have no
+    approved mapping yet can still pick one up later if the approved
+    dataset grows (this foundation seeds only a small subset of the
+    Interpretation Engine's own theme vocabulary).
     """
 
     schema_version: str

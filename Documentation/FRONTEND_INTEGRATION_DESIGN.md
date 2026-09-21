@@ -238,7 +238,7 @@ stable enough to hand-maintain for MVP).
 re-read fresh) already named this as the leading candidate, explicitly
 because the already-approved "no refresh tokens" decision (Step 20/21)
 makes a pure in-memory-token approach impractical (it would force a full
-re-login on every page reload, not merely after the 30-minute expiry).
+re-login on every page reload, not merely after the token's own expiry).
 That document left the final choice as "a frontend-implementation-time
 choice, not a blocking one" — this design adopts `localStorage` as the
 concrete recommendation for the implementation step to build against,

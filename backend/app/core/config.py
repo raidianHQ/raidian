@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     Documentation/AUTHENTICATION_OWNERSHIP_IMPLEMENTATION_DESIGN.md Section 9.2.
     """
     jwt_algorithm: str = "HS256"
-    jwt_access_token_expire_minutes: int = 30
+    jwt_access_token_expire_minutes: int = 1440
 
     ai_api_key: str = ""
     """Credential for the sole AI provider the Reflection Engine (ADR-0005,

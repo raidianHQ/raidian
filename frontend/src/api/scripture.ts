@@ -40,12 +40,29 @@ export interface ScripturalPerspective {
 }
 
 /**
- * GET /readings/{reading_id}/scripture -- always recomputed fresh from
- * the current Interpretation and the approved Scripture reference
- * dataset, never cached/persisted. `reflections` may legitimately be
- * empty when none of the reading's own established themes have an
- * approved mapping yet -- not an error.
+ * GET /readings/{reading_id}/scripture -- the first call for a given
+ * interpretation selects and, if it finds at least one approved
+ * reference, persists a snapshot; every later call for that same
+ * interpretation returns the persisted snapshot as-is, without
+ * re-querying the (mutable) Scripture reference dataset. `reflections`
+ * may legitimately be empty when none of the reading's own established
+ * themes have an approved mapping yet -- not an error, and never
+ * persisted (so a later addition to the approved dataset can still be
+ * found on this reading's next request).
  */
 export function getScripture(token: string, readingId: string): Promise<ScripturalPerspective> {
   return request<ScripturalPerspective>(`/readings/${readingId}/scripture`, { token })
+}
+
+/**
+ * GET /readings/{reading_id}/scripture/current -- never selects,
+ * computes, or persists anything; 404 means no Scriptural Reflection
+ * snapshot has been created yet for this reading's current
+ * interpretation (either GET /scripture was never called, or it was
+ * called but found no approved match). Mirrors
+ * api/aiNarrative.ts::getCurrentAiNarrative()'s own "safe, read-only
+ * check" contract.
+ */
+export function getCurrentScripture(token: string, readingId: string): Promise<ScripturalPerspective> {
+  return request<ScripturalPerspective>(`/readings/${readingId}/scripture/current`, { token })
 }

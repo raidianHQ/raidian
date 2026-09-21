@@ -60,6 +60,10 @@ from app.services.interpretation.persistence import save_interpretation
 from app.services.narrative.assembler import assemble_narrative
 from app.services.reflection_engine.client import ReflectionEngineClient
 from app.services.scripture.selection import select_scripture_reflections
+from app.services.scriptural_reflection.persistence import (
+    get_current_scriptural_reflection,
+    save_scriptural_reflection,
+)
 
 
 class ReadingNotReadyForInterpretationError(ValueError):
@@ -171,12 +175,13 @@ def get_narrative_for_reading(session: Session, reading: Reading) -> NarrativeMo
 
 
 def get_scripture_for_reading(session: Session, reading: Reading) -> ScripturalPerspective | None:
-    """Selects the optional Scriptural Reflection for `reading`'s current
-    interpretation -- the Interpretation row with the highest `sequence`
-    for this `reading_id` -- or None if `reading` has never been
-    interpreted. Mirrors get_narrative_for_reading() above exactly, one
-    layer over: same "reconstruct the persisted InterpretiveModel, hand
-    it to a pure-with-respect-to-tarot-content downstream function" shape.
+    """Selects (or retrieves an already-persisted) Scriptural Reflection
+    for `reading`'s current interpretation -- the Interpretation row with
+    the highest `sequence` for this `reading_id` -- or None if `reading`
+    has never been interpreted. Mirrors get_narrative_for_reading() above
+    exactly, one layer over: same "reconstruct the persisted
+    InterpretiveModel, hand it to a pure-with-respect-to-tarot-content
+    downstream function" shape.
 
     Callers decide whether to call this at all -- that decision (never a
     stored flag, never a request parameter this function reads) is what
@@ -185,18 +190,33 @@ def get_scripture_for_reading(session: Session, reading: Reading) -> ScripturalP
     preference is future work; today, simply not calling this function is
     "Scripture Off").
 
-    ScripturalPerspective is never persisted or cached here (mirrors
-    NarrativeModel's own discipline) -- every call recomputes it fresh
-    from the persisted Interpretation and the current approved
-    ScriptureReference reference data.
+    A ScripturalReflection snapshot, once created, is never recomputed --
+    if `reading`'s current interpretation already has one (see
+    get_current_scriptural_reflection_for_reading below), it is returned
+    as-is, without touching select_scripture_reflections() or the
+    ScriptureReference table at all, so a saved/reopened reading's
+    Scriptural Reflection cannot silently change if the approved
+    reference dataset is edited later. Only the *first* call for a given
+    interpretation actually selects; and only when that selection finds
+    at least one approved reference is a snapshot persisted --
+    Documentation's own audit finding that an empty result must never be
+    frozen (it would permanently hide a later addition to the approved
+    dataset from a reading that has already been viewed).
     """
     latest = get_current_interpretation(session, reading)
 
     if latest is None:
         return None
 
+    existing = get_current_scriptural_reflection(session, latest)
+    if existing is not None:
+        return ScripturalPerspective.model_validate(existing.scriptural_perspective)
+
     model = InterpretiveModel.model_validate(latest.interpretive_model)
-    return select_scripture_reflections(session, model)
+    perspective = select_scripture_reflections(session, model)
+    if perspective.reflections:
+        save_scriptural_reflection(session, latest, perspective)
+    return perspective
 
 
 def get_current_ai_narrative(session: Session, interpretation: Interpretation) -> AINarrative | None:
@@ -228,6 +248,31 @@ def get_current_ai_narrative_for_reading(session: Session, reading: Reading) -> 
     if latest is None:
         return None
     return get_current_ai_narrative(session, latest)
+
+
+def get_current_scriptural_reflection_for_reading(
+    session: Session, reading: Reading
+) -> ScripturalPerspective | None:
+    """The already-persisted Scriptural Reflection for `reading`'s current
+    interpretation, or None if `reading` has never been interpreted, or
+    has been interpreted but has no ScripturalReflection snapshot
+    persisted against its current interpretation yet. Both cases are
+    indistinguishable to a caller by design -- mirrors
+    get_current_ai_narrative_for_reading() exactly, one layer over
+    (app/api/scripture.py maps either to 404).
+
+    Never selects, computes, or persists anything -- a free, read-only
+    check, safe to call on every page load (mirrors GET
+    /ai-narrative/current's own contract). Never touches
+    select_scripture_reflections() or the ScriptureReference table.
+    """
+    latest = get_current_interpretation(session, reading)
+    if latest is None:
+        return None
+    existing = get_current_scriptural_reflection(session, latest)
+    if existing is None:
+        return None
+    return ScripturalPerspective.model_validate(existing.scriptural_perspective)
 
 
 def generate_ai_narrative_for_reading(
