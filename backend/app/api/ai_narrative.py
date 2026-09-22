@@ -10,6 +10,8 @@ call, or response parsing happens here.
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
@@ -25,6 +27,8 @@ from app.services.reading_orchestration import (
     get_current_ai_narrative_for_reading,
 )
 from app.services.reflection_engine.client import ReflectionEngineClient, ReflectionEngineNotConfiguredError
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/readings/{reading_id}", tags=["ai-narrative"])
 
@@ -86,8 +90,26 @@ def generate_ai_narrative_route(
     except AINarrativeProviderError as exc:
         if isinstance(exc.__cause__, ReflectionEngineNotConfiguredError):
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=_NOT_CONFIGURED) from exc
+        logger.error(
+            "AI Narrative generation failed (provider error): reading_id=%s provider=%s model=%s "
+            "include_scripture=%s",
+            reading.id,
+            "anthropic",
+            settings.ai_model,
+            include_scripture,
+            exc_info=exc,
+        )
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=_GENERATION_FAILED) from exc
     except AINarrativeValidationError as exc:
+        logger.error(
+            "AI Narrative generation failed (validation error): reading_id=%s provider=%s model=%s "
+            "include_scripture=%s",
+            reading.id,
+            "anthropic",
+            settings.ai_model,
+            include_scripture,
+            exc_info=exc,
+        )
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=_GENERATION_FAILED) from exc
 
     if ai_narrative is None:
