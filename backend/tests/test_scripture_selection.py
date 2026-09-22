@@ -10,13 +10,15 @@ ranked fallback: Scripture selection first tries the reading's primary
 theme -- a Single Card reading's own first-listed authored theme, or a
 multi-card reading's already-computed central_issue -- and, only if that
 theme has no approved mapping, falls back through the InterpretiveModel's
-own already-ranked `supporting_themes`, in order, using the first one
-that does. `theme_strength` alone (a theme that is merely present in the
-reading, not promoted to `supporting_themes`) is never consulted as a
-fallback source. `_model()` below builds a two-card fixture by default so
-most tests exercise the central_issue path (mirroring their pre-existing
-intent); `_single_card_model()` builds a genuine one-card fixture for the
-Single Card-specific tests.
+own already-ranked `supporting_themes`, in order, then `clarification`,
+`blocker`, and `advice` (each an already-computed, structurally-selected
+single theme, used only when present), using the first candidate in that
+whole order that has an approved mapping. `theme_strength` alone (a theme
+that is merely present in the reading, not promoted to any of the fields
+above) is never consulted as a fallback source. `_model()` below builds a
+two-card fixture by default so most tests exercise the central_issue path
+(mirroring their pre-existing intent); `_single_card_model()` builds a
+genuine one-card fixture for the Single Card-specific tests.
 """
 
 from __future__ import annotations
@@ -35,7 +37,7 @@ from app.schemas.interpretive_model import (
     Relationships,
     ThemeStrength,
 )
-from app.services.scripture.selection import _MAX_REFLECTIONS, select_scripture_reflections
+from app.services.scripture.selection import _MAX_REFLECTIONS, _theme_candidates, select_scripture_reflections
 from tests.interpretation_helpers import build_reading
 
 
@@ -157,7 +159,10 @@ def _reference(session, theme: str, **overrides) -> ScriptureReference:
 def test_returns_a_reflection_for_a_theme_with_an_approved_mapping(db_session):
     _reference(db_session, "anxiety")
     citations = (_citation("anxiety"),)
-    model = _model(theme_strength=(ThemeStrength(theme="anxiety", count=2, citations=citations),))
+    model = _model(
+        theme_strength=(ThemeStrength(theme="anxiety", count=2, citations=citations),),
+        central_issue=Explained(value="anxiety", citations=citations),
+    )
 
     perspective = select_scripture_reflections(db_session, model)
 
@@ -244,14 +249,23 @@ def test_a_theme_merely_present_in_theme_strength_is_not_a_fallback_source(db_se
 def test_central_issue_match_is_selected_first_even_when_a_supporting_theme_is_also_mapped(db_session):
     """Proves priority order and preserves pre-existing behavior: when
     central_issue itself has an approved mapping, that match wins
-    outright -- a mapped supporting_theme is never consulted, let alone
-    merged in alongside it.
+    outright -- a mapped supporting_theme, clarification, blocker, or
+    advice is never consulted, let alone merged in alongside it.
     """
     _reference(db_session, "anxiety", reference_display="Philippians 4:6-7")
     _reference(db_session, "hope", book="Romans", chapter=15, verse_start=13, verse_end=None, reference_display="Romans 15:13")
+    _reference(db_session, "grief", book="Psalms", chapter=34, verse_start=18, verse_end=None, reference_display="Psalm 34:18")
+    _reference(db_session, "patience", book="James", chapter=1, verse_start=2, verse_end=4, reference_display="James 1:2-4")
+    _reference(
+        db_session, "relationships", book="1 Corinthians", chapter=13, verse_start=4, verse_end=7,
+        reference_display="1 Corinthians 13:4-7",
+    )
     model = _model(
         theme_strength=(ThemeStrength(theme="anxiety", count=2, citations=(_citation("anxiety"),)),),
         supporting_themes=(Explained(value="hope", citations=(_citation("hope"),)),),
+        clarification=Explained(value="grief", citations=(_citation("grief"),)),
+        blocker=Explained(value="patience", citations=(_citation("patience"),)),
+        advice=Explained(value="relationships", citations=(_citation("relationships"),)),
     )
     assert model.central_issue.value == "anxiety"
 
@@ -304,6 +318,157 @@ def test_no_reflection_when_neither_central_issue_nor_any_supporting_theme_has_a
     perspective = select_scripture_reflections(db_session, model)
 
     assert perspective.reflections == ()
+
+
+# --- Fallback through clarification / blocker / advice ---------------------------
+
+
+def test_production_scenario_falls_back_to_clarification_when_nothing_earlier_matches(db_session):
+    """The exact reported production scenario (reading
+    00626797-39c9-4b12-bb7e-a5582293e135): central_issue "momentum" and
+    every ranked supporting theme (recognition, assertiveness,
+    collaboration) are unmapped, but clarification "grief" is an
+    approved Scripture theme and must now be selected -- with its own
+    citations (not theme_strength's), since "grief" here is not itself a
+    theme_strength entry.
+    """
+    _reference(db_session, "grief", book="Psalms", chapter=34, verse_start=18, verse_end=None, reference_display="Psalm 34:18")
+    grief_citations = (_citation("grief", card_name="Three of Swords"),)
+    model = _model(
+        theme_strength=(
+            ThemeStrength(theme="momentum", count=2, citations=(_citation("momentum"),)),
+            ThemeStrength(theme="recognition", count=2, citations=(_citation("recognition"),)),
+            ThemeStrength(theme="assertiveness", count=1, citations=(_citation("assertiveness"),)),
+            ThemeStrength(theme="collaboration", count=1, citations=(_citation("collaboration"),)),
+        ),
+        supporting_themes=(
+            Explained(value="recognition", citations=(_citation("recognition"),)),
+            Explained(value="assertiveness", citations=(_citation("assertiveness"),)),
+            Explained(value="collaboration", citations=(_citation("collaboration"),)),
+        ),
+        clarification=Explained(value="grief", citations=grief_citations),
+        blocker=Explained(value="intuition", citations=(_citation("intuition"),)),
+        advice=Explained(value="strategy", citations=(_citation("strategy"),)),
+    )
+    assert model.central_issue.value == "momentum"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert len(perspective.reflections) == 1
+    reflection = perspective.reflections[0]
+    assert reflection.theme == "grief"
+    assert reflection.reference_display == "Psalm 34:18"
+    assert reflection.theme_citations == grief_citations
+
+
+def test_supporting_theme_wins_over_clarification_when_both_are_mapped(db_session):
+    """A ranked supporting theme is tried before clarification: when
+    central_issue is unmapped but a supporting theme has an approved
+    mapping, that supporting theme wins even though clarification is
+    also mapped.
+    """
+    _reference(db_session, "hope", book="Romans", chapter=15, verse_start=13, verse_end=None, reference_display="Romans 15:13")
+    _reference(db_session, "grief", book="Psalms", chapter=34, verse_start=18, verse_end=None, reference_display="Psalm 34:18")
+    model = _model(
+        theme_strength=(
+            ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),
+            ThemeStrength(theme="hope", count=1, citations=(_citation("hope"),)),
+        ),
+        supporting_themes=(Explained(value="hope", citations=(_citation("hope"),)),),
+        clarification=Explained(value="grief", citations=(_citation("grief"),)),
+    )
+    assert model.central_issue.value == "ambition"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert {r.theme for r in perspective.reflections} == {"hope"}
+
+
+def test_clarification_is_used_when_central_issue_and_supporting_themes_are_unmapped(db_session):
+    _reference(db_session, "grief", book="Psalms", chapter=34, verse_start=18, verse_end=None, reference_display="Psalm 34:18")
+    model = _model(
+        theme_strength=(
+            ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),
+            ThemeStrength(theme="recognition", count=1, citations=(_citation("recognition"),)),
+        ),
+        supporting_themes=(Explained(value="recognition", citations=(_citation("recognition"),)),),
+        clarification=Explained(value="grief", citations=(_citation("grief"),)),
+    )
+    assert model.central_issue.value == "ambition"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert {r.theme for r in perspective.reflections} == {"grief"}
+
+
+def test_blocker_is_used_when_central_issue_supporting_themes_and_clarification_are_unmapped(db_session):
+    _reference(db_session, "patience", book="James", chapter=1, verse_start=2, verse_end=4, reference_display="James 1:2-4")
+    model = _model(
+        theme_strength=(ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),),
+        supporting_themes=(Explained(value="recognition", citations=(_citation("recognition"),)),),
+        clarification=Explained(value="momentum", citations=(_citation("momentum"),)),
+        blocker=Explained(value="patience", citations=(_citation("patience"),)),
+    )
+    assert model.central_issue.value == "ambition"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert {r.theme for r in perspective.reflections} == {"patience"}
+
+
+def test_advice_is_used_when_every_earlier_candidate_is_unmapped(db_session):
+    _reference(
+        db_session, "relationships", book="1 Corinthians", chapter=13, verse_start=4, verse_end=7,
+        reference_display="1 Corinthians 13:4-7",
+    )
+    model = _model(
+        theme_strength=(ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),),
+        supporting_themes=(Explained(value="recognition", citations=(_citation("recognition"),)),),
+        clarification=Explained(value="momentum", citations=(_citation("momentum"),)),
+        blocker=Explained(value="assertiveness", citations=(_citation("assertiveness"),)),
+        advice=Explained(value="relationships", citations=(_citation("relationships"),)),
+    )
+    assert model.central_issue.value == "ambition"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert {r.theme for r in perspective.reflections} == {"relationships"}
+
+
+def test_no_reflection_when_nothing_in_the_entire_candidate_hierarchy_has_a_mapping(db_session):
+    model = _model(
+        theme_strength=(ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),),
+        supporting_themes=(Explained(value="recognition", citations=(_citation("recognition"),)),),
+        clarification=Explained(value="momentum", citations=(_citation("momentum"),)),
+        blocker=Explained(value="assertiveness", citations=(_citation("assertiveness"),)),
+        advice=Explained(value="collaboration", citations=(_citation("collaboration"),)),
+    )
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert perspective.reflections == ()
+
+
+def test_theme_candidates_deduplicates_preserving_first_occurrence_order():
+    """A theme repeated across stages (a supporting theme re-appearing as
+    central_issue, clarification re-appearing as a supporting theme,
+    advice repeating blocker) must appear exactly once in
+    _theme_candidates(), at its first-occurrence position -- proving
+    duplicates are collapsed without disturbing priority order.
+    """
+    model = _model(
+        theme_strength=(ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),),
+        supporting_themes=(
+            Explained(value="hope", citations=(_citation("hope"),)),
+            Explained(value="ambition", citations=(_citation("ambition"),)),  # duplicate of central_issue
+        ),
+        clarification=Explained(value="hope", citations=(_citation("hope"),)),  # duplicate of a supporting theme
+        blocker=Explained(value="grief", citations=(_citation("grief"),)),
+        advice=Explained(value="grief", citations=(_citation("grief"),)),  # duplicate of blocker
+    )
+    assert model.central_issue.value == "ambition"
+
+    assert _theme_candidates(model) == ("ambition", "hope", "grief")
 
 
 def test_empty_theme_strength_produces_no_reflections(db_session):

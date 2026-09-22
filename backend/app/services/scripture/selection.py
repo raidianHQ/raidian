@@ -82,35 +82,72 @@ def _to_reflection(row: ScriptureReference, theme_citations: tuple[Citation, ...
 
 
 def _theme_candidates(model: InterpretiveModel) -> tuple[str, ...]:
-    """Ordered themes select_scripture_reflections() tries in turn: the
-    reading's primary Scripture theme (_theme_for_scripture above)
-    first, then each already-ranked `supporting_themes` entry as a
-    fallback -- tried only when every theme earlier in this order has no
-    approved ScriptureReference. Still an exact, per-theme match with no
-    fuzzy/invented equivalence; this only widens *which* theme(s) get
-    checked, never how a single theme is matched. De-duplicates so the
-    same theme is never queried twice.
+    """Ordered themes select_scripture_reflections() tries in turn:
+    1) the reading's primary Scripture theme (_theme_for_scripture
+       above), 2) each already-ranked `supporting_themes` entry, then
+       3) `clarification`, 4) `blocker`, and 5) `advice` (each already a
+       single structurally-selected theme tag on InterpretiveModel, used
+       only when present -- all three default to None and are skipped
+       when unset). Every stage after the first is tried only when every
+       theme earlier in this order has no approved ScriptureReference.
+       Still an exact, per-theme match with no fuzzy/invented
+       equivalence, and never a Card/CardDraw lookup of its own -- this
+       only widens *which* already-computed theme(s) get checked, never
+       how a single theme is matched or where a theme tag comes from.
+       De-duplicates so the same theme is never queried twice.
     """
+    candidates = [
+        _theme_for_scripture(model),
+        *(explained.value for explained in model.supporting_themes),
+    ]
+    for explained in (model.clarification, model.blocker, model.advice):
+        if explained is not None:
+            candidates.append(explained.value)
+
     seen: set[str] = set()
     ordered: list[str] = []
-    for theme in (_theme_for_scripture(model), *(explained.value for explained in model.supporting_themes)):
+    for theme in candidates:
         if theme not in seen:
             seen.add(theme)
             ordered.append(theme)
     return tuple(ordered)
 
 
+def _citations_for_theme(model: InterpretiveModel, theme: str) -> tuple[Citation, ...]:
+    """Citations for whichever theme _theme_candidates() selected --
+    copied verbatim from wherever that theme's own Explained[str]
+    wrapper already lives on InterpretiveModel (central_issue,
+    supporting_themes, clarification, blocker, and advice each already
+    carry their own citations), never recomputed. Falls back to
+    theme_strength only for the Single Card path's bare `themes[0]`
+    string (see _theme_for_scripture), which has no Explained wrapper of
+    its own -- the same lookup this function used exclusively before
+    clarification/blocker/advice became candidates too.
+    """
+    if model.central_issue.value == theme:
+        return model.central_issue.citations
+    for explained in model.supporting_themes:
+        if explained.value == theme:
+            return explained.citations
+    for explained in (model.clarification, model.blocker, model.advice):
+        if explained is not None and explained.value == theme:
+            return explained.citations
+    return next((score.citations for score in model.theme_strength if score.theme == theme), ())
+
+
 def select_scripture_reflections(session: Session, model: InterpretiveModel) -> ScripturalPerspective:
     """Maps the reading to approved ScriptureReference rows for the
     first theme -- in _theme_candidates() order -- that has an approved
     mapping: the reading's primary Scripture theme first, then its
-    already-ranked supporting_themes as a fallback (Scripture Theme-
-    Selection Design Audit, Section 3C, as amended to allow a ranked
-    fallback rather than none). Each candidate theme is still matched
-    exactly, never fuzzily; the first candidate with any approved rows
-    wins outright -- a later candidate is never merged in alongside it.
-    If no candidate theme has an approved mapping, returns an empty
-    perspective.
+    already-ranked supporting_themes, then clarification, blocker, and
+    advice, each tried only as a fallback for every candidate before it
+    (Scripture Theme-Selection Design Audit, Section 3C, as amended to
+    allow a ranked fallback through the reading's other already-computed
+    structural themes rather than none). Each candidate theme is still
+    matched exactly, never fuzzily; the first candidate with any
+    approved rows wins outright -- a later candidate is never merged in
+    alongside it. If no candidate theme has an approved mapping, returns
+    an empty perspective.
     """
     for theme in _theme_candidates(model):
         rows = session.scalars(
@@ -119,10 +156,7 @@ def select_scripture_reflections(session: Session, model: InterpretiveModel) -> 
             .order_by(ScriptureReference.book, ScriptureReference.chapter, ScriptureReference.verse_start)
         ).all()
         if rows:
-            theme_citations: tuple[Citation, ...] = next(
-                (score.citations for score in model.theme_strength if score.theme == theme),
-                (),
-            )
+            theme_citations = _citations_for_theme(model, theme)
             reflections = tuple(_to_reflection(row, theme_citations) for row in rows[:_MAX_REFLECTIONS])
             break
     else:
