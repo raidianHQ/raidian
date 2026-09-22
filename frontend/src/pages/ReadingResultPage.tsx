@@ -599,7 +599,7 @@ export function ReadingResultPage() {
   const totalCards = model.card_interpretations.length
 
   return (
-    <div className="-mt-12 mx-auto flex w-full max-w-275 flex-col">
+    <div id="reading-print-area" className="-mt-12 mx-auto flex w-full max-w-275 flex-col">
       {/* 1 + 2. Hero -- "Your Reading" heading area, and the spread
           subtitle/question beneath it. Stays unboxed, directly on the
           cosmic background, matching the mockup -- the large gold
@@ -621,6 +621,13 @@ export function ReadingResultPage() {
           </p>
         )}
         <p className="max-w-2xl text-xl text-ink italic sm:text-2xl">&ldquo;{model.central_question}&rdquo;</p>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="no-print rounded-full border border-accent px-4 py-2 text-sm text-accent transition-colors hover:bg-accent hover:text-paper"
+        >
+          Share / Save PDF
+        </button>
       </div>
       <GoldDivider size="lg" />
 
@@ -638,7 +645,7 @@ export function ReadingResultPage() {
               const draw = drawByPositionName.get(position.name)
               if (!draw) return null
               return (
-                <div key={position.id} className="flex flex-col items-center gap-2 text-center">
+                <div key={position.id} className="flex flex-col items-center gap-2 text-center break-inside-avoid">
                   <span className="text-sm font-medium text-ink-soft sm:text-base">{position.name}</span>
                   <div className="aspect-2/3 w-full overflow-hidden rounded-xl bg-paper p-2 sm:p-3">
                     <CardArtwork card={draw.card} orientation={draw.orientation} />
@@ -680,7 +687,7 @@ export function ReadingResultPage() {
           ) : (
             <>
               {narrativeError && (
-                <div className="rounded-xl bg-error-soft px-3 py-2">
+                <div className="no-print rounded-xl bg-error-soft px-3 py-2">
                   <p role="alert" className="text-sm text-error">
                     {narrativeError}
                   </p>
@@ -693,7 +700,9 @@ export function ReadingResultPage() {
                   </button>
                 </div>
               )}
-              {!narrative && !narrativeError && <p className="text-sm text-ink-soft">Loading reflection…</p>}
+              {!narrative && !narrativeError && (
+                <p className="no-print text-sm text-ink-soft">Loading reflection…</p>
+              )}
               {openingSections.map((section) => (
                 <NarrativeSectionBlock key={section.id} section={section} />
               ))}
@@ -701,14 +710,14 @@ export function ReadingResultPage() {
           )}
 
           {aiNarrativeState.phase === 'checking' && (
-            <p className="text-sm text-ink-soft">Checking for a previously generated AI reflection…</p>
+            <p className="no-print text-sm text-ink-soft">Checking for a previously generated AI reflection…</p>
           )}
 
           {/* AI generation entry point lives here, at the top of the flow it
               opens -- see AiNarrativeState's own docstring for why this is
               opt-in/not automatic. */}
           {aiNarrativeState.phase === 'idle' && (
-            <div className="rounded-2xl border border-dashed border-border bg-paper-muted p-3">
+            <div className="no-print rounded-2xl border border-dashed border-border bg-paper-muted p-3">
               <p className="mb-2 text-sm text-ink-soft">
                 Generate an AI-written reflection woven through this reading -- optional, and always secondary to
                 the structured analysis below.
@@ -731,10 +740,10 @@ export function ReadingResultPage() {
             </div>
           )}
           {aiNarrativeState.phase === 'loading' && (
-            <p className="text-sm text-ink-soft">Generating your AI reflection…</p>
+            <p className="no-print text-sm text-ink-soft">Generating your AI reflection…</p>
           )}
           {aiNarrativeState.phase === 'error' && (
-            <div className="rounded-xl bg-error-soft px-3 py-2">
+            <div className="no-print rounded-xl bg-error-soft px-3 py-2">
               <p role="alert" className="text-sm text-error">
                 {aiNarrativeState.error}
               </p>
@@ -781,7 +790,7 @@ export function ReadingResultPage() {
             {model.card_interpretations.map((card, index) => {
               const draw = drawByPositionName.get(card.position_name)
               return (
-                <div key={index} className="flex gap-4">
+                <div key={index} className="flex gap-4 break-inside-avoid">
                   {draw && (
                     <div className="aspect-2/3 w-16 shrink-0 overflow-hidden rounded-lg bg-paper-muted sm:w-24">
                       <CardArtwork card={draw.card} orientation={card.orientation} />
@@ -852,11 +861,11 @@ export function ReadingResultPage() {
           </h2>
 
           {scriptureState.phase === 'checking' && (
-            <p className="text-sm text-ink-soft">Checking for a previously shown Scriptural Reflection…</p>
+            <p className="no-print text-sm text-ink-soft">Checking for a previously shown Scriptural Reflection…</p>
           )}
 
           {scriptureState.phase === 'idle' && (
-            <>
+            <div className="no-print flex flex-col items-start gap-3">
               <p className="text-sm text-ink-soft">
                 See whether any Scripture references connect to this reading's own established themes.
               </p>
@@ -867,13 +876,13 @@ export function ReadingResultPage() {
               >
                 Show Scriptural Reflection
               </button>
-            </>
+            </div>
           )}
 
-          {scriptureState.phase === 'loading' && <p className="text-sm text-ink-soft">Loading…</p>}
+          {scriptureState.phase === 'loading' && <p className="no-print text-sm text-ink-soft">Loading…</p>}
 
           {scriptureState.phase === 'error' && (
-            <div>
+            <div className="no-print">
               <p role="alert" className="mb-2 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
                 {scriptureState.error}
               </p>
@@ -897,7 +906,7 @@ export function ReadingResultPage() {
               ) : (
                 <ul className="flex flex-col gap-5">
                   {scriptureState.perspective.reflections.map((reflection, index) => (
-                    <li key={index} className="rounded-xl border border-border bg-paper-muted p-3">
+                    <li key={index} className="rounded-xl border border-border bg-paper-muted p-3 break-inside-avoid">
                       <p className="font-serif text-lg text-ink">
                         {reflection.reference_display} ({reflection.translation})
                       </p>
@@ -1072,8 +1081,10 @@ export function ReadingResultPage() {
           </div>
         </div>
 
-        {/* Journal -- always available, independent of AI/Scripture. */}
-        <div className="flex flex-col gap-3 border-t border-border pt-6">
+        {/* Journal -- always available, independent of AI/Scripture. Not
+            included in the printed/PDF output by default (Journal is a
+            private space, not "reading result" content). */}
+        <div className="no-print flex flex-col gap-3 border-t border-border pt-6">
           <p className="text-sm text-ink-soft sm:text-base">
             A private space for your own response to this reading. Your journal entries belong to you.
           </p>
@@ -1119,7 +1130,7 @@ export function ReadingResultPage() {
         {/* Save. mark_saved() is idempotent, so this action is offered
             unconditionally rather than fabricating a locally-known saved
             state (Documentation/READING_RESULT_FLOW_DESIGN.md Section 7). */}
-        <div className="border-t border-border pt-6">
+        <div className="no-print border-t border-border pt-6">
           {saveState.phase === 'saved' ? (
             <p className="rounded-xl bg-accent-soft px-3 py-2 text-sm text-accent">
               This reading has been saved to your history.
@@ -1144,7 +1155,10 @@ export function ReadingResultPage() {
         </div>
       </SectionPanel>
 
-      <Link to={`/readings/${readingId}`} className="mt-8 self-center text-sm text-accent underline">
+      <Link
+        to={`/readings/${readingId}`}
+        className="no-print mt-8 self-center text-sm text-accent underline"
+      >
         Back to Spread Review
       </Link>
     </div>

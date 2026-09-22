@@ -90,3 +90,68 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Share / Save PDF -- Reading Result's native browser print/PDF flow
+   (ReadingResultPage.tsx). Presentation-layer only. Re-skins for print by
+   overriding the same `--color-*` design tokens every panel/text/border
+   utility across the page already consumes (see @theme above), rather
+   than special-casing each component -- so this stays a two-file change
+   instead of touching every component that uses those tokens. Only
+   `#reading-print-area` (the page's own root element) is printed; every
+   other on-screen element (cosmic background, header/nav, bottom nav,
+   loading/error states, and any element marked `.no-print`) is excluded. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #reading-print-area,
+  #reading-print-area * {
+    visibility: visible;
+  }
+  #reading-print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-top: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  :root {
+    --color-ink: #241a08 !important;
+    --color-ink-soft: #5a4d38 !important;
+    --color-paper: #ffffff !important;
+    --color-paper-muted: #f6f1e4 !important;
+    --color-accent: #8a6416 !important;
+    --color-accent-soft: #f2e6c8 !important;
+    --color-gold-soft: #8a6416 !important;
+    --color-border: #d9c99a !important;
+    --color-error: #a33d3d !important;
+    --color-error-soft: #f7e7e7 !important;
+    --color-bg-deepest: #ffffff !important;
+    --color-bg-deep: #ffffff !important;
+    --color-panel: #ffffff !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  #reading-print-area * {
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    text-shadow: none !important;
+  }
+
+  /* "See the supporting evidence" is collapsed by default on screen; a
+     saved/printed reading should include it without the user having to
+     remember to expand it first. Overrides the UA stylesheet's own
+     `details:not([open]) > *:not(summary) { display: none }` rule. */
+  #reading-print-area details:not([open]) summary ~ * {
+    display: block !important;
+  }
+}
