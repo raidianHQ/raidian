@@ -130,3 +130,19 @@ export function saveReading(token: string, readingId: string): Promise<ReadingSu
     token,
   })
 }
+
+/**
+ * DELETE /readings/{reading_id} -- permanently deletes this reading and
+ * everything persisted beneath it (card draws, interpretation history,
+ * AI Narrative, Scriptural Reflection, journal entries), via the
+ * backend's existing ownership-gated cascade delete. Irreversible; no
+ * confirmation happens here -- the caller (ReadingHistoryPage) is
+ * responsible for confirming with the user first. 204 No Content on
+ * success, which `request()` already resolves to `undefined`.
+ */
+export function deleteReading(token: string, readingId: string): Promise<void> {
+  return request<void>(`/readings/${readingId}`, {
+    method: 'DELETE',
+    token,
+  })
+}

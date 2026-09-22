@@ -16,7 +16,7 @@ import uuid
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -209,6 +209,112 @@ def test_generate_route_include_scripture_true_supplies_scripture_and_allows_it_
     payload = json.loads(fake_ai_client.calls[0]["user_prompt"].split("READING DATA (JSON):\n\n")[1])
     assert payload["scripture"] is not None
     assert payload["scripture"]["reflections"]
+
+
+def _unmatched_reading(session: Session, owner: User) -> Reading:
+    """A Single Card reading of The Chariot -- its own first authored
+    theme ("determination") has no approved Scripture mapping anywhere
+    in its candidate chain (verified directly against the seeded
+    dataset), proving the "opted in but nothing found" path stays
+    graceful: no error, and no snapshot persisted.
+    """
+    return build_reading(
+        session, spread_name="Single Card", draws=[("The Card", "The Chariot", Orientation.UPRIGHT)], owner=owner
+    )
+
+
+# --- AI Narrative + Scriptural Reflection integration (Raidian Reading Lifecycle
+# improvements): checking "include Scripture" must itself surface the Scriptural
+# Perspective, not merely weave it into the AI text ----------------------------------
+
+
+def test_include_scripture_true_persists_a_scripture_snapshot_as_a_side_effect(
+    api_seeded_session, client, owner, fake_ai_client
+):
+    """The reported UX gap: checking "include Scripture" when generating
+    an AI Narrative must not require a separate, subsequent GET
+    /scripture call to make the Scriptural Perspective available to the
+    rest of the page -- generating with include_scripture=true must
+    itself leave a ScripturalReflection snapshot persisted, exactly as
+    GET /scripture would.
+    """
+    reading = _matched_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+
+    response = client.post(f"/readings/{reading.id}/ai-narrative", params={"include_scripture": "true"})
+    assert response.status_code == 201
+
+    current = client.get(f"/readings/{reading.id}/scripture/current")
+    assert current.status_code == 200
+    assert current.json()["reflections"]
+
+
+def test_include_scripture_false_does_not_persist_a_scripture_snapshot(
+    api_seeded_session, client, owner, fake_ai_client
+):
+    """Preserves the existing AI-Narrative-only behavior when the
+    checkbox is unchecked (the default): no Scripture snapshot appears
+    as a side effect of a plain AI Narrative generation.
+    """
+    reading = _matched_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+
+    response = client.post(f"/readings/{reading.id}/ai-narrative")
+    assert response.status_code == 201
+
+    current = client.get(f"/readings/{reading.id}/scripture/current")
+    assert current.status_code == 404
+
+
+def test_include_scripture_true_does_not_duplicate_an_already_persisted_snapshot(
+    api_seeded_session, client, owner, fake_ai_client
+):
+    """A Scripture snapshot already persisted (via an earlier GET
+    /scripture call) is reused as-is by a later include_scripture=true
+    generation -- never recomputed into a second, possibly-different
+    snapshot.
+    """
+    reading = _matched_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+    first = client.get(f"/readings/{reading.id}/scripture")
+    assert first.status_code == 200
+    assert first.json()["reflections"]
+
+    response = client.post(f"/readings/{reading.id}/ai-narrative", params={"include_scripture": "true"})
+    assert response.status_code == 201
+
+    second = client.get(f"/readings/{reading.id}/scripture/current")
+    assert second.status_code == 200
+    assert {k: v for k, v in second.json().items() if k != "generated_at"} == {
+        k: v for k, v in first.json().items() if k != "generated_at"
+    }
+
+
+def test_include_scripture_true_with_no_approved_match_succeeds_without_error(
+    api_seeded_session, client, owner, fake_ai_client
+):
+    """Opting in to Scripture for a reading whose themes have no approved
+    reference must not surface as an error -- AI Narrative generation
+    still succeeds, with scripture omitted from its own response, and no
+    ScripturalReflection snapshot is persisted (an empty selection is
+    never persisted -- see get_scripture_for_reading's own docstring).
+    """
+    reading = _unmatched_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+
+    response = client.post(f"/readings/{reading.id}/ai-narrative", params={"include_scripture": "true"})
+
+    assert response.status_code == 201
+    assert response.json()["ai_narrative"]["scriptural_reflection"] is None
+    payload = json.loads(fake_ai_client.calls[0]["user_prompt"].split("READING DATA (JSON):\n\n")[1])
+    assert payload["scripture"] is not None
+    assert payload["scripture"]["reflections"] == []
+    current = client.get(f"/readings/{reading.id}/scripture/current")
+    assert current.status_code == 404
 
 
 def test_generate_route_rejects_a_response_that_invents_scripture_when_not_requested(
@@ -411,3 +517,37 @@ def test_generate_route_nonexistent_reading_returns_404(client):
     response = client.post(f"/readings/{uuid.uuid4()}/ai-narrative")
 
     assert response.status_code == 404
+
+
+# --- Delete Saved Reading cascades through AINarrative/ScripturalReflection ---------
+
+
+def test_deleting_a_reading_cascades_to_ai_narrative_and_scriptural_reflection(
+    api_seeded_session, client, owner, fake_ai_client
+):
+    """Delete Saved Reading (Raidian Reading Lifecycle improvements): the
+    cascade must reach every row an AI Narrative generation with Scripture
+    included leaves behind, not just CardDraw/Interpretation -- verified
+    directly against real AINarrative/ScripturalReflection rows, not just
+    inferred from the FK configuration.
+    """
+    from app.models.ai_narrative import AINarrative
+    from app.models.scriptural_reflection import ScripturalReflection
+
+    reading = _matched_reading(api_seeded_session, owner)
+    api_seeded_session.commit()
+    client.post(f"/readings/{reading.id}/interpret")
+    client.post(f"/readings/{reading.id}/ai-narrative", params={"include_scripture": "true"})
+    client.post(f"/readings/{reading.id}/save")
+    reading_id = reading.id
+
+    api_seeded_session.expire_all()
+    assert len(api_seeded_session.execute(select(AINarrative)).all()) == 1
+    assert len(api_seeded_session.execute(select(ScripturalReflection)).all()) == 1
+
+    response = client.delete(f"/readings/{reading_id}")
+
+    assert response.status_code == 204
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(AINarrative)).all() == []
+    assert api_seeded_session.execute(select(ScripturalReflection)).all() == []

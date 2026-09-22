@@ -68,6 +68,7 @@ from app.models.exceptions import (
     InsufficientCardsForDigitalDrawError,
     PositionAlreadyDrawnError,
     ReadingAlreadyDrawnError,
+    ReadingNotDeletableError,
     ReadingNotDigitalError,
     ReadingNotDraftingError,
     ReadingNotSaveableError,
@@ -87,7 +88,7 @@ from app.schemas.reading_api import (
     ReadingSummary,
 )
 from app.schemas.reference_data_api import SpreadPositionSummary
-from app.services.reading_service import create_reading, record_card_draw, record_digital_draw
+from app.services.reading_service import create_reading, delete_reading, record_card_draw, record_digital_draw
 
 router = APIRouter(prefix="/readings", tags=["reading"])
 
@@ -102,6 +103,7 @@ _READING_NOT_DRAFTING = "Reading cannot accept card draws from its current statu
 _READING_NOT_DIGITAL = "Reading is not configured for digital draw"
 _READING_ALREADY_DRAWN = "Reading already has card draws recorded"
 _INSUFFICIENT_CARDS = "Deck does not have enough cards to fill this spread"
+_READING_NOT_DELETABLE = "Only a saved reading can be deleted"
 
 
 def _to_summary(reading: Reading) -> ReadingSummary:
@@ -352,6 +354,37 @@ def save_reading_route(reading: Reading = Depends(get_owned_reading)) -> Reading
     except ReadingNotSaveableError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     return _to_summary(reading)
+
+
+@router.delete(
+    "/{reading_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Permanently delete a Reading",
+    description=(
+        "Permanently deletes this Reading and every persisted row beneath "
+        "it (CardDraw, Interpretation, AINarrative, ScripturalReflection, "
+        "JournalEntry), via the existing cascade-delete relationships -- "
+        "not a soft delete or status change, and not reversible. Only "
+        "allowed while the Reading is SAVED; a DRAFTING/SPREAD_COMPLETE/"
+        "INTERPRETED reading is not deletable (simply never save it "
+        "instead). Ownership is enforced by the same get_owned_reading "
+        "dependency as every other Reading-scoped route in this module; "
+        "a nonexistent or unowned reading_id returns 404 and deletes "
+        "nothing."
+    ),
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Reading not found"},
+        409: {"description": _READING_NOT_DELETABLE},
+    },
+)
+def delete_reading_route(
+    reading: Reading = Depends(get_owned_reading), session: Session = Depends(get_db)
+) -> None:
+    try:
+        delete_reading(session, reading)
+    except ReadingNotDeletableError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_READING_NOT_DELETABLE) from exc
 
 
 @router.get(

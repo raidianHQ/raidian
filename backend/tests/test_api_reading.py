@@ -320,6 +320,259 @@ def test_save_commits_through_the_api_boundary(api_seeded_session, client):
 
 
 # =====================================================================================
+# Delete Reading -- DELETE /readings/{reading_id} (Raidian Reading Lifecycle
+# improvements: Delete Saved Reading)
+# =====================================================================================
+
+
+def test_owner_can_delete_a_saved_reading(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="del1@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/save", headers=_auth_header(owner))
+    reading_id = reading.id
+
+    response = client.delete(f"/readings/{reading_id}", headers=_auth_header(owner))
+
+    assert response.status_code == 204
+    assert response.content == b""
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading_id) is None
+
+
+def test_delete_cascades_to_card_draws_and_interpretations(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="del2@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/interpret", headers=_auth_header(owner))
+    client.post(f"/readings/{reading.id}/save", headers=_auth_header(owner))
+    reading_id = reading.id
+
+    response = client.delete(f"/readings/{reading_id}", headers=_auth_header(owner))
+
+    assert response.status_code == 204
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(CardDraw).where(CardDraw.reading_id == reading_id)).all() == []
+    assert (
+        api_seeded_session.execute(select(Interpretation).where(Interpretation.reading_id == reading_id)).all() == []
+    )
+
+
+def test_delete_cascades_to_journal_entries(api_seeded_session, client):
+    from app.models.journal_entry import JournalEntry
+
+    owner = make_user(api_seeded_session, email="del3@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(
+        f"/readings/{reading.id}/journal-entries",
+        json={"content": "A private reflection."},
+        headers=_auth_header(owner),
+    )
+    client.post(f"/readings/{reading.id}/save", headers=_auth_header(owner))
+    reading_id = reading.id
+    api_seeded_session.expire_all()
+    assert len(api_seeded_session.execute(select(JournalEntry).where(JournalEntry.reading_id == reading_id)).all()) == 1
+
+    response = client.delete(f"/readings/{reading_id}", headers=_auth_header(owner))
+
+    assert response.status_code == 204
+    api_seeded_session.expire_all()
+    assert api_seeded_session.execute(select(JournalEntry).where(JournalEntry.reading_id == reading_id)).all() == []
+
+
+def test_delete_removes_the_reflection_session_too(api_seeded_session, client):
+    """No orphaned ReflectionSession should remain -- Reading carries no
+    owner column of its own; ReflectionSession is the ownership anchor
+    (see ReflectionSession's own docstring), so a delete that only
+    removed the Reading row would leave a purposeless, ownerless row
+    behind.
+    """
+    owner = make_user(api_seeded_session, email="del4@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/save", headers=_auth_header(owner))
+    reflection_session_id = reading.reflection_session_id
+
+    response = client.delete(f"/readings/{reading.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 204
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(ReflectionSession, reflection_session_id) is None
+
+
+def test_cross_user_delete_returns_404_and_deletes_nothing(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="del5@example.com")
+    other = make_user(api_seeded_session, email="del5other@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+
+    response = client.delete(f"/readings/{reading.id}", headers=_auth_header(other))
+
+    assert response.status_code == 404
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading.id) is not None
+
+
+def test_unauthenticated_delete_returns_401(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="del6@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+
+    response = client.delete(f"/readings/{reading.id}")
+
+    assert response.status_code == 401
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading.id) is not None
+
+
+def test_delete_of_a_nonexistent_reading_returns_404(api_seeded_session, client):
+    user = make_user(api_seeded_session, email="del7@example.com")
+    api_seeded_session.commit()
+
+    response = client.delete(f"/readings/{uuid.uuid4()}", headers=_auth_header(user))
+
+    assert response.status_code == 404
+
+
+def test_delete_of_an_unowned_reading_fails_closed(api_seeded_session, client):
+    """A Reading whose ReflectionSession.owner_id is None must be
+    inaccessible to every authenticated user for deletion too -- the same
+    fail-closed guarantee already re-verified for /save and /draws, now
+    re-verified for this new route specifically.
+    """
+    user = make_user(api_seeded_session, email="del8@example.com")
+    api_seeded_session.commit()
+    unowned_reading = build_reading(api_seeded_session, spread_name="Three Card", draws=_THREE_CARD_DRAWS)
+    api_seeded_session.commit()
+    assert unowned_reading.reflection_session.owner_id is None
+
+    response = client.delete(f"/readings/{unowned_reading.id}", headers=_auth_header(user))
+
+    assert response.status_code == 404
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, unowned_reading.id) is not None
+
+
+def test_deleting_one_reading_does_not_affect_another_owned_by_the_same_user(api_seeded_session, client):
+    """Do not accidentally delete unrelated user/readings data: a second
+    reading owned by the very same user, sitting alongside the one being
+    deleted, must be completely untouched.
+    """
+    owner = make_user(api_seeded_session, email="del9@example.com")
+    api_seeded_session.commit()
+    keep = _complete_reading(api_seeded_session, owner)
+    doomed = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{doomed.id}/save", headers=_auth_header(owner))
+    keep_id = keep.id
+    doomed_id = doomed.id
+
+    response = client.delete(f"/readings/{doomed_id}", headers=_auth_header(owner))
+
+    assert response.status_code == 204
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, keep_id) is not None
+    assert api_seeded_session.get(Reading, doomed_id) is None
+
+
+def test_deleting_one_users_reading_does_not_affect_another_users_reading(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="del10@example.com")
+    other = make_user(api_seeded_session, email="del10other@example.com")
+    api_seeded_session.commit()
+    mine = _complete_reading(api_seeded_session, owner)
+    theirs = _complete_reading(api_seeded_session, other)
+    client.post(f"/readings/{mine.id}/save", headers=_auth_header(owner))
+
+    response = client.delete(f"/readings/{mine.id}", headers=_auth_header(owner))
+
+    assert response.status_code == 204
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, theirs.id) is not None
+
+
+def test_deleted_reading_no_longer_appears_in_history(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="del11@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/save", headers=_auth_header(owner))
+
+    delete_response = client.delete(f"/readings/{reading.id}", headers=_auth_header(owner))
+    assert delete_response.status_code == 204
+
+    response = client.get("/readings", headers=_auth_header(owner))
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_delete_of_a_drafting_reading_is_rejected_with_409(api_seeded_session, client):
+    """Delete is scoped to SAVED readings only -- a DRAFTING reading a
+    user no longer wants is abandoned, not deleted: it simply never gets
+    saved, and never appears in Reading History regardless.
+    """
+    owner = make_user(api_seeded_session, email="del12@example.com")
+    api_seeded_session.commit()
+    reading = _drafting_reading(api_seeded_session, owner)
+    reading_id = reading.id
+
+    response = client.delete(f"/readings/{reading_id}", headers=_auth_header(owner))
+
+    assert response.status_code == 409
+    api_seeded_session.expire_all()
+    reloaded = api_seeded_session.get(Reading, reading_id)
+    assert reloaded is not None
+    assert reloaded.status == ReadingStatus.DRAFTING  # unchanged
+
+
+def test_delete_of_a_spread_complete_reading_is_rejected_with_409(api_seeded_session, client):
+    """Same SAVED-only gate for SPREAD_COMPLETE -- a completed-but-never-
+    saved reading is not deletable either; it's simply left unsaved.
+    """
+    owner = make_user(api_seeded_session, email="del14@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    reading_id = reading.id
+    assert reading.status == ReadingStatus.SPREAD_COMPLETE
+
+    response = client.delete(f"/readings/{reading_id}", headers=_auth_header(owner))
+
+    assert response.status_code == 409
+    api_seeded_session.expire_all()
+    reloaded = api_seeded_session.get(Reading, reading_id)
+    assert reloaded is not None
+    assert reloaded.status == ReadingStatus.SPREAD_COMPLETE  # unchanged
+
+
+def test_delete_of_an_interpreted_reading_is_rejected_with_409(api_seeded_session, client):
+    """Same SAVED-only gate for INTERPRETED -- interpreting a reading
+    does not make it deletable; only saving it does.
+    """
+    owner = make_user(api_seeded_session, email="del15@example.com")
+    api_seeded_session.commit()
+    reading = _complete_reading(api_seeded_session, owner)
+    client.post(f"/readings/{reading.id}/interpret", headers=_auth_header(owner))
+    reading_id = reading.id
+    api_seeded_session.expire_all()
+    assert api_seeded_session.get(Reading, reading_id).status == ReadingStatus.INTERPRETED
+
+    response = client.delete(f"/readings/{reading_id}", headers=_auth_header(owner))
+
+    assert response.status_code == 409
+    api_seeded_session.expire_all()
+    reloaded = api_seeded_session.get(Reading, reading_id)
+    assert reloaded is not None
+    assert reloaded.status == ReadingStatus.INTERPRETED  # unchanged
+
+
+def test_malformed_reading_id_on_delete_returns_422(api_seeded_session, client):
+    owner = make_user(api_seeded_session, email="del13@example.com")
+    api_seeded_session.commit()
+
+    response = client.delete("/readings/not-a-uuid", headers=_auth_header(owner))
+
+    assert response.status_code == 422
+
+
+# =====================================================================================
 # Reading History -- GET /readings
 # =====================================================================================
 

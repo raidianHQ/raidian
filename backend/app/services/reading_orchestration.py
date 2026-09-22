@@ -293,10 +293,28 @@ def generate_ai_narrative_for_reading(
     get_scripture_for_reading()'s own "callers decide whether to call this
     at all" contract; there is no persisted per-User/per-Reading
     preference (SCRIPTURAL_REFLECTION_FOUNDATION_DESIGN.md Section 4).
-    When True, the *already-computed, already-approved* ScripturalPerspective
-    is looked up via select_scripture_reflections() (never a second, AI-driven
-    Scripture lookup) and handed to the AI Narrative Layer alongside the
-    InterpretiveModel; the AI is never given the ability to introduce a
+    When True, the ScripturalPerspective is obtained via
+    get_scripture_for_reading() itself (never a second, AI-driven
+    Scripture lookup, and never a bare call to
+    select_scripture_reflections() that would bypass that function's own
+    persistence) -- so checking "include Scripture" when generating an AI
+    Narrative both hands the already-approved Scripture to the AI
+    Narrative Layer *and* leaves a ScripturalReflection snapshot
+    persisted exactly as if the caller had separately called GET
+    /scripture, without a second, duplicate selection: a snapshot already
+    persisted for this interpretation (from an earlier GET /scripture
+    call, or an earlier AI Narrative generation that also included
+    Scripture) is reused as-is, never recomputed (Raidian Reading
+    Lifecycle improvements, "AI Narrative + Scriptural Reflection
+    integration" -- the separate Scriptural Reflection action no longer
+    needs a second, subsequent click to surface what this one request
+    already opted into). A reading whose themes have no approved
+    reference yields a ScripturalPerspective with empty `reflections` --
+    a normal, valid outcome (see get_scripture_for_reading()'s own
+    docstring: never persisted, never an error) -- generation.py's
+    `context.scripture is None` check only fires when Scripture was not
+    requested at all, so an opted-in-but-empty result never trips that
+    guard either. The AI is never given the ability to introduce a
     Scripture reference this layer did not already select (see
     generation.py's own validation).
 
@@ -316,7 +334,7 @@ def generate_ai_narrative_for_reading(
     model_obj = InterpretiveModel.model_validate(latest.interpretive_model)
     scripture: ScripturalPerspective | None = None
     if include_scripture:
-        scripture = select_scripture_reflections(session, model_obj)
+        scripture = get_scripture_for_reading(session, reading)
 
     context = build_deterministic_reading_context(model_obj, scripture)
     response: AINarrativeResponse = generate_ai_narrative(client, context, provider=provider, model=model)

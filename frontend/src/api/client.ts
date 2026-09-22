@@ -22,7 +22,7 @@ export class ApiError extends Error {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST'
+  method?: 'GET' | 'POST' | 'DELETE'
   body?: unknown
   token?: string | null
   /** Query parameters appended to the URL; omitted keys/undefined values are skipped. */

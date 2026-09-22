@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../api/client'
-import { listSavedReadings, type ReadingStatus, type ReadingSummary } from '../api/readings'
+import { deleteReading, listSavedReadings, type ReadingStatus, type ReadingSummary } from '../api/readings'
 import { useAuth } from '../auth/useAuth'
 import { Panel } from '../components/Panel'
 
@@ -86,6 +86,44 @@ export function ReadingHistoryPage() {
     }
   }, [token, clearToken])
 
+  /**
+   * Delete Saved Reading (Raidian Reading Lifecycle improvements) --
+   * DELETE /readings/{reading_id}, permanent and irreversible on the
+   * backend (cascades through every persisted row beneath the reading).
+   * Requires an explicit confirmation step first: clicking "Delete"
+   * only arms a per-row confirm prompt (`confirmingId`) -- the actual
+   * DELETE call only fires from the follow-up "Yes, delete" click, never
+   * from the first click alone. `confirmingId` names at most one
+   * reading at a time, so confirming one row's deletion can never be
+   * misread as confirming a different row's.
+   */
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  async function handleConfirmDelete(readingId: string) {
+    if (!token || deletingId) {
+      return
+    }
+    setDeletingId(readingId)
+    setDeleteError(null)
+    try {
+      await deleteReading(token, readingId)
+      // Returns the user to an updated Reading History -- the deleted
+      // reading simply no longer appears, without a full reload/refetch.
+      setReadings((prev) => (prev ? prev.filter((reading) => reading.id !== readingId) : prev))
+      setConfirmingId(null)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        clearToken()
+        return
+      }
+      setDeleteError(err instanceof ApiError ? err.message : 'Could not delete this reading. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   if (loadError) {
     return (
       <div className="mx-auto w-full max-w-2xl">
@@ -156,7 +194,51 @@ export function ReadingHistoryPage() {
                 <Link to={`/readings/${reading.id}/result`} className="text-sm text-accent underline">
                   View Result
                 </Link>
+                {confirmingId !== reading.id && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteError(null)
+                      setConfirmingId(reading.id)
+                    }}
+                    className="ml-auto text-sm text-error underline"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
+
+              {confirmingId === reading.id && (
+                <div className="mt-3 flex flex-col gap-2 rounded-xl border border-error-soft bg-error-soft/40 p-3">
+                  <p className="text-sm text-ink">
+                    Permanently delete this reading? This removes its cards, interpretation, AI Narrative,
+                    Scripture, and journal entries, and cannot be undone.
+                  </p>
+                  {deleteError && (
+                    <p role="alert" className="text-sm text-error">
+                      {deleteError}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={deletingId === reading.id}
+                      onClick={() => void handleConfirmDelete(reading.id)}
+                      className="rounded-full bg-error px-3 py-1.5 text-sm text-paper hover:opacity-90 disabled:opacity-50"
+                    >
+                      {deletingId === reading.id ? 'Deleting…' : 'Yes, delete'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={deletingId === reading.id}
+                      onClick={() => setConfirmingId(null)}
+                      className="text-sm text-ink-soft underline disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </Panel>
           ))}
         </ul>

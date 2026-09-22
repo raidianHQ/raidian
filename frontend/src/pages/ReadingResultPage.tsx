@@ -266,6 +266,24 @@ export function ReadingResultPage() {
   const [aiNarrativeState, setAiNarrativeState] = useState<AiNarrativeState>({ phase: 'checking' })
   const [includeScriptureInAiNarrative, setIncludeScriptureInAiNarrative] = useState(false)
 
+  /**
+   * Save This Reading (Raidian Reading Lifecycle improvements): whether
+   * there is currently anything new/changed for the user to persist by
+   * clicking Save. Starts `false` and is set `true` only by an actual
+   * change this visit -- a freshly-added journal entry, a freshly
+   * *generated* AI Narrative, or a freshly *generated* Scriptural
+   * Perspective (never by merely loading an already-persisted one of
+   * either on mount, and never by viewing the interpretation or using
+   * PDF/print, none of which touch this state at all). Also seeded
+   * `true` once `readingDetail` first loads if this reading has never
+   * been saved at all (`status !== 'saved'`) -- that first Save is
+   * itself a legitimate pending action, since it is what makes the
+   * reading appear in Reading History at all. Reset to `false` after a
+   * successful Save (see handleSave), returning to the clean/disabled
+   * state until another change occurs.
+   */
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([])
   const [journalDraft, setJournalDraft] = useState('')
   const [journalSaving, setJournalSaving] = useState(false)
@@ -331,7 +349,16 @@ export function ReadingResultPage() {
     let cancelled = false
     getReading(token, readingId)
       .then((detail) => {
-        if (!cancelled) setReadingDetail(detail)
+        if (cancelled) return
+        setReadingDetail(detail)
+        // Save button dirty-tracking: a reading that has never been
+        // saved has a genuine, legitimate pending action the instant it
+        // loads (see hasUnsavedChanges's own docstring) -- checked here,
+        // once, against the server's own persisted status, never
+        // inferred from local session state.
+        if (detail.status !== 'saved') {
+          setHasUnsavedChanges(true)
+        }
       })
       .catch((err: unknown) => {
         if (cancelled) return
@@ -459,6 +486,7 @@ export function ReadingResultPage() {
     try {
       const result = await saveReading(token, readingId)
       setSaveState({ phase: 'saved', status: result.status })
+      setHasUnsavedChanges(false)
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearToken()
@@ -479,6 +507,7 @@ export function ReadingResultPage() {
     try {
       const perspective = await getScripture(token, readingId)
       setScriptureState({ phase: 'loaded', perspective })
+      setHasUnsavedChanges(true)
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearToken()
@@ -501,6 +530,29 @@ export function ReadingResultPage() {
         includeScripture: includeScriptureInAiNarrative,
       })
       setAiNarrativeState({ phase: 'loaded', result: summary.ai_narrative })
+      setHasUnsavedChanges(true)
+      // AI Narrative + Scriptural Reflection integration: when the user
+      // opted in, the backend (generate_ai_narrative_for_reading) has
+      // already selected -- and, if any approved reference was found,
+      // persisted -- the Scriptural Perspective as part of this same
+      // request. Surface it here too, so the separate Scriptural
+      // Reflection section reflects it immediately and the user is never
+      // required to click "Show Scriptural Reflection" a second time for
+      // what they already asked for. A free, read-only check (never a
+      // second selection call) -- mirrors the mount-time existence check
+      // below exactly, including its own silent, no-error fallback: a
+      // 404 here just means this reading's themes had no approved
+      // match, which is a normal outcome, not something to surface as a
+      // failure of an AI generation that otherwise succeeded.
+      if (includeScriptureInAiNarrative) {
+        void getCurrentScripture(token, readingId)
+          .then((perspective) => setScriptureState({ phase: 'loaded', perspective }))
+          .catch((scriptureErr: unknown) => {
+            if (scriptureErr instanceof ApiError && scriptureErr.status === 401) {
+              clearToken()
+            }
+          })
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearToken()
@@ -525,6 +577,7 @@ export function ReadingResultPage() {
       const entry = await createJournalEntry(token, readingId, content)
       setJournalEntries((prev) => [...prev, entry])
       setJournalDraft('')
+      setHasUnsavedChanges(true)
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearToken()
@@ -1120,31 +1173,32 @@ export function ReadingResultPage() {
           </form>
         </div>
 
-        {/* Save. mark_saved() is idempotent, so this action is offered
-            unconditionally rather than fabricating a locally-known saved
-            state (Documentation/READING_RESULT_FLOW_DESIGN.md Section 7). */}
+        {/* Save. mark_saved() is idempotent, so this action was previously
+            offered unconditionally; it is now gated on hasUnsavedChanges
+            (see that state's own docstring) so the button is only active
+            when there is actually something new to persist -- a freshly
+            added journal entry, a freshly generated AI Narrative or
+            Scriptural Perspective, or a reading that has never been
+            saved at all. Merely viewing/opening an already-saved reading,
+            or viewing already-persisted interpretation/AI Narrative/
+            Scripture loaded from a prior visit, leaves this disabled.
+            The button itself is always rendered (never swapped out for
+            static text) so it can re-activate the moment another change
+            occurs, without needing a page reload. */}
         <div className="no-print border-t border-border pt-6">
-          {saveState.phase === 'saved' ? (
-            <p className="rounded-xl bg-accent-soft px-3 py-2 text-sm text-accent">
-              This reading has been saved to your history.
+          {saveState.phase === 'error' && (
+            <p role="alert" className="mb-2 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
+              {saveState.error}
             </p>
-          ) : (
-            <>
-              {saveState.phase === 'error' && (
-                <p role="alert" className="mb-2 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
-                  {saveState.error}
-                </p>
-              )}
-              <button
-                type="button"
-                disabled={saveState.phase === 'saving'}
-                onClick={() => void handleSave()}
-                className="rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90 disabled:opacity-50"
-              >
-                {saveState.phase === 'saving' ? 'Saving…' : 'Save this reading'}
-              </button>
-            </>
           )}
+          <button
+            type="button"
+            disabled={!hasUnsavedChanges || saveState.phase === 'saving'}
+            onClick={() => void handleSave()}
+            className="rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90 disabled:opacity-50"
+          >
+            {saveState.phase === 'saving' ? 'Saving…' : hasUnsavedChanges ? 'Save this reading' : 'Saved'}
+          </button>
         </div>
       </SectionPanel>
 

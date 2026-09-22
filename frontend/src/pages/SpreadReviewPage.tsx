@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
-import { getNarrative, interpretReading, type InterpretationSummary, type NarrativeModel } from '../api/interpretation'
+import {
+  getCurrentInterpretation,
+  getNarrative,
+  interpretReading,
+  type InterpretationSummary,
+  type NarrativeModel,
+} from '../api/interpretation'
 import { getReading, type ReadingDetail, type ReadingStatus } from '../api/readings'
 import { useAuth } from '../auth/useAuth'
 import { CardArtwork } from '../components/CardArtwork'
@@ -57,6 +63,25 @@ type InterpretFlowState =
   | { phase: 'narrating'; interpretation: InterpretationSummary }
   | { phase: 'narrative-failed'; interpretation: InterpretationSummary; error: string }
 
+/**
+ * Reading immutability (Raidian Reading Lifecycle improvements): once a
+ * reading has actually been interpreted, re-running interpretation must
+ * no longer be reachable from this page -- the deterministic
+ * interpretation is foundational reading data, not something a later
+ * visit should be able to change. `reading.status` alone is not a
+ * reliable signal for this: Reading.mark_saved() explicitly allows a
+ * SPREAD_COMPLETE reading with zero Interpretation rows to reach SAVED
+ * (see that method's own docstring), so a 'saved' reading is not always
+ * an *interpreted* one. This mirrors ReadingResultPage's own
+ * 'checking'/'idle'/'loaded' existence-check pattern for AI Narrative/
+ * Scripture exactly -- a free, read-only GET
+ * /interpretations/current call, 404 meaning "never interpreted yet"
+ * (offering the normal flow below), any other resolution meaning
+ * "already interpreted" (offering only a link to the result, never the
+ * button again).
+ */
+type InterpretationExistenceState = 'checking' | 'none' | 'exists'
+
 export function SpreadReviewPage() {
   const { readingId } = useParams<{ readingId: string }>()
   const { token, clearToken } = useAuth()
@@ -65,6 +90,7 @@ export function SpreadReviewPage() {
   const [reading, setReading] = useState<ReadingDetail | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [interpretFlow, setInterpretFlow] = useState<InterpretFlowState>({ phase: 'idle' })
+  const [existingInterpretation, setExistingInterpretation] = useState<InterpretationExistenceState>('checking')
 
   useEffect(() => {
     if (!token || !readingId) {
@@ -92,6 +118,33 @@ export function SpreadReviewPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, readingId])
+
+  useEffect(() => {
+    if (!token || !readingId) {
+      return
+    }
+    let cancelled = false
+    getCurrentInterpretation(token, readingId)
+      .then(() => {
+        if (!cancelled) setExistingInterpretation('exists')
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        if (err instanceof ApiError && err.status === 401) {
+          clearToken()
+          return
+        }
+        // 404 ("never interpreted") or any other failure checking for an
+        // existing interpretation: fall back to offering the normal
+        // "Interpret My Reading" flow, never surfaced as an error the
+        // user didn't cause -- mirrors AiNarrativeState/ScriptureState's
+        // own identical fallback in ReadingResultPage.tsx.
+        setExistingInterpretation('none')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [token, readingId, clearToken])
 
   const drawnByPositionId = useMemo(() => {
     const map = new Map<string, ReadingDetail['card_draws'][number]>()
@@ -189,59 +242,81 @@ export function SpreadReviewPage() {
           <p className="font-serif text-xl text-ink">This spread is complete.</p>
           <p className="mt-1 text-base text-ink-soft">Every required position has been drawn.</p>
 
-          {(interpretFlow.phase === 'idle' || interpretFlow.phase === 'interpret-failed') && (
-            <>
-              {interpretFlow.phase === 'interpret-failed' && (
-                <p role="alert" className="mt-3 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
-                  {interpretFlow.error}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={() => void handleInterpretClick()}
-                className="mt-3 rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
-              >
-                Interpret My Reading
-              </button>
-            </>
+          {existingInterpretation === 'checking' && (
+            <p className="mt-3 text-sm text-ink-soft">Checking whether this reading has already been interpreted…</p>
           )}
 
-          {(interpretFlow.phase === 'interpreting' || interpretFlow.phase === 'narrating') && (
-            <div className="mt-3 flex flex-col gap-1">
-              <p className="text-sm text-ink">Interpreting your reading…</p>
-              <p className="text-sm text-ink-soft">
-                Raidian Reflection is building a structured analysis of your spread -- no AI is involved in this step.
-              </p>
-            </div>
-          )}
-
-          {interpretFlow.phase === 'narrative-failed' && (
+          {/* Reading immutability: a reading that has already been
+              interpreted at least once must never offer "Interpret My
+              Reading" again -- the deterministic interpretation is
+              foundational reading data, not something a later visit can
+              change. Only a link to the already-computed result is
+              offered here; a different question or spread means
+              starting a new reading. See existingInterpretation's own
+              docstring above. */}
+          {existingInterpretation === 'exists' && (
             <div className="mt-3 flex flex-col gap-2">
-              <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
-                {interpretFlow.error}
-              </p>
               <p className="text-sm text-ink-soft">
-                Your interpretation was recorded. Only the reflection text failed to load -- retrying will not
-                create another interpretation.
+                This reading has already been interpreted. Its structured analysis does not change on a later
+                visit -- start a new reading for a different question or spread.
               </p>
-              <button
-                type="button"
-                onClick={() => void fetchNarrative(interpretFlow.interpretation)}
+              <Link
+                to={`/readings/${reading.id}/result`}
                 className="self-start rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
               >
-                Try loading the reflection again
-              </button>
+                View the result
+              </Link>
             </div>
           )}
 
-          {interpretFlow.phase === 'idle' && (
-            <p className="mt-3 text-sm text-ink-soft">
-              Already interpreted this reading?{' '}
-              <Link to={`/readings/${reading.id}/result`} className="text-accent underline">
-                View the result
-              </Link>
-              .
-            </p>
+          {existingInterpretation === 'none' && (
+            <>
+              {(interpretFlow.phase === 'idle' || interpretFlow.phase === 'interpret-failed') && (
+                <>
+                  {interpretFlow.phase === 'interpret-failed' && (
+                    <p role="alert" className="mt-3 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
+                      {interpretFlow.error}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void handleInterpretClick()}
+                    className="mt-3 rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
+                  >
+                    Interpret My Reading
+                  </button>
+                </>
+              )}
+
+              {(interpretFlow.phase === 'interpreting' || interpretFlow.phase === 'narrating') && (
+                <div className="mt-3 flex flex-col gap-1">
+                  <p className="text-sm text-ink">Interpreting your reading…</p>
+                  <p className="text-sm text-ink-soft">
+                    Raidian Reflection is building a structured analysis of your spread -- no AI is involved in this
+                    step.
+                  </p>
+                </div>
+              )}
+
+              {interpretFlow.phase === 'narrative-failed' && (
+                <div className="mt-3 flex flex-col gap-2">
+                  <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
+                    {interpretFlow.error}
+                  </p>
+                  <p className="text-sm text-ink-soft">
+                    Your interpretation was recorded. Only the reflection text failed to load -- retrying will not
+                    create another interpretation.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void fetchNarrative(interpretFlow.interpretation)}
+                    className="self-start rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
+                  >
+                    Try loading the reflection again
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </Panel>
       ) : (

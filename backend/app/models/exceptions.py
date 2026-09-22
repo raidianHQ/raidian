@@ -26,6 +26,18 @@ class ReadingNotSaveableError(ValueError):
     """
 
 
+class ReadingNotDeletableError(ValueError):
+    """Raised by app/services/reading_service.py::delete_reading() when
+    the target Reading's status is not SAVED -- Delete Saved Reading is,
+    as its name states, scoped to *saved* readings only (Raidian Reading
+    Lifecycle improvements). A DRAFTING/SPREAD_COMPLETE/INTERPRETED
+    reading a user no longer wants is abandoned, not deleted -- it simply
+    never gets saved, and remains excluded from Reading History regardless
+    (GET /readings only ever lists SAVED rows). Mapped to 409 at the API
+    layer, mirroring ReadingNotSaveableError's own status-gate pattern.
+    """
+
+
 class EmailAlreadyRegisteredError(ValueError):
     """Raised by app/services/auth_service.py::register_user() when the
     normalized email already belongs to an existing User -- mapped to 409

@@ -43,6 +43,7 @@ from app.models.exceptions import (
     InsufficientCardsForDigitalDrawError,
     PositionAlreadyDrawnError,
     ReadingAlreadyDrawnError,
+    ReadingNotDeletableError,
     ReadingNotDigitalError,
     ReadingNotDraftingError,
     SpreadNotFoundError,
@@ -229,6 +230,47 @@ def record_card_draw(
             f"position {position_id} has already been drawn in reading {reading.id}"
         ) from exc
     return draw
+
+
+def delete_reading(session: Session, reading: Reading) -> None:
+    """Permanently deletes `reading` and every persisted row beneath it
+    (CardDraw, Interpretation, and -- one level further -- AINarrative/
+    ScripturalReflection under Interpretation, plus JournalEntry) --
+    Delete Saved Reading, Raidian Reading Lifecycle improvements.
+
+    Raises ReadingNotDeletableError if `reading.status` is not SAVED --
+    Delete Saved Reading is scoped to saved readings only; checked first,
+    before anything is touched. `reading` is already-resolved and
+    already-owned (the caller passes the object
+    app.api.dependencies.get_owned_reading produced), exactly mirroring
+    record_card_draw()/record_digital_draw()'s own contract -- this
+    function performs no ownership check of its own.
+
+    Deletes `reading.reflection_session`, not `reading` directly: Reading
+    carries no owner column of its own (ReflectionSession.owner_id is the
+    ownership anchor -- see ReflectionSession's own docstring), so
+    deleting only the Reading row would leave an orphaned, ownerless
+    ReflectionSession behind with nothing beneath it. Every table this
+    needs to remove is already wired for exactly this via existing
+    relationships/database constraints, so nothing new is introduced
+    here: ReflectionSession.reading cascades at the ORM level
+    (cascade="all, delete-orphan"), and CardDraw/Interpretation/
+    JournalEntry (ondelete="CASCADE" on their reading_id column) and
+    AINarrative/ScripturalReflection (ondelete="CASCADE" on their
+    interpretation_id column) all cascade at the database level -- one
+    delete removes the entire tree.
+
+    Never commits or rolls back -- the caller (the get_db request
+    boundary, app/db/session.py) controls the transaction, exactly as
+    every other function in this module already does.
+    """
+    if reading.status != ReadingStatus.SAVED:
+        raise ReadingNotDeletableError(
+            f"reading {reading.id} is not SAVED (status={reading.status.value}); "
+            "only a saved reading can be deleted"
+        )
+    session.delete(reading.reflection_session)
+    session.flush()
 
 
 def select_digital_cards(
