@@ -91,4 +91,18 @@ The Raidian Wise reflection flow -- registration, New Reading, Card Entry, Sprea
 
 ## License
 
-See the LICENSE file included in this repository.
+Raidian-original material is proprietary; all rights are reserved. This
+repository is publicly viewable, but it is not open-source and no license
+to reuse Raidian-original material is granted by that visibility alone.
+
+Third-party and public-domain materials included in this repository (such
+as artwork and reference data) are governed separately by their own
+applicable licenses or public-domain status, not by Raidian's proprietary
+license.
+
+See [LICENSE](LICENSE), [COPYRIGHT.md](COPYRIGHT.md), and
+[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for full details.
+Artwork provenance is documented separately in
+[Documentation/STEP74_ARTWORK_ASSET_ACQUISITION.md](Documentation/STEP74_ARTWORK_ASSET_ACQUISITION.md)
+and
+[Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md](Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md).

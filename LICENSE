@@ -1,0 +1,62 @@
+Copyright (c) 2026 Kelly Sprinkle. All rights reserved.
+
+This repository ("Raidian") is made publicly viewable on GitHub, but it is
+NOT open-source software and is NOT released under an open-source license.
+
+1. Reservation of rights
+
+All rights in the Raidian-original material contained in this repository --
+including, without limitation, its application source code, architecture,
+documentation, design and governance documents, interpretation-engine and
+narrative-assembly implementation, original prompts and prompt architecture,
+and other original expressive content authored for the project -- are
+reserved by the copyright holder named above.
+
+2. No permission granted
+
+No permission is granted to any person to reproduce, copy, modify, merge,
+publish, distribute, sublicense, sell, or create derivative works from the
+Raidian-original material in this repository, in whole or in part, except as
+expressly permitted in writing by the copyright holder or as required by
+applicable law.
+
+3. Public visibility does not imply permission
+
+The fact that this repository is publicly visible on GitHub (for example, to
+support portfolio review, collaboration discussion, or similar purposes)
+does not, by itself, grant any license or permission to use, copy, modify,
+or redistribute the Raidian-original material. Viewing or forking this
+repository does not create any license under this document.
+
+4. Third-party and public-domain material
+
+This repository also contains material that is third-party or public-domain
+in origin and is NOT claimed as Raidian-original material under this
+license. That material remains subject to its own applicable license or
+public-domain status, independent of this license, and nothing in this
+license claims ownership of it or restricts its use beyond what its own
+license or status already permits. See COPYRIGHT.md and
+THIRD_PARTY_LICENSES.md for the specific categories and sources of such
+material, including (without limitation):
+
+   - the cosmic background photograph, a public-domain NASA astronaut
+     photograph (see Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md);
+   - the Rider-Waite-Smith card artwork, public domain as documented in
+     Documentation/STEP74_ARTWORK_ASSET_ACQUISITION.md;
+   - traditional tarot structure, names, and symbolism, and Scripture
+     references, which are not original to this project; and
+   - third-party software dependencies, each governed by its own license
+     (see THIRD_PARTY_LICENSES.md).
+
+5. No override of public-domain or third-party rights
+
+Nothing in this license attempts to re-copyright, restrict, or otherwise
+override the public-domain status of any public-domain material described
+above, or the terms of any third-party license under which other material is
+used.
+
+6. No warranty
+
+THE RAIDIAN-ORIGINAL MATERIAL IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED. THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY
+CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM ITS USE.

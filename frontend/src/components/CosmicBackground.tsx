@@ -25,18 +25,22 @@
  *    the time it reaches full opacity it's already the same solid color
  *    the page uses everywhere else.
  *
- * 3. The hero photograph itself -- public/assets/raidian/"Stargazer
- *    Beneath the Milky Way.png" (1672x941), tree/Milky Way/stargazing
- *    figure -- completely unchanged from every previous pass: same crop,
+ * 3. The hero photograph itself -- public/assets/raidian/
+ *    "iss41-milky-way-and-sahara-sands.jpg" (4256x2832), a NASA
+ *    astronaut photograph (ISS Expedition 41) of the Milky Way and
+ *    starfield above Earth's limb, with ISS hardware silhouettes framing
+ *    the frame's edges -- public domain (see
+ *    Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md). Same crop,
  *    same fade, no filter of any kind. This is the only layer meant to be
  *    read clearly; layers 1-2 exist purely so the page below it doesn't
  *    feel like a hard cut to flat color.
  *
- * Crop unchanged from every previous pass: the outer band is sized with
- * `aspect-1672/800` (the top ~85% of the photo's height) while the <img>
- * renders at its own full natural aspect ratio (`w-full h-auto`, never
- * object-fit/upscaling), so the excess simply overflows past the box and
- * `overflow-hidden` clips it there -- tree/figure always intact.
+ * Crop: the outer band is sized with `aspect-4256/2408` (the top ~85% of
+ * the photo's natural height, the same fraction every previous pass used
+ * for the prior hero photo, re-derived for this photo's own dimensions)
+ * while the <img> renders at its own full natural aspect ratio (`w-full
+ * h-auto`, never object-fit/upscaling), so the excess simply overflows
+ * past the box and `overflow-hidden` clips it there.
  *
  * `import.meta.env.BASE_URL` (never a bare leading slash), matching the
  * existing convention in ../lib/cardArtwork.ts, so this keeps resolving
@@ -49,10 +53,10 @@
 const SKY_GHOST_OPACITY = 0.16
 
 /** Where the occluder's own transparent-to-solid gradient starts: exactly
- * at the hero photo's own box bottom (`100vw * 800/1672`, the same math
+ * at the hero photo's own box bottom (`100vw * 2408/4256`, the same math
  * the hero's own box height uses), so there's a single, well-defined
  * hand-off point rather than two independent fades overlapping oddly. */
-const SKY_CONTINUATION_TOP = 'calc(100vw * 800 / 1672)'
+const SKY_CONTINUATION_TOP = 'calc(100vw * 2408 / 4256)'
 
 /** Plain two-stop color gradient (no image, no blur risk at any length)
  * from transparent to the page's own flat `--color-bg-deepest`, over a
@@ -65,14 +69,13 @@ const SKY_CONTINUATION_FADE =
 /**
  * A wash toward rgb(11,8,24) -- --color-bg-deepest's deep violet-black --
  * confined to the photo's own lower edge: fully transparent for the first
- * 55% of the box (where the Milky Way, tree, and stargazer silhouette need
- * to read with the source photo's own contrast, untouched), then ramping
- * up only over the last 45% to ease the image's own coloring toward the
- * page color the alpha mask below is simultaneously fading it into. This
- * is only the fade's *target* color, mirroring --color-bg-deepest so the
- * page transition stays seamless -- the photo itself carries no filter,
- * hue-shift, or overlay. Still fully transparent until well past the
- * silhouette's own position, so it never touches tree/person.
+ * 55% of the box (where the Milky Way and station-hardware silhouettes
+ * need to read with the source photo's own contrast, untouched), then
+ * ramping up only over the last 45% to ease the image's own coloring
+ * toward the page color the alpha mask below is simultaneously fading it
+ * into. This is only the fade's *target* color, mirroring
+ * --color-bg-deepest so the page transition stays seamless -- the photo
+ * itself carries no filter, hue-shift, or overlay.
  */
 const HERO_TINT_GRADIENT = [
   'rgba(11,8,24,0) 0%',
@@ -92,7 +95,7 @@ const HERO_FADE_MASK =
   'linear-gradient(to bottom, black 0%, black 22%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.12) 88%, transparent 100%)'
 
 export function CosmicBackground() {
-  const heroSrc = `${import.meta.env.BASE_URL}assets/raidian/${encodeURIComponent('Stargazer Beneath the Milky Way.png')}`
+  const heroSrc = `${import.meta.env.BASE_URL}assets/raidian/${encodeURIComponent('iss41-milky-way-and-sahara-sands.jpg')}`
 
   return (
     <>
@@ -117,15 +120,17 @@ export function CosmicBackground() {
         style={{ top: SKY_CONTINUATION_TOP, bottom: 0, backgroundImage: SKY_CONTINUATION_FADE }}
       />
 
-      {/* Layer 3: the hero photo -- unchanged from every previous pass. */}
+      {/* Layer 3: the hero photo -- same crop/fade/mask treatment as
+          every previous pass, re-derived for this photo's own dimensions
+          (see file doc comment). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 aspect-1672/800 overflow-hidden"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 aspect-4256/2408 overflow-hidden"
         style={{ WebkitMaskImage: HERO_FADE_MASK, maskImage: HERO_FADE_MASK }}
       >
         {/* No filter/hue-rotate/blend-mode grade on the photo -- shown
             essentially as-is, so the Milky Way's own vividness and the
-            tree/stargazer silhouette's own contrast are what actually
+            station-hardware silhouettes' own contrast are what actually
             render, matching the mockup's clear photographic hierarchy. */}
         <img src={heroSrc} alt="" className="block h-auto w-full" />
         <div
