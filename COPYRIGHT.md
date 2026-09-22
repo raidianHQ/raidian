@@ -47,7 +47,14 @@ following as original project material:
 - original astrology/correspondence notes and organizational structure
   authored by the project, to the extent copyrightable, as distinct from
   the underlying traditional correspondence facts themselves (see Section D
-  for important caveats specific to this category).
+  for important caveats specific to this category); and
+- the active cosmic background photograph
+  (`frontend/public/assets/raidian/Stargazer Beneath the Milky Way.png`) --
+  an original photograph personally taken by the Raidian project
+  creator/user, with the enhanced/color-adjusted version in this repository
+  produced from that original photograph during Raidian's own design work;
+  see
+  [Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md](Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md).
 
 ### AI-assisted material
 
@@ -68,8 +75,11 @@ protected by applicable law.
 The following categories of material appear in or are used by this
 repository but are **not** claimed as Raidian-owned:
 
-- **the cosmic background photograph** -- a public-domain NASA astronaut
-  photograph; see
+- **a formerly-used cosmic background photograph**
+  (`iss41-milky-way-and-sahara-sands.jpg`) -- a public-domain NASA astronaut
+  photograph, present in the repository but not the currently active cosmic
+  background (the active one is Raidian-original material; see Section B);
+  see
   [Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md](Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md);
 - **the Rider-Waite-Smith card artwork** -- sourced from Wikimedia Commons
   and documented as public domain there; see
@@ -125,9 +135,12 @@ documented in:
 - [Documentation/STEP74_ARTWORK_ASSET_ACQUISITION.md](Documentation/STEP74_ARTWORK_ASSET_ACQUISITION.md)
   (Rider-Waite-Smith card artwork), and
 - [Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md](Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md)
-  (cosmic background photograph).
+  (cosmic background photographs).
 
-Raidian does not claim ownership of either of these public-domain assets.
+Raidian does not claim ownership of the Rider-Waite-Smith card artwork
+(public domain) or of the formerly-used NASA cosmic background photograph
+(public domain, not currently active; see Section C). The currently active
+cosmic background photograph is Raidian-original material (see Section B).
 These documents govern the provenance record for those assets; this
 section only cross-references them.
 

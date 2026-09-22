@@ -30,9 +30,18 @@ collection (the "Pam-A" 1910 Rider (UK) trade-edition scan).
 No additional licensing claims beyond what that document states are made
 here.
 
-## C. Cosmic background image
+## C. Cosmic background image (formerly used, not currently active)
 
 `frontend/public/assets/raidian/iss41-milky-way-and-sahara-sands.jpg`
+
+**This is not the currently active cosmic background.** The active cosmic
+background (`Stargazer Beneath the Milky Way.png`) is Raidian-original
+material -- an original photograph taken by the Raidian project creator,
+enhanced/color-adjusted during Raidian's own design work -- and is not
+third-party material; see [COPYRIGHT.md](COPYRIGHT.md) Section B and
+[Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md](Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md)
+Section 2. The file below remains present in the repository and its
+provenance record below remains accurate, kept for reference.
 
 Verified facts, drawn from
 [Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md](Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md):
@@ -148,22 +157,31 @@ are not claimed as Raidian-original material.
   here about MPL-2.0/proprietary-code compatibility beyond this factual
   description of how the component is used.
 
-## G. Removed/unknown-provenance material
+## G. Removed, unknown-provenance material
 
-This repository previously contained several cosmic background image files
-of unknown provenance (no source, license, or attribution information was
-recoverable from the repository for any of them). They were removed during
-this licensing/IP cleanup and are **not** current assets of this project:
+This repository previously contained three additional cosmic background
+image files of unknown provenance (no source, license, or attribution
+information was recoverable from the repository for any of them). They were
+removed during this licensing/IP cleanup and are **not** current assets of
+this project:
 
-- `Stargazer Beneath the Milky Way.png` (replaced by the NASA image
-  documented in Section C above)
 - `raidian-milky-way.png` (unused, removed)
 - `milky-way-sky.jpeg` (unused, removed)
 - `raidian-wise-reading-reference.png` (unused, removed)
 
+A fourth file, `Stargazer Beneath the Milky Way.png`, was temporarily removed
+during the same cleanup on the same unknown-provenance basis, but that
+determination was incorrect for this file: it is an original photograph
+taken by the Raidian project creator, not third-party or unknown-provenance
+material. It has been restored and is once again the active cosmic
+background; see [COPYRIGHT.md](COPYRIGHT.md) Section B and
+[Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md](Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md)
+Sections 1-2. It is listed here only to explain the historical record, not as
+current removed/unknown-provenance material.
+
 See
 [Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md](Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md)
-for the historical record of this removal and replacement.
+for the full historical record.
 
 ## H. No ownership claim over third-party material
 

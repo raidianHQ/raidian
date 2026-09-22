@@ -39,8 +39,12 @@ license or status already permits. See COPYRIGHT.md and
 THIRD_PARTY_LICENSES.md for the specific categories and sources of such
 material, including (without limitation):
 
-   - the cosmic background photograph, a public-domain NASA astronaut
-     photograph (see Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md);
+   - a formerly-used cosmic background photograph, a public-domain NASA
+     astronaut photograph present in the repository but not the currently
+     active cosmic background (see
+     Documentation/COSMIC_BACKGROUND_ASSET_PROVENANCE.md; the currently
+     active cosmic background photograph is Raidian-original material, not
+     third-party or public-domain material -- see COPYRIGHT.md Section B);
    - the Rider-Waite-Smith card artwork, public domain as documented in
      Documentation/STEP74_ARTWORK_ASSET_ACQUISITION.md;
    - traditional tarot structure, names, and symbolism, and Scripture

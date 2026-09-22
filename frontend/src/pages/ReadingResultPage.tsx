@@ -621,13 +621,6 @@ export function ReadingResultPage() {
           </p>
         )}
         <p className="max-w-2xl text-xl text-ink italic sm:text-2xl">&ldquo;{model.central_question}&rdquo;</p>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="no-print rounded-full border border-accent px-4 py-2 text-sm text-accent transition-colors hover:bg-accent hover:text-paper"
-        >
-          Share / Save PDF
-        </button>
       </div>
       <GoldDivider size="lg" />
 
@@ -1155,12 +1148,21 @@ export function ReadingResultPage() {
         </div>
       </SectionPanel>
 
-      <Link
-        to={`/readings/${readingId}`}
-        className="no-print mt-8 self-center text-sm text-accent underline"
-      >
-        Back to Spread Review
-      </Link>
+      <div className="no-print mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          to={`/readings/${readingId}`}
+          className="rounded-full border border-accent px-4 py-2 text-sm text-accent no-underline transition-colors hover:bg-accent hover:text-paper"
+        >
+          Back to Spread Review
+        </Link>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="rounded-full border border-accent px-4 py-2 text-sm text-accent transition-colors hover:bg-accent hover:text-paper"
+        >
+          Share / Save PDF
+        </button>
+      </div>
     </div>
   )
 }
