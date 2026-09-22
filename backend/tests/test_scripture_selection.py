@@ -5,14 +5,18 @@ InterpretiveModel fixtures and directly-inserted ScriptureReference rows
 explicit integration tests at the bottom), so most of these tests remain
 stable even if that seed content changes.
 
-Scripture Theme-Selection Design Audit, Option 2 (approved): Scripture
-selection reads exactly ONE theme -- a Single Card reading's own
-first-listed authored theme, or a multi-card reading's already-computed
-central_issue -- and never falls back to a different, lower-ranked theme
-even when that other theme has an approved mapping. `_model()` below
-builds a two-card fixture by default so most tests exercise the
-central_issue path (mirroring their pre-existing intent); `_single_card_model()`
-builds a genuine one-card fixture for the Single Card-specific tests.
+Scripture Theme-Selection Design Audit, Option 2, as amended to allow a
+ranked fallback: Scripture selection first tries the reading's primary
+theme -- a Single Card reading's own first-listed authored theme, or a
+multi-card reading's already-computed central_issue -- and, only if that
+theme has no approved mapping, falls back through the InterpretiveModel's
+own already-ranked `supporting_themes`, in order, using the first one
+that does. `theme_strength` alone (a theme that is merely present in the
+reading, not promoted to `supporting_themes`) is never consulted as a
+fallback source. `_model()` below builds a two-card fixture by default so
+most tests exercise the central_issue path (mirroring their pre-existing
+intent); `_single_card_model()` builds a genuine one-card fixture for the
+Single Card-specific tests.
 """
 
 from __future__ import annotations
@@ -211,30 +215,91 @@ def test_the_reflections_limit_still_applies_within_a_single_theme(db_session):
     assert {r.theme for r in perspective.reflections} == {"hope"}
 
 
-# --- No cross-theme fallback -----------------------------------------------------
+# --- Ranked fallback through supporting_themes ------------------------------------
 
 
-def test_no_fallback_to_a_lower_ranked_theme_even_when_it_has_an_approved_mapping(db_session):
-    """Mirrors the Scripture Theme-Selection Design Audit's own concrete
-    example: central theme "ambition" has no mapping, a lower-ranked
-    theme "hope" does -- the result must still be empty, never "hope"'s
-    references.
+def test_a_theme_merely_present_in_theme_strength_is_not_a_fallback_source(db_session):
+    """theme_strength lists every theme the reading touches at all;
+    supporting_themes is the narrower, already-ranked subset Scripture
+    actually falls back through. central theme "ambition" has no
+    mapping, and "hope" is mapped and present in theme_strength -- but
+    this fixture never promotes "hope" into supporting_themes (the
+    default, matching _model()'s own un-overridden `supporting_themes`),
+    so the result must still be empty.
     """
-    _reference(db_session, "hope")  # mapped, but not the central theme
+    _reference(db_session, "hope")  # mapped, but not the central theme, and not in supporting_themes
     theme_strength = (
         ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),  # central theme, unmapped
-        ThemeStrength(theme="hope", count=1, citations=(_citation("hope"),)),  # lower-ranked, mapped
+        ThemeStrength(theme="hope", count=1, citations=(_citation("hope"),)),  # present, but not promoted
     )
     model = _model(theme_strength=theme_strength)
     assert model.central_issue.value == "ambition"
+    assert model.supporting_themes == ()
 
     perspective = select_scripture_reflections(db_session, model)
 
     assert perspective.reflections == ()
 
 
-def test_no_reflection_when_no_approved_mapping_exists_for_the_themes_present(db_session):
-    model = _model(theme_strength=(ThemeStrength(theme="ambition", count=1, citations=(_citation("ambition"),)),))
+def test_central_issue_match_is_selected_first_even_when_a_supporting_theme_is_also_mapped(db_session):
+    """Proves priority order and preserves pre-existing behavior: when
+    central_issue itself has an approved mapping, that match wins
+    outright -- a mapped supporting_theme is never consulted, let alone
+    merged in alongside it.
+    """
+    _reference(db_session, "anxiety", reference_display="Philippians 4:6-7")
+    _reference(db_session, "hope", book="Romans", chapter=15, verse_start=13, verse_end=None, reference_display="Romans 15:13")
+    model = _model(
+        theme_strength=(ThemeStrength(theme="anxiety", count=2, citations=(_citation("anxiety"),)),),
+        supporting_themes=(Explained(value="hope", citations=(_citation("hope"),)),),
+    )
+    assert model.central_issue.value == "anxiety"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert {r.theme for r in perspective.reflections} == {"anxiety"}
+
+
+def test_falls_back_to_a_mapped_supporting_theme_when_central_issue_is_unmapped(db_session):
+    """The fix under test: central_issue "ambition" has no mapping;
+    supporting_themes ranks an unmapped theme ("recognition") ahead of a
+    mapped one ("hope") -- selection must skip the unmapped entry and
+    use the first supporting theme that does have an approved reference,
+    respecting supporting_themes' own existing rank order.
+    """
+    _reference(db_session, "hope", book="Romans", chapter=15, verse_start=13, verse_end=None, reference_display="Romans 15:13")
+    model = _model(
+        theme_strength=(
+            ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),
+            ThemeStrength(theme="recognition", count=1, citations=(_citation("recognition"),)),
+            ThemeStrength(theme="hope", count=1, citations=(_citation("hope"),)),
+        ),
+        supporting_themes=(
+            Explained(value="recognition", citations=(_citation("recognition"),)),
+            Explained(value="hope", citations=(_citation("hope"),)),
+        ),
+    )
+    assert model.central_issue.value == "ambition"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert len(perspective.reflections) == 1
+    assert perspective.reflections[0].theme == "hope"
+    assert perspective.reflections[0].reference_display == "Romans 15:13"
+
+
+def test_no_reflection_when_neither_central_issue_nor_any_supporting_theme_has_a_mapping(db_session):
+    model = _model(
+        theme_strength=(
+            ThemeStrength(theme="ambition", count=2, citations=(_citation("ambition"),)),
+            ThemeStrength(theme="recognition", count=1, citations=(_citation("recognition"),)),
+            ThemeStrength(theme="momentum", count=1, citations=(_citation("momentum"),)),
+        ),
+        supporting_themes=(
+            Explained(value="recognition", citations=(_citation("recognition"),)),
+            Explained(value="momentum", citations=(_citation("momentum"),)),
+        ),
+    )
 
     perspective = select_scripture_reflections(db_session, model)
 
@@ -345,12 +410,14 @@ def test_integration_single_card_uses_the_stars_own_first_theme(seeded_session):
     assert {r.theme for r in perspective.reflections} == {"hope"}
 
 
-def test_integration_multi_card_does_not_fall_back_to_a_mapped_lower_ranked_theme(seeded_session):
+def test_integration_multi_card_falls_back_to_a_mapped_supporting_theme(seeded_session):
     """The real Celtic Cross fixture used throughout this project's own
     test suite computes central_issue="inner_guidance", which has no
-    approved Scripture mapping -- even though this same reading's
-    theme_strength includes "patience" (a lower-ranked, mapped theme).
-    Scripture must return no reflections, never "patience"'s.
+    approved Scripture mapping -- but this same reading's own
+    already-ranked supporting_themes includes "patience" (mapped).
+    Scripture must now surface "patience"'s approved reference, proving
+    the fallback works end-to-end against the real engine and the real
+    seeded reference data, not just hand-built fixtures.
     """
     from app.services.interpretation.engine import interpret
 
@@ -372,8 +439,8 @@ def test_integration_multi_card_does_not_fall_back_to_a_mapped_lower_ranked_them
     model = interpret(reading, seeded_session)
 
     assert model.central_issue.value == "inner_guidance"
-    assert any(t.theme == "patience" for t in model.theme_strength)  # mapped, but must not be used
+    assert any(t.value == "patience" for t in model.supporting_themes)  # ranked fallback candidate
 
     perspective = select_scripture_reflections(seeded_session, model)
 
-    assert perspective.reflections == ()
+    assert {r.theme for r in perspective.reflections} == {"patience"}

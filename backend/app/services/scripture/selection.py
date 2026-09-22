@@ -81,30 +81,52 @@ def _to_reflection(row: ScriptureReference, theme_citations: tuple[Citation, ...
     )
 
 
-def select_scripture_reflections(session: Session, model: InterpretiveModel) -> ScripturalPerspective:
-    """Deterministically maps ONE theme -- the reading's Scripture theme
-    per _theme_for_scripture above, never the full theme_strength list --
-    to approved ScriptureReference rows via an exact theme-tag match: no
-    fuzzy matching, no invented equivalence, and critically, no
-    cross-theme fallback. If the selected theme has no approved mapping,
-    this returns an empty perspective; a lower-ranked theme that happens
-    to have an approved mapping is never substituted in -- preserving
-    semantic integrity between what the reading is actually about and
-    what Scripture is shown (Scripture Theme-Selection Design Audit,
-    Section 3C).
+def _theme_candidates(model: InterpretiveModel) -> tuple[str, ...]:
+    """Ordered themes select_scripture_reflections() tries in turn: the
+    reading's primary Scripture theme (_theme_for_scripture above)
+    first, then each already-ranked `supporting_themes` entry as a
+    fallback -- tried only when every theme earlier in this order has no
+    approved ScriptureReference. Still an exact, per-theme match with no
+    fuzzy/invented equivalence; this only widens *which* theme(s) get
+    checked, never how a single theme is matched. De-duplicates so the
+    same theme is never queried twice.
     """
-    theme = _theme_for_scripture(model)
-    theme_citations: tuple[Citation, ...] = next(
-        (score.citations for score in model.theme_strength if score.theme == theme),
-        (),
-    )
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for theme in (_theme_for_scripture(model), *(explained.value for explained in model.supporting_themes)):
+        if theme not in seen:
+            seen.add(theme)
+            ordered.append(theme)
+    return tuple(ordered)
 
-    rows = session.scalars(
-        select(ScriptureReference)
-        .where(ScriptureReference.theme == theme)
-        .order_by(ScriptureReference.book, ScriptureReference.chapter, ScriptureReference.verse_start)
-    ).all()
-    reflections = tuple(_to_reflection(row, theme_citations) for row in rows[:_MAX_REFLECTIONS])
+
+def select_scripture_reflections(session: Session, model: InterpretiveModel) -> ScripturalPerspective:
+    """Maps the reading to approved ScriptureReference rows for the
+    first theme -- in _theme_candidates() order -- that has an approved
+    mapping: the reading's primary Scripture theme first, then its
+    already-ranked supporting_themes as a fallback (Scripture Theme-
+    Selection Design Audit, Section 3C, as amended to allow a ranked
+    fallback rather than none). Each candidate theme is still matched
+    exactly, never fuzzily; the first candidate with any approved rows
+    wins outright -- a later candidate is never merged in alongside it.
+    If no candidate theme has an approved mapping, returns an empty
+    perspective.
+    """
+    for theme in _theme_candidates(model):
+        rows = session.scalars(
+            select(ScriptureReference)
+            .where(ScriptureReference.theme == theme)
+            .order_by(ScriptureReference.book, ScriptureReference.chapter, ScriptureReference.verse_start)
+        ).all()
+        if rows:
+            theme_citations: tuple[Citation, ...] = next(
+                (score.citations for score in model.theme_strength if score.theme == theme),
+                (),
+            )
+            reflections = tuple(_to_reflection(row, theme_citations) for row in rows[:_MAX_REFLECTIONS])
+            break
+    else:
+        reflections = ()
 
     return ScripturalPerspective(
         schema_version=SCHEMA_VERSION,
