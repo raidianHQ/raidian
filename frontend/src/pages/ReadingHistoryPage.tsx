@@ -3,14 +3,15 @@ import { Link } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { listSavedReadings, type ReadingStatus, type ReadingSummary } from '../api/readings'
 import { useAuth } from '../auth/useAuth'
+import { Panel } from '../components/Panel'
 
 /**
- * Reading History (Step 52) -- GET /readings, reused verbatim from the
- * existing API layer (no new HTTP mechanism). Saved Readings only, by
- * the backend's own already-established, unmodified design
- * (READING_HISTORY_OWNERSHIP_DESIGN.md Section 7) -- this page does not
- * attempt to surface drafts/in-progress Readings and adds no second
- * endpoint to do so.
+ * Reading History (Step 52; restyled for the cosmic redesign) -- GET
+ * /readings, reused verbatim from the existing API layer (no new HTTP
+ * mechanism). Saved Readings only, by the backend's own already-
+ * established, unmodified design (READING_HISTORY_OWNERSHIP_DESIGN.md
+ * Section 7) -- this page does not attempt to surface drafts/in-progress
+ * Readings and adds no second endpoint to do so.
  *
  * Known, deliberate contract gap, not fabricated here: ReadingSummary
  * (backend/app/schemas/reading_api.py) has no spread_id/spread field --
@@ -88,7 +89,7 @@ export function ReadingHistoryPage() {
   if (loadError) {
     return (
       <div className="mx-auto w-full max-w-2xl">
-        <p role="alert" className="rounded-md bg-error-soft px-3 py-2 text-sm text-error">
+        <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
           {loadError}
         </p>
       </div>
@@ -105,23 +106,25 @@ export function ReadingHistoryPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <h1 className="mb-2 text-2xl font-medium text-ink">Reading History</h1>
-      <p className="mb-8 text-sm text-ink-soft">Your saved readings, newest first.</p>
+      <div className="mb-8 text-center">
+        <h1 className="font-serif text-3xl text-ink sm:text-4xl">Reading History</h1>
+        <p className="mt-2 text-sm text-ink-soft">Your saved readings, newest first.</p>
+      </div>
 
       {readings.length === 0 ? (
-        <div className="rounded-lg border border-border bg-paper-muted px-4 py-6 text-center">
+        <Panel className="text-center">
           <p className="text-sm text-ink-soft">You haven't saved any readings yet.</p>
           <Link
             to="/readings/new"
-            className="mt-4 inline-block rounded-md bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
+            className="mt-4 inline-block rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
           >
             Start a new reading
           </Link>
-        </div>
+        </Panel>
       ) : (
         <ul className="flex flex-col gap-3">
           {readings.map((reading) => (
-            <li key={reading.id} className="rounded-lg border border-border bg-paper px-4 py-3">
+            <Panel key={reading.id} as="li" className="p-4 sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 {/* min-w-0 lets this text shrink/wrap inside the flex row instead
                     of resisting its intrinsic content width (Step 57 fix for the
@@ -129,7 +132,7 @@ export function ReadingHistoryPage() {
                     Section 14) -- a long, unbroken question could otherwise push
                     the row wider than its container on a narrow screen. */}
                 <p className="min-w-0 flex-1 text-ink">{reading.question}</p>
-                <span className="whitespace-nowrap rounded-full border border-border px-2 py-0.5 text-xs uppercase tracking-wide text-ink-soft">
+                <span className="rounded-full border border-border px-2 py-0.5 text-xs tracking-wide whitespace-nowrap text-accent uppercase">
                   {STATUS_LABEL[reading.status]}
                 </span>
               </div>
@@ -154,7 +157,7 @@ export function ReadingHistoryPage() {
                   View Result
                 </Link>
               </div>
-            </li>
+            </Panel>
           ))}
         </ul>
       )}

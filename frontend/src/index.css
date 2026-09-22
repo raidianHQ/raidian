@@ -1,41 +1,92 @@
 @import "tailwindcss";
 
-/* Raidian's own visual foundation -- deliberately calm and unadorned,
-   in keeping with docs/PRINCIPLES.md ("Reflection over prediction",
-   "Humility over certainty", "Wisdom over fear"). No mystical or
-   fortune-telling visual language (no purple/neon "magic" palette) --
-   a plain, readable, neutral base that later screens build on. */
+/* Raidian Wise cosmic visual identity -- deep indigo night sky, gold
+   accents, warm ivory text. Still deliberately calm and unadorned in
+   spirit (docs/PRINCIPLES.md: "Reflection over prediction", "Humility
+   over certainty") -- this is a quiet, reflective palette, not a
+   fortune-teller/neon-mystical one. Token *names* are kept stable
+   (ink/paper/accent/border/etc.) so every existing page and component
+   re-skins through them without per-component rewrites; only the
+   underlying values changed. New tokens (bg-deepest/bg-deep/gold-soft/
+   font-serif) support the header, cosmic background, and dividers the
+   redesign adds. */
 @theme {
-  --color-ink: #1f1c24;
-  --color-ink-soft: #4b4553;
-  --color-paper: #fdfcfb;
-  --color-paper-muted: #f4f1ee;
-  --color-border: #e2ddd6;
-  --color-accent: #5b5470;
-  --color-accent-soft: #efedf3;
-  --color-error: #a13636;
-  --color-error-soft: #f8e9e9;
+  /* Text */
+  --color-ink: #f3ebdd; /* warm ivory -- primary text on dark surfaces */
+  --color-ink-soft: #b9b0c7; /* muted lavender -- secondary text */
+
+  /* Surfaces ("paper" now means a translucent purple panel, not a page) */
+  --color-paper: #1b1530; /* purple panel surface */
+  --color-paper-muted: #241b3d; /* secondary/muted purple surface */
+
+  /* Gold */
+  --color-accent: #d9b56d; /* gold -- buttons, links, emphasis */
+  --color-accent-soft: rgba(217, 181, 109, 0.16); /* soft gold wash for badges/selected states */
+  --color-gold-soft: #e8cc91; /* brighter gold for hover/highlight text */
+  /* Thin gold hairline border/divider -- 0.22, down from 0.35: at the
+     higher alpha, this border (repeated around every card slot) read as a
+     visually heavy grid rather than a restrained accent, and blended with
+     whatever dark surface sat behind it into a muddy not-quite-gold,
+     not-quite-purple line. Lower alpha keeps it a quiet gold hairline
+     (matching the mockup) instead of a major visual element on its own. */
+  --color-border: rgba(217, 181, 109, 0.22);
+
+  /* Status */
+  --color-error: #e08585;
+  --color-error-soft: #3a2323;
+
+  /* Background (behind panels, beneath the Milky Way hero image) -- a
+     deep violet-black, matching the mockup's rich violet/plum night sky.
+     A previous pass sampled this from the hero photo's own pixels
+     (#26323d, blue-indigo), which was color-accurate to the photograph
+     but read as gray/slate against the mockup's warmer violet UI
+     language -- reverted to the deep violet this token originally held. */
+  --color-bg-deepest: #0b0818;
+  --color-bg-deep: #151025;
+  /* The reading board's own surface -- same value as --color-paper-muted
+     (the existing "secondary/muted purple surface" token), so the board
+     reads as deep violet/plum like the mockup rather than the blue-slate
+     a previous pass introduced here. */
+  --color-panel: #241b3d;
 
   --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-ink: #f0eef2;
-    --color-ink-soft: #b8b2c2;
-    --color-paper: #17151b;
-    --color-paper-muted: #201d26;
-    --color-border: #322e3a;
-    --color-accent: #b3abcf;
-    --color-accent-soft: #2a2733;
-    --color-error: #e08585;
-    --color-error-soft: #3a2323;
-  }
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
 body {
   margin: 0;
-  background-color: var(--color-paper);
+  /* --color-bg-deepest: a deep violet-black (see that token's own comment
+     above), and CosmicBackground's HERO_TINT_GRADIENT fades the photo into
+     this exact color -- so the photo, the page, and the board
+     (--color-panel, one step lighter, same violet family) are one
+     continuous environment instead of the photo handing off to a visibly
+     different page color. */
+  background-color: var(--color-bg-deepest);
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+
+/* Gold focus ring in place of the browser default -- stays clearly
+   visible against both the purple panels and the night-sky background,
+   and reads as part of the palette rather than a mismatched blue. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

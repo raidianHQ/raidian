@@ -16,15 +16,28 @@ import { getReading, saveReading, type ReadingDetail, type ReadingStatus } from 
 import { getCurrentScripture, getScripture, type ScripturalPerspective } from '../api/scripture'
 import { useAuth } from '../auth/useAuth'
 import { CardArtwork } from '../components/CardArtwork'
+import { GoldDivider } from '../components/GoldDivider'
+import { BookIcon, ConstellationIcon, ReflectionIcon, SpreadIcon } from '../components/icons'
+import { SectionPanel } from '../components/Panel'
 
 /**
  * Reading Result (Step 55; reorganized into a single guided-reflection
- * flow) -- Documentation/READING_RESULT_FLOW_DESIGN.md Sections 4/5/6/9.
- * Renders everything Raidian Wise knows about one Reading, in one linear
- * "what are the cards saying together?" progression: question -> spread
- * -> opening synthesis -> key themes -> each card -> relationships and
- * patterns -> the full deterministic reading -> optional Scripture ->
- * closing reflection and questions -> journal.
+ * flow; restyled Step -- cosmic redesign) -- Documentation/
+ * READING_RESULT_FLOW_DESIGN.md Sections 4/5/6/9. Renders everything
+ * Raidian Wise knows about one Reading, in one linear "what are the
+ * cards saying together?" progression: question -> spread -> opening
+ * synthesis -> key themes -> each card -> relationships and patterns ->
+ * the full deterministic reading -> optional Scripture -> closing
+ * reflection and questions -> journal.
+ *
+ * The redesign groups this same, unchanged flow into three visually
+ * distinct zones -- a hero (question/spread), "The Reading" panel
+ * (everything the Interpretation Engine and Narrative/AI produced), and
+ * "Your Reflection" panel (the closing prompt + this reading's own
+ * Journal) -- separated by GoldDivider, per the design brief ("do not
+ * place both sections into one large undifferentiated card"). This is a
+ * presentation/grouping change only: no section here was added, removed,
+ * or given new data-fetching/mutation behavior.
  *
  * Two entry modes for the deterministic Interpretation/Narrative, per the
  * design doc Section 7:
@@ -110,12 +123,12 @@ function Citations({ citations }: { citations: Citation[] }) {
     return null
   }
   return (
-    <div className="mt-1 flex flex-wrap items-center gap-1.5">
-      <span className="text-xs text-ink-soft">Sources:</span>
+    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+      <span className="text-sm text-ink-soft">Sources:</span>
       {citations.map((citation, index) => (
         <span
           key={index}
-          className="rounded-full border border-border bg-paper-muted px-2 py-0.5 text-xs text-ink-soft"
+          className="rounded-full border border-border bg-paper-muted px-2 py-0.5 text-sm text-ink-soft"
         >
           {citationLabel(citation)}
         </span>
@@ -127,9 +140,11 @@ function Citations({ citations }: { citations: Citation[] }) {
 function NarrativeSectionBlock({ section }: { section: NarrativeSection }) {
   return (
     <div>
-      <h3 className="mb-1 text-sm font-medium uppercase tracking-wide text-ink-soft">{section.title}</h3>
+      <h3 className="mb-1.5 text-sm font-medium tracking-wide text-accent uppercase sm:text-base">
+        {section.title}
+      </h3>
       {section.statements.map((statement, index) => (
-        <p key={index} className="text-ink">
+        <p key={index} className="text-lg leading-relaxed text-ink sm:text-xl">
           {statement.text}
         </p>
       ))}
@@ -523,7 +538,7 @@ export function ReadingResultPage() {
 
   if (loadError) {
     return (
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto w-full max-w-275">
         <p role="alert" className="rounded-md bg-error-soft px-3 py-2 text-sm text-error">
           {loadError}
         </p>
@@ -536,13 +551,13 @@ export function ReadingResultPage() {
 
   if (notInterpreted) {
     return (
-      <div className="mx-auto w-full max-w-3xl">
-        <h1 className="mb-2 text-2xl font-medium text-ink">Reading Result</h1>
-        <div className="rounded-lg border border-border bg-paper-muted px-4 py-6 text-center">
+      <div className="mx-auto w-full max-w-275">
+        <h1 className="mb-2 font-serif text-3xl text-ink">Reading Result</h1>
+        <div className="rounded-3xl border border-border bg-paper/80 px-4 py-6 text-center backdrop-blur-sm">
           <p className="text-sm text-ink-soft">This reading hasn't been interpreted yet.</p>
           <Link
             to={`/readings/${readingId}`}
-            className="mt-4 inline-block rounded-md bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
+            className="mt-4 inline-block rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
           >
             Back to Spread Review
           </Link>
@@ -553,7 +568,7 @@ export function ReadingResultPage() {
 
   if (!interpretation) {
     return (
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto w-full max-w-275">
         <p className="text-sm text-ink-soft">Loading…</p>
       </div>
     )
@@ -584,508 +599,552 @@ export function ReadingResultPage() {
   const totalCards = model.card_interpretations.length
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      {/* 1. Question / intention */}
-      <h1 className="mb-2 text-2xl font-medium text-ink">Reading Result</h1>
-      <p className="mb-6 text-lg text-ink">{model.central_question}</p>
-
-      {/* 2. Spread and positions -- the whole reading at a glance. */}
-      {positions.length > 0 && (
-        <section className="mb-8">
-          <h2 className="mb-1 text-sm font-medium uppercase tracking-wide text-ink-soft">Your Spread</h2>
-          <p className="mb-3 text-xs text-ink-soft">
-            {readingDetail?.spread.name}
-            {readingDetail?.spread.description && <> — {readingDetail.spread.description}</>}
+    <div className="-mt-12 mx-auto flex w-full max-w-275 flex-col">
+      {/* 1 + 2. Hero -- "Your Reading" heading area, and the spread
+          subtitle/question beneath it. Stays unboxed, directly on the
+          cosmic background, matching the mockup -- the large gold
+          divider below it is the first of the major-section transitions,
+          not the hero's own closing rule.
+          `-mt-12` here cancels AppShell's `<main>` own `pt-6` for this page
+          specifically, plus one further small increment into the header's
+          own bottom padding (empty space, no content sits there), pulling
+          the whole reading content block -- heading, spread label,
+          question, and everything below -- up together as one group,
+          without touching AppShell's shared `<main>` padding used by every
+          other page. */}
+      <div className="mb-2 flex flex-col items-center gap-3 text-center">
+        <h1 className="font-serif text-4xl text-ink sm:text-5xl">Your Reading</h1>
+        {readingDetail && (
+          <p className="text-xs font-medium tracking-[0.3em] text-accent uppercase">
+            {readingDetail.spread.name}
+            {positions.length > 0 && ` · ${positions.length}-Card Spread`}
           </p>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        )}
+        <p className="max-w-2xl text-xl text-ink italic sm:text-2xl">&ldquo;{model.central_question}&rdquo;</p>
+      </div>
+      <GoldDivider size="lg" />
+
+      {/* 3. The card spread -- its own major SectionPanel, distinct from
+          "The Reading" below it (not a subsection sharing that panel).
+          Individual cards have no bordered/filled box of their own (the
+          "box around the box" the mockup doesn't have) -- only the card
+          artwork's own frame (aspect-2/3, bg-paper) remains, plus the
+          position label, name, and orientation badge as plain stacked
+          text. */}
+      {positions.length > 0 && (
+        <SectionPanel title="Your Spread" icon={<SpreadIcon className="h-8 w-8 text-accent" />}>
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-7">
             {positions.map((position) => {
               const draw = drawByPositionName.get(position.name)
               if (!draw) return null
               return (
-                <div key={position.id} className="flex flex-col items-center gap-2">
-                  <span className="text-center text-sm font-medium text-ink">{position.name}</span>
-                  <div className="flex w-full flex-col items-center gap-2 rounded-lg border-2 border-accent bg-paper p-2 text-center shadow-sm">
-                    <div className="aspect-2/3 w-full overflow-hidden rounded-md bg-paper-muted">
-                      <CardArtwork card={draw.card} orientation={draw.orientation} />
+                <div key={position.id} className="flex flex-col items-center gap-2 text-center">
+                  <span className="text-sm font-medium text-ink-soft sm:text-base">{position.name}</span>
+                  <div className="aspect-2/3 w-full overflow-hidden rounded-xl bg-paper p-2 sm:p-3">
+                    <CardArtwork card={draw.card} orientation={draw.orientation} />
+                  </div>
+                  <span className="font-serif text-base text-ink sm:text-lg">{draw.card.name}</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-sm ${
+                      draw.orientation === 'reversed' ? 'bg-error-soft text-error' : 'bg-accent-soft text-accent'
+                    }`}
+                  >
+                    {draw.orientation === 'reversed' ? '↓ Reversed' : '↑ Upright'}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </SectionPanel>
+      )}
+
+      <GoldDivider size="lg" />
+
+      {/* 5 + 6. "The Reading" -- opening synthesis, key themes, card-by-
+          card, relationships/patterns, and Scriptural Reflection. Its own
+          major SectionPanel; the sub-parts within it (Key Themes, Card by
+          Card, ...) use plain typography/dividers, never their own
+          SectionPanel, so that treatment stays reserved for genuinely
+          major sections. */}
+      <SectionPanel title="The Reading" icon={<BookIcon className="h-8 w-8 text-accent" />}>
+        {/* Opening synthesis -- AI's opening_summary/overall_narrative
+            when available, else the deterministic Narrative's own
+            opening prose. Either way, this is a synthesis OF the
+            reading below it, never a replacement for it. */}
+        <div className="flex flex-col gap-3">
+          {aiLoaded ? (
+            <>
+              <p className="text-lg leading-relaxed text-ink sm:text-xl">{aiLoaded.opening_summary}</p>
+              <p className="text-lg leading-relaxed text-ink sm:text-xl">{aiLoaded.overall_narrative}</p>
+            </>
+          ) : (
+            <>
+              {narrativeError && (
+                <div className="rounded-xl bg-error-soft px-3 py-2">
+                  <p role="alert" className="text-sm text-error">
+                    {narrativeError}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void handleRetryNarrative()}
+                    className="mt-2 rounded-full bg-accent px-3 py-1.5 text-sm text-paper hover:opacity-90"
+                  >
+                    Try loading the reflection again
+                  </button>
+                </div>
+              )}
+              {!narrative && !narrativeError && <p className="text-sm text-ink-soft">Loading reflection…</p>}
+              {openingSections.map((section) => (
+                <NarrativeSectionBlock key={section.id} section={section} />
+              ))}
+            </>
+          )}
+
+          {aiNarrativeState.phase === 'checking' && (
+            <p className="text-sm text-ink-soft">Checking for a previously generated AI reflection…</p>
+          )}
+
+          {/* AI generation entry point lives here, at the top of the flow it
+              opens -- see AiNarrativeState's own docstring for why this is
+              opt-in/not automatic. */}
+          {aiNarrativeState.phase === 'idle' && (
+            <div className="rounded-2xl border border-dashed border-border bg-paper-muted p-3">
+              <p className="mb-2 text-sm text-ink-soft">
+                Generate an AI-written reflection woven through this reading -- optional, and always secondary to
+                the structured analysis below.
+              </p>
+              <label className="mb-2 flex items-center gap-2 text-sm text-ink-soft">
+                <input
+                  type="checkbox"
+                  checked={includeScriptureInAiNarrative}
+                  onChange={(event) => setIncludeScriptureInAiNarrative(event.target.checked)}
+                />
+                Include the Scriptural Perspective, if available
+              </label>
+              <button
+                type="button"
+                onClick={() => void handleGenerateAiNarrative()}
+                className="rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
+              >
+                Generate AI Reflection
+              </button>
+            </div>
+          )}
+          {aiNarrativeState.phase === 'loading' && (
+            <p className="text-sm text-ink-soft">Generating your AI reflection…</p>
+          )}
+          {aiNarrativeState.phase === 'error' && (
+            <div className="rounded-xl bg-error-soft px-3 py-2">
+              <p role="alert" className="text-sm text-error">
+                {aiNarrativeState.error}
+              </p>
+              <p className="mt-1 text-sm text-ink-soft">
+                Your reading is still complete without it -- see the structured reading below.
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleGenerateAiNarrative()}
+                className="mt-2 rounded-full bg-accent px-3 py-1.5 text-sm text-paper hover:opacity-90"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Key themes. */}
+        {keyThemes.length > 0 && (
+          <div>
+            <h2 className="mb-3 text-sm font-medium tracking-wide text-ink-soft uppercase sm:text-base">
+              Key Themes
+            </h2>
+            <ul className="flex flex-wrap gap-2">
+              {keyThemes.map((theme, index) => (
+                <li key={index} className="rounded-full bg-accent-soft px-3 py-1 text-sm text-accent">
+                  {theme}
+                </li>
+              ))}
+            </ul>
+            {!aiLoaded && !keyThemesSection && (
+              <p className="mt-2 text-sm text-ink-soft">Themes carried by more than one card in this reading.</p>
+            )}
+          </div>
+        )}
+
+        {/* Individual card interpretations -- spacing/a thumbnail as the
+            visual anchor for each entry, not a bordered box per card. */}
+        <div>
+          <h2 className="mb-4 text-sm font-medium tracking-wide text-ink-soft uppercase sm:text-base">
+            Card by Card
+          </h2>
+          <div className="flex flex-col gap-8">
+            {model.card_interpretations.map((card, index) => {
+              const draw = drawByPositionName.get(card.position_name)
+              return (
+                <div key={index} className="flex gap-4">
+                  {draw && (
+                    <div className="aspect-2/3 w-16 shrink-0 overflow-hidden rounded-lg bg-paper-muted sm:w-24">
+                      <CardArtwork card={draw.card} orientation={card.orientation} />
                     </div>
-                    <span className="text-sm font-medium text-ink">{draw.card.name}</span>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <p className="font-serif text-lg text-ink sm:text-xl">
+                      {card.card_name}{' '}
+                      <span className="font-sans text-sm text-ink-soft sm:text-base">— {card.position_name}</span>
+                    </p>
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${
-                        draw.orientation === 'reversed' ? 'bg-error-soft text-error' : 'bg-accent-soft text-ink'
+                      className={`self-start rounded-full px-2 py-0.5 text-sm ${
+                        card.orientation === 'reversed' ? 'bg-error-soft text-error' : 'bg-accent-soft text-accent'
                       }`}
                     >
-                      {draw.orientation === 'reversed' ? '↓ Reversed' : '↑ Upright'}
+                      {card.orientation === 'reversed' ? '↓ Reversed' : '↑ Upright'}
                     </span>
+                    <p className="text-lg leading-relaxed text-ink sm:text-xl">{card.meaning_text}</p>
+                    <Citations citations={[card.citation]} />
                   </div>
                 </div>
               )
             })}
           </div>
-        </section>
-      )}
-
-      {/* 3. Opening synthesis -- AI's opening_summary/overall_narrative
-          when available, else the deterministic Narrative's own opening
-          prose. Either way, this is a synthesis OF the reading below it,
-          never a replacement for it. */}
-      <section className="mb-8 flex flex-col gap-3">
-        {aiLoaded ? (
-          <>
-            <p className="text-ink">{aiLoaded.opening_summary}</p>
-            <p className="text-ink">{aiLoaded.overall_narrative}</p>
-          </>
-        ) : (
-          <>
-            {narrativeError && (
-              <div className="rounded-md bg-error-soft px-3 py-2">
-                <p role="alert" className="text-sm text-error">
-                  {narrativeError}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => void handleRetryNarrative()}
-                  className="mt-2 rounded-md bg-accent px-3 py-1.5 text-sm text-paper hover:opacity-90"
-                >
-                  Try loading the reflection again
-                </button>
-              </div>
-            )}
-            {!narrative && !narrativeError && <p className="text-sm text-ink-soft">Loading reflection…</p>}
-            {openingSections.map((section) => (
-              <NarrativeSectionBlock key={section.id} section={section} />
-            ))}
-          </>
-        )}
-
-        {aiNarrativeState.phase === 'checking' && (
-          <p className="text-sm text-ink-soft">Checking for a previously generated AI reflection…</p>
-        )}
-
-        {/* AI generation entry point lives here, at the top of the flow it
-            opens -- see AiNarrativeState's own docstring for why this is
-            opt-in/not automatic. */}
-        {aiNarrativeState.phase === 'idle' && (
-          <div className="rounded-lg border border-dashed border-border bg-paper-muted p-3">
-            <p className="mb-2 text-xs text-ink-soft">
-              Generate an AI-written reflection woven through this reading -- optional, and always secondary to
-              the structured analysis below.
-            </p>
-            <label className="mb-2 flex items-center gap-2 text-xs text-ink-soft">
-              <input
-                type="checkbox"
-                checked={includeScriptureInAiNarrative}
-                onChange={(event) => setIncludeScriptureInAiNarrative(event.target.checked)}
-              />
-              Include the Scriptural Perspective, if available
-            </label>
-            <button
-              type="button"
-              onClick={() => void handleGenerateAiNarrative()}
-              className="rounded-md bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
-            >
-              Generate AI Reflection
-            </button>
-          </div>
-        )}
-        {aiNarrativeState.phase === 'loading' && (
-          <p className="text-sm text-ink-soft">Generating your AI reflection…</p>
-        )}
-        {aiNarrativeState.phase === 'error' && (
-          <div className="rounded-md bg-error-soft px-3 py-2">
-            <p role="alert" className="text-sm text-error">
-              {aiNarrativeState.error}
-            </p>
-            <p className="mt-1 text-xs text-ink-soft">
-              Your reading is still complete without it -- see the structured reading below.
-            </p>
-            <button
-              type="button"
-              onClick={() => void handleGenerateAiNarrative()}
-              className="mt-2 rounded-md bg-accent px-3 py-1.5 text-sm text-paper hover:opacity-90"
-            >
-              Try again
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* 4. Key themes. */}
-      {keyThemes.length > 0 && (
-        <section className="mb-8">
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-ink-soft">Key Themes</h2>
-          <ul className="flex flex-wrap gap-2">
-            {keyThemes.map((theme, index) => (
-              <li key={index} className="rounded-full bg-accent-soft px-3 py-1 text-sm text-ink">
-                {theme}
-              </li>
-            ))}
-          </ul>
-          {!aiLoaded && !keyThemesSection && (
-            <p className="mt-2 text-xs text-ink-soft">Themes carried by more than one card in this reading.</p>
-          )}
-        </section>
-      )}
-
-      {/* 5. Individual card interpretations. */}
-      <section className="mb-8">
-        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-ink-soft">Card by Card</h2>
-        <div className="flex flex-col gap-4">
-          {model.card_interpretations.map((card, index) => {
-            const draw = drawByPositionName.get(card.position_name)
-            return (
-              <div key={index} className="flex gap-3 rounded-lg border border-border p-3">
-                {draw && (
-                  <div className="aspect-2/3 w-16 shrink-0 overflow-hidden rounded-md bg-paper-muted sm:w-20">
-                    <CardArtwork card={draw.card} orientation={card.orientation} />
-                  </div>
-                )}
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium text-ink">
-                    {card.card_name} <span className="text-ink-soft">— {card.position_name}</span>
-                  </p>
-                  <span
-                    className={`self-start rounded-full px-2 py-0.5 text-xs ${
-                      card.orientation === 'reversed' ? 'bg-error-soft text-error' : 'bg-accent-soft text-ink'
-                    }`}
-                  >
-                    {card.orientation === 'reversed' ? '↓ Reversed' : '↑ Upright'}
-                  </span>
-                  <p className="text-sm text-ink">{card.meaning_text}</p>
-                  <Citations citations={[card.citation]} />
-                </div>
-              </div>
-            )
-          })}
         </div>
-      </section>
 
-      {/* 6. Card relationships and patterns. */}
-      <section className="mb-8">
-        <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-ink-soft">
-          How the Cards Connect
-        </h2>
-        <ul className="flex flex-col gap-2">
-          {model.relationships.same_suit_clusters.map((cluster, index) => (
-            <li key={`suit-${index}`} className="text-sm text-ink">
-              The {cluster.suit} cards reinforce one another: {cluster.card_names.join(', ')}.
-              <Citations citations={cluster.citations} />
-            </li>
-          ))}
-          {totalCards > 1 && (
-            <li className="text-sm text-ink">
-              This reading draws {model.relationships.major_arcana_count} Major Arcana and{' '}
-              {model.relationships.minor_arcana_count} Minor Arcana card
-              {model.relationships.minor_arcana_count === 1 ? '' : 's'}.
-            </li>
-          )}
-          {model.relationships.same_suit_clusters.length === 0 && totalCards <= 1 && (
-            <li className="text-sm text-ink-soft">Not enough cards in this reading to form a pattern.</li>
-          )}
-          {aiLoaded?.card_relationships.map((relationship, index) => (
-            <li key={`ai-${index}`} className="text-sm text-ink">
-              {relationship}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* 7. Deterministic synthesis / supporting interpretation -- what
-          the engine concluded, and (collapsed by default) the full
-          evidence behind it. */}
-      <section className="mb-8 flex flex-col gap-4 rounded-lg border border-border p-4">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">The Structured Reading</h2>
-        <p className="text-xs text-ink-soft">
-          A structured analysis of your cards and positions -- no AI is used to produce this reading.
-        </p>
-
-        <p className="text-ink">{model.deterministic_synthesis.value}</p>
-        <Citations citations={model.deterministic_synthesis.citations} />
-
-        {remainingSections.map((section) => (
-          <NarrativeSectionBlock key={section.id} section={section} />
-        ))}
-
-        <details className="rounded-md border border-border">
-          <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-ink-soft">
-            See the supporting evidence
-          </summary>
-          <div className="flex flex-col gap-4 border-t border-border p-3">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Evidence strength</p>
-              <p className="text-ink">
-                {EVIDENCE_STRENGTH_LABEL[model.evidence_strength] ?? model.evidence_strength}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Central issue</p>
-              <p className="text-ink">{model.central_issue.value}</p>
-              <Citations citations={model.central_issue.citations} />
-            </div>
-
-            {model.primary_tension && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Primary tension</p>
-                <p className="text-ink">
-                  {model.primary_tension.value.pole_a} ↔ {model.primary_tension.value.pole_b} —{' '}
-                  {model.primary_tension.value.label}
-                </p>
-                <Citations citations={model.primary_tension.citations} />
-              </div>
-            )}
-
-            {model.supporting_themes.length > 0 && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Supporting themes</p>
-                <ul className="list-inside list-disc text-ink">
-                  {model.supporting_themes.map((theme, index) => (
-                    <li key={index}>
-                      {theme.value}
-                      <Citations citations={theme.citations} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {model.trajectory && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Trajectory</p>
-                <ol className="list-inside list-decimal text-ink">
-                  {model.trajectory.value.arc.map((step, index) => (
-                    <li key={index}>
-                      {step.position_name}: {step.card_name} ({step.orientation})
-                    </li>
-                  ))}
-                </ol>
-                <Citations citations={model.trajectory.citations} />
-              </div>
-            )}
-
-            {model.blocker && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Blocker</p>
-                <p className="text-ink">{model.blocker.value}</p>
-                <Citations citations={model.blocker.citations} />
-              </div>
-            )}
-
-            {model.advice && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Advice</p>
-                <p className="text-ink">{model.advice.value}</p>
-                <Citations citations={model.advice.citations} />
-              </div>
-            )}
-
-            {model.clarification && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Clarification</p>
-                <p className="text-ink">{model.clarification.value}</p>
-                <Citations citations={model.clarification.citations} />
-              </div>
-            )}
-
-            {model.uncertainty.length > 0 && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">What remains unclear</p>
-                <ul className="list-inside list-disc text-ink">
-                  {model.uncertainty.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {model.contradictions.length > 0 && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Contradictions</p>
-                <ul className="list-inside list-disc text-ink">
-                  {model.contradictions.map((item, index) => (
-                    <li key={index}>
-                      {item.description}
-                      <Citations citations={item.sources} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </details>
-      </section>
-
-      {/* 8. Scriptural Reflection -- optional, opt-in (see ScriptureState's
-          own docstring above). Deterministic theme -> Scripture reference
-          mapping, never AI-generated, never presented as this reading's
-          conclusion -- see the fixed disclaimer rendered with every
-          result. */}
-      <section className="mb-8 flex flex-col gap-4 rounded-lg border border-border p-4">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">
-          Scriptural Reflection (Optional)
-        </h2>
-
-        {scriptureState.phase === 'checking' && (
-          <p className="text-sm text-ink-soft">Checking for a previously shown Scriptural Reflection…</p>
-        )}
-
-        {scriptureState.phase === 'idle' && (
-          <>
-            <p className="text-xs text-ink-soft">
-              See whether any Scripture references connect to this reading's own established themes.
-            </p>
-            <button
-              type="button"
-              onClick={() => void handleShowScripture()}
-              className="self-start rounded-md bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
-            >
-              Show Scriptural Reflection
-            </button>
-          </>
-        )}
-
-        {scriptureState.phase === 'loading' && <p className="text-sm text-ink-soft">Loading…</p>}
-
-        {scriptureState.phase === 'error' && (
-          <div>
-            <p role="alert" className="mb-2 rounded-md bg-error-soft px-3 py-2 text-sm text-error">
-              {scriptureState.error}
-            </p>
-            <button
-              type="button"
-              onClick={() => void handleShowScripture()}
-              className="rounded-md bg-accent px-3 py-1.5 text-sm text-paper hover:opacity-90"
-            >
-              Try again
-            </button>
-          </div>
-        )}
-
-        {scriptureState.phase === 'loaded' && (
-          <>
-            <p className="text-xs italic text-ink-soft">{scriptureState.perspective.disclaimer}</p>
-            {scriptureState.perspective.reflections.length === 0 ? (
-              <p className="text-sm text-ink-soft">
-                None of this reading's themes have an approved Scripture reference yet.
-              </p>
-            ) : (
-              <ul className="flex flex-col gap-4">
-                {scriptureState.perspective.reflections.map((reflection, index) => (
-                  <li key={index} className="rounded-md border border-border bg-paper-muted p-3">
-                    <p className="text-sm font-medium text-ink">
-                      {reflection.reference_display} ({reflection.translation})
-                    </p>
-                    <p className="mt-1 text-xs uppercase tracking-wide text-ink-soft">
-                      Theme: {reflection.theme}
-                    </p>
-                    <p className="mt-2 text-sm text-ink">{reflection.context_note}</p>
-                    <p className="mt-2 text-sm text-ink-soft">{reflection.reflection_connection}</p>
-                    <Citations citations={reflection.theme_citations} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </section>
-
-      {/* 9 + 10. Closing reflection and reflection questions -- AI's own
-          when available, else the deterministic Narrative's "Overall
-          Reflection" plus reading-grounded prompts. Either way, this is
-          meant to lead naturally into the journal below. */}
-      <section className="mb-8 flex flex-col gap-4 rounded-lg border border-border p-4">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Sit With It</h2>
-        <p className="text-ink">{closingReflectionText}</p>
-        {aiLoaded?.scriptural_reflection && (
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">Scriptural Perspective</p>
-            <p className="text-ink">{aiLoaded.scriptural_reflection}</p>
-          </div>
-        )}
+        {/* Card relationships and patterns. */}
         <div>
-          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-ink-soft">
-            Questions to sit with
-          </p>
-          <ul className="list-inside list-disc text-ink">
-            {reflectionQuestions.map((question, index) => (
-              <li key={index}>{question}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* 11. Journal -- always available, independent of AI/Scripture. */}
-      <section className="mb-8 flex flex-col gap-3 rounded-lg border border-border p-4">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Journal</h2>
-        <p className="text-xs text-ink-soft">
-          A private space for your own response to this reading. Your journal entries belong to you.
-        </p>
-
-        {journalEntries.length > 0 && (
+          <h2 className="mb-3 text-sm font-medium tracking-wide text-ink-soft uppercase sm:text-base">
+            How the Cards Connect
+          </h2>
           <ul className="flex flex-col gap-3">
-            {journalEntries.map((entry) => (
-              <li key={entry.id} className="rounded-md bg-paper-muted p-3">
-                <p className="whitespace-pre-wrap text-sm text-ink">{entry.content}</p>
-                <p className="mt-1 text-xs text-ink-soft">{new Date(entry.created_at).toLocaleString()}</p>
+            {model.relationships.same_suit_clusters.map((cluster, index) => (
+              <li key={`suit-${index}`} className="text-lg leading-relaxed text-ink sm:text-xl">
+                The {cluster.suit} cards reinforce one another: {cluster.card_names.join(', ')}.
+                <Citations citations={cluster.citations} />
+              </li>
+            ))}
+            {totalCards > 1 && (
+              <li className="text-lg leading-relaxed text-ink sm:text-xl">
+                This reading draws {model.relationships.major_arcana_count} Major Arcana and{' '}
+                {model.relationships.minor_arcana_count} Minor Arcana card
+                {model.relationships.minor_arcana_count === 1 ? '' : 's'}.
+              </li>
+            )}
+            {model.relationships.same_suit_clusters.length === 0 && totalCards <= 1 && (
+              <li className="text-base text-ink-soft">Not enough cards in this reading to form a pattern.</li>
+            )}
+            {aiLoaded?.card_relationships.map((relationship, index) => (
+              <li key={`ai-${index}`} className="text-lg leading-relaxed text-ink sm:text-xl">
+                {relationship}
               </li>
             ))}
           </ul>
-        )}
+        </div>
 
-        <form onSubmit={(event) => void handleAddJournalEntry(event)} className="flex flex-col gap-2">
-          <label htmlFor="journal-entry" className="text-xs font-medium uppercase tracking-wide text-ink-soft">
-            What stands out to you about this reading?
-          </label>
-          <textarea
-            id="journal-entry"
-            value={journalDraft}
-            onChange={(event) => setJournalDraft(event.target.value)}
-            rows={4}
-            className="rounded-md border border-border bg-paper px-3 py-2 text-sm text-ink"
-            placeholder="Write your own reflection here…"
-          />
-          {journalError && (
-            <p role="alert" className="rounded-md bg-error-soft px-3 py-2 text-sm text-error">
-              {journalError}
-            </p>
+        {/* Scriptural Reflection -- optional, opt-in (see ScriptureState's
+            own docstring above). Deterministic theme -> Scripture reference
+            mapping, never AI-generated, never presented as this reading's
+            conclusion -- see the fixed disclaimer rendered with every
+            result. Moved here (was after Structured Reading) now that
+            Structured Reading is its own major SectionPanel below --
+            this keeps it as the closing subsection of "The Reading"
+            instead of being orphaned between two major panels. */}
+        <div className="flex flex-col gap-4 border-t border-border pt-6">
+          <h2 className="text-sm font-medium tracking-wide text-ink-soft uppercase sm:text-base">
+            Scriptural Reflection (Optional)
+          </h2>
+
+          {scriptureState.phase === 'checking' && (
+            <p className="text-sm text-ink-soft">Checking for a previously shown Scriptural Reflection…</p>
           )}
-          <button
-            type="submit"
-            disabled={journalSaving || !journalDraft.trim()}
-            className="self-start rounded-md bg-accent px-4 py-2 text-sm text-paper hover:opacity-90 disabled:opacity-50"
-          >
-            {journalSaving ? 'Saving…' : 'Save to journal'}
-          </button>
-        </form>
-      </section>
 
-      {/* Save. mark_saved() is idempotent, so this action is offered
-          unconditionally rather than fabricating a locally-known saved
-          state (Documentation/READING_RESULT_FLOW_DESIGN.md Section 7). */}
-      <section className="mb-8">
-        {saveState.phase === 'saved' ? (
-          <p className="rounded-md bg-accent-soft px-3 py-2 text-sm text-ink">
-            This reading has been saved to your history.
+          {scriptureState.phase === 'idle' && (
+            <>
+              <p className="text-sm text-ink-soft">
+                See whether any Scripture references connect to this reading's own established themes.
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleShowScripture()}
+                className="self-start rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
+              >
+                Show Scriptural Reflection
+              </button>
+            </>
+          )}
+
+          {scriptureState.phase === 'loading' && <p className="text-sm text-ink-soft">Loading…</p>}
+
+          {scriptureState.phase === 'error' && (
+            <div>
+              <p role="alert" className="mb-2 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
+                {scriptureState.error}
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleShowScripture()}
+                className="rounded-full bg-accent px-3 py-1.5 text-sm text-paper hover:opacity-90"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {scriptureState.phase === 'loaded' && (
+            <>
+              <p className="text-sm text-ink-soft italic">{scriptureState.perspective.disclaimer}</p>
+              {scriptureState.perspective.reflections.length === 0 ? (
+                <p className="text-base text-ink-soft">
+                  None of this reading's themes have an approved Scripture reference yet.
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-5">
+                  {scriptureState.perspective.reflections.map((reflection, index) => (
+                    <li key={index} className="rounded-xl border border-border bg-paper-muted p-3">
+                      <p className="font-serif text-lg text-ink">
+                        {reflection.reference_display} ({reflection.translation})
+                      </p>
+                      <p className="mt-1 text-sm tracking-wide text-ink-soft uppercase">Theme: {reflection.theme}</p>
+                      <p className="mt-2 text-base leading-relaxed text-ink sm:text-lg">{reflection.context_note}</p>
+                      <p className="mt-2 text-base text-ink-soft">{reflection.reflection_connection}</p>
+                      <Citations citations={reflection.theme_citations} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
+      </SectionPanel>
+
+      <GoldDivider size="lg" />
+
+      {/* 7. The deterministic synthesis / supporting interpretation --
+          what the engine concluded, and (collapsed by default) the full
+          evidence behind it. Its own major SectionPanel now (was a
+          divider-only subsection of "The Reading"), per the redesign's
+          explicit call for a distinct "Structured Reading" section. */}
+      <SectionPanel title="Structured Reading" icon={<ConstellationIcon className="h-8 w-8 text-accent" />}>
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-ink-soft">
+            A structured analysis of your cards and positions -- no AI is used to produce this reading.
           </p>
-        ) : (
-          <>
-            {saveState.phase === 'error' && (
-              <p role="alert" className="mb-2 rounded-md bg-error-soft px-3 py-2 text-sm text-error">
-                {saveState.error}
+
+          <p className="text-lg leading-relaxed text-ink sm:text-xl">{model.deterministic_synthesis.value}</p>
+          <Citations citations={model.deterministic_synthesis.citations} />
+
+          {remainingSections.map((section) => (
+            <NarrativeSectionBlock key={section.id} section={section} />
+          ))}
+
+          <details className="rounded-xl border border-border">
+            <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-ink-soft select-none">
+              See the supporting evidence
+            </summary>
+            <div className="flex flex-col gap-4 border-t border-border p-3">
+              <div>
+                <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Evidence strength</p>
+                <p className="text-base text-ink sm:text-lg">
+                  {EVIDENCE_STRENGTH_LABEL[model.evidence_strength] ?? model.evidence_strength}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Central issue</p>
+                <p className="text-base leading-relaxed text-ink sm:text-lg">{model.central_issue.value}</p>
+                <Citations citations={model.central_issue.citations} />
+              </div>
+
+              {model.primary_tension && (
+                <div>
+                  <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Primary tension</p>
+                  <p className="text-base leading-relaxed text-ink sm:text-lg">
+                    {model.primary_tension.value.pole_a} ↔ {model.primary_tension.value.pole_b} —{' '}
+                    {model.primary_tension.value.label}
+                  </p>
+                  <Citations citations={model.primary_tension.citations} />
+                </div>
+              )}
+
+              {model.supporting_themes.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Supporting themes</p>
+                  <ul className="list-inside list-disc text-base leading-relaxed text-ink sm:text-lg">
+                    {model.supporting_themes.map((theme, index) => (
+                      <li key={index}>
+                        {theme.value}
+                        <Citations citations={theme.citations} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {model.trajectory && (
+                <div>
+                  <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Trajectory</p>
+                  <ol className="list-inside list-decimal text-base leading-relaxed text-ink sm:text-lg">
+                    {model.trajectory.value.arc.map((step, index) => (
+                      <li key={index}>
+                        {step.position_name}: {step.card_name} ({step.orientation})
+                      </li>
+                    ))}
+                  </ol>
+                  <Citations citations={model.trajectory.citations} />
+                </div>
+              )}
+
+              {model.blocker && (
+                <div>
+                  <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Blocker</p>
+                  <p className="text-base leading-relaxed text-ink sm:text-lg">{model.blocker.value}</p>
+                  <Citations citations={model.blocker.citations} />
+                </div>
+              )}
+
+              {model.advice && (
+                <div>
+                  <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Advice</p>
+                  <p className="text-base leading-relaxed text-ink sm:text-lg">{model.advice.value}</p>
+                  <Citations citations={model.advice.citations} />
+                </div>
+              )}
+
+              {model.clarification && (
+                <div>
+                  <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Clarification</p>
+                  <p className="text-base leading-relaxed text-ink sm:text-lg">{model.clarification.value}</p>
+                  <Citations citations={model.clarification.citations} />
+                </div>
+              )}
+
+              {model.uncertainty.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">What remains unclear</p>
+                  <ul className="list-inside list-disc text-base leading-relaxed text-ink sm:text-lg">
+                    {model.uncertainty.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {model.contradictions.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium tracking-wide text-ink-soft uppercase">Contradictions</p>
+                  <ul className="list-inside list-disc text-base leading-relaxed text-ink sm:text-lg">
+                    {model.contradictions.map((item, index) => (
+                      <li key={index}>
+                        {item.description}
+                        <Citations citations={item.sources} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </details>
+        </div>
+      </SectionPanel>
+
+      <GoldDivider size="lg" fromLabel="Reading" toLabel="Reflection" />
+
+      {/* 8 + 9. "Your Reflection" -- the closing reflection/reflection-
+          questions prompt, leading into this reading's own Journal
+          (create + list). Save-this-reading lives at the very end, as
+          the natural closing action once reflecting is done. */}
+      <SectionPanel title="Your Reflection" icon={<ReflectionIcon className="h-8 w-8 text-accent" />}>
+        {/* Closing reflection -- AI's own when available, else the
+            deterministic Narrative's "Overall Reflection" plus
+            reading-grounded prompts. */}
+        <div className="flex flex-col gap-4">
+          <p className="text-lg leading-relaxed text-ink sm:text-xl">{closingReflectionText}</p>
+          {aiLoaded?.scriptural_reflection && (
+            <div>
+              <p className="mb-1 text-sm font-medium tracking-wide text-ink-soft uppercase">Scriptural Perspective</p>
+              <p className="text-lg leading-relaxed text-ink sm:text-xl">{aiLoaded.scriptural_reflection}</p>
+            </div>
+          )}
+          <div>
+            <p className="mb-1 text-sm font-medium tracking-wide text-ink-soft uppercase">Questions to sit with</p>
+            <ul className="list-inside list-disc text-lg leading-relaxed text-ink sm:text-xl">
+              {reflectionQuestions.map((question, index) => (
+                <li key={index}>{question}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Journal -- always available, independent of AI/Scripture. */}
+        <div className="flex flex-col gap-3 border-t border-border pt-6">
+          <p className="text-sm text-ink-soft sm:text-base">
+            A private space for your own response to this reading. Your journal entries belong to you.
+          </p>
+
+          {journalEntries.length > 0 && (
+            <ul className="flex flex-col gap-3">
+              {journalEntries.map((entry) => (
+                <li key={entry.id} className="rounded-xl bg-paper-muted p-3">
+                  <p className="text-base whitespace-pre-wrap text-ink">{entry.content}</p>
+                  <p className="mt-1 text-sm text-ink-soft">{new Date(entry.created_at).toLocaleString()}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <form onSubmit={(event) => void handleAddJournalEntry(event)} className="flex flex-col gap-2">
+            <label htmlFor="journal-entry" className="text-sm font-medium tracking-wide text-ink-soft uppercase">
+              What stands out to you about this reading?
+            </label>
+            <textarea
+              id="journal-entry"
+              value={journalDraft}
+              onChange={(event) => setJournalDraft(event.target.value)}
+              rows={5}
+              className="rounded-2xl border border-border bg-paper px-3 py-2.5 text-ink placeholder:text-ink-soft/70"
+              placeholder="Write your own reflection here…"
+            />
+            {journalError && (
+              <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
+                {journalError}
               </p>
             )}
             <button
-              type="button"
-              disabled={saveState.phase === 'saving'}
-              onClick={() => void handleSave()}
-              className="rounded-md bg-accent px-4 py-2 text-sm text-paper hover:opacity-90 disabled:opacity-50"
+              type="submit"
+              disabled={journalSaving || !journalDraft.trim()}
+              className="self-start rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90 disabled:opacity-50"
             >
-              {saveState.phase === 'saving' ? 'Saving…' : 'Save this reading'}
+              {journalSaving ? 'Saving…' : 'Save to journal'}
             </button>
-          </>
-        )}
-      </section>
+          </form>
+        </div>
 
-      <Link to={`/readings/${readingId}`} className="text-sm text-accent underline">
+        {/* Save. mark_saved() is idempotent, so this action is offered
+            unconditionally rather than fabricating a locally-known saved
+            state (Documentation/READING_RESULT_FLOW_DESIGN.md Section 7). */}
+        <div className="border-t border-border pt-6">
+          {saveState.phase === 'saved' ? (
+            <p className="rounded-xl bg-accent-soft px-3 py-2 text-sm text-accent">
+              This reading has been saved to your history.
+            </p>
+          ) : (
+            <>
+              {saveState.phase === 'error' && (
+                <p role="alert" className="mb-2 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
+                  {saveState.error}
+                </p>
+              )}
+              <button
+                type="button"
+                disabled={saveState.phase === 'saving'}
+                onClick={() => void handleSave()}
+                className="rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90 disabled:opacity-50"
+              >
+                {saveState.phase === 'saving' ? 'Saving…' : 'Save this reading'}
+              </button>
+            </>
+          )}
+        </div>
+      </SectionPanel>
+
+      <Link to={`/readings/${readingId}`} className="mt-8 self-center text-sm text-accent underline">
         Back to Spread Review
       </Link>
     </div>

@@ -5,15 +5,16 @@ import type { Arcana, CardSummary, Suit } from '../api/cards'
 import { listCards } from '../api/cards'
 import { getReading, recordCardDraw, type Orientation, type ReadingDetail } from '../api/readings'
 import { useAuth } from '../auth/useAuth'
+import { Panel } from '../components/Panel'
 
 /**
- * Card Entry (Step 49) -- the real physical-draw workflow, replacing
- * Step 47's placeholder. Per Documentation/CARD_IMAGE_ASSET_DESIGN.md
- * Section 9: the Product Spec specifies Card Entry as a text-based
- * searchable/filterable selector, and explicitly defers visual card
- * browsing beyond it -- so this page never renders, loads, or resolves
- * `image_ref` into a URL; a card is identified by its CardSummary
- * fields (name, arcana, suit, rank) alone.
+ * Card Entry (Step 49; restyled for the cosmic redesign) -- the real
+ * physical-draw workflow, replacing Step 47's placeholder. Per
+ * Documentation/CARD_IMAGE_ASSET_DESIGN.md Section 9: the Product Spec
+ * specifies Card Entry as a text-based searchable/filterable selector,
+ * and explicitly defers visual card browsing beyond it -- so this page
+ * never renders, loads, or resolves `image_ref` into a URL; a card is
+ * identified by its CardSummary fields (name, arcana, suit, rank) alone.
  *
  * The backend is authoritative for everything this page cannot
  * determine on its own: draw_order, ownership, and lifecycle status
@@ -198,7 +199,7 @@ export function CardEntryPage() {
   if (loadError) {
     return (
       <div className="mx-auto w-full max-w-2xl">
-        <p role="alert" className="rounded-md bg-error-soft px-3 py-2 text-sm text-error">
+        <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
           {loadError}
         </p>
       </div>
@@ -218,9 +219,9 @@ export function CardEntryPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <h1 className="mb-2 text-2xl font-medium text-ink">Card Entry</h1>
-      <div className="mb-8 flex flex-col gap-1">
-        <p className="text-sm text-ink-soft">
+      <div className="mb-8 text-center">
+        <h1 className="font-serif text-3xl text-ink sm:text-4xl">Card Entry</h1>
+        <p className="mt-3 text-sm text-ink-soft">
           <span className="font-medium text-ink">Question: </span>
           {reading.question}
         </p>
@@ -238,15 +239,15 @@ export function CardEntryPage() {
         // automatic transition" principle Step 49 already applied to
         // draw submission (no auto-advance to the next position).
         // Spread Review is offered as the clear next step instead.
-        <div className="mb-8 rounded-lg border border-accent bg-accent-soft px-4 py-3">
-          <p className="font-medium text-ink">This spread is complete.</p>
+        <Panel className="mb-8">
+          <p className="font-serif text-xl text-ink">This spread is complete.</p>
           <p className="mt-1 text-sm text-ink-soft">
             Every required position has been drawn. Interpreting this reading is not available yet.
           </p>
           <div className="mt-3 flex items-center gap-4">
             <Link
               to={`/readings/${reading.id}`}
-              className="rounded-md bg-accent px-3 py-1.5 text-sm text-paper hover:opacity-90"
+              className="rounded-full bg-accent px-3 py-1.5 text-sm text-paper hover:opacity-90"
             >
               View spread review
             </Link>
@@ -254,11 +255,11 @@ export function CardEntryPage() {
               Back to home
             </Link>
           </div>
-        </div>
+        </Panel>
       )}
 
       <section className="mb-8">
-        <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-ink-soft">Positions</h2>
+        <h2 className="mb-2 text-xs font-medium tracking-[0.2em] text-accent uppercase">Positions</h2>
         <ul className="flex flex-col gap-2">
           {positions.map((position) => {
             const draw = drawnByPositionId.get(position.id)
@@ -271,11 +272,9 @@ export function CardEntryPage() {
                   type="button"
                   disabled={!isAvailable}
                   onClick={() => selectPosition(position.id)}
-                  className={`w-full rounded-lg border px-4 py-3 text-left transition-colors ${
-                    isSelected
-                      ? 'border-accent bg-accent-soft'
-                      : 'border-border bg-paper'
-                  } ${isAvailable ? 'hover:bg-paper-muted' : ''} ${!isAvailable && !draw ? 'opacity-60' : ''}`}
+                  className={`w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
+                    isSelected ? 'border-accent bg-accent-soft' : 'border-border bg-paper-muted'
+                  } ${isAvailable ? 'hover:bg-paper' : ''} ${!isAvailable && !draw ? 'opacity-60' : ''}`}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <span className="font-medium text-ink">{position.name}</span>
@@ -300,9 +299,10 @@ export function CardEntryPage() {
       </section>
 
       {canDraw && selectedPositionId && (
-        <section className="mb-8 flex flex-col gap-4 rounded-lg border border-border p-4">
+        <Panel as="section" className="mb-8 flex flex-col gap-4">
           <p className="text-sm text-ink-soft">
-            Drawing for <span className="font-medium text-ink">
+            Drawing for{' '}
+            <span className="font-medium text-ink">
               {positions.find((position) => position.id === selectedPositionId)?.name}
             </span>
           </p>
@@ -315,7 +315,7 @@ export function CardEntryPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Card name…"
-                className="rounded-md border border-border bg-paper px-3 py-2 text-ink"
+                className="rounded-xl border border-border bg-paper px-3 py-2 text-ink placeholder:text-ink-soft/70"
               />
             </label>
 
@@ -331,7 +331,7 @@ export function CardEntryPage() {
                       setSuitFilter('all')
                     }
                   }}
-                  className="rounded-md border border-border bg-paper px-3 py-2 text-ink"
+                  className="rounded-xl border border-border bg-paper px-3 py-2 text-ink"
                 >
                   <option value="all">All</option>
                   <option value="major">Major Arcana</option>
@@ -345,7 +345,7 @@ export function CardEntryPage() {
                   value={suitFilter}
                   disabled={arcanaFilter === 'major'}
                   onChange={(event) => setSuitFilter(event.target.value as SuitFilter)}
-                  className="rounded-md border border-border bg-paper px-3 py-2 text-ink disabled:opacity-50"
+                  className="rounded-xl border border-border bg-paper px-3 py-2 text-ink disabled:opacity-50"
                 >
                   <option value="all">All</option>
                   {SUITS.map((suit) => (
@@ -358,7 +358,7 @@ export function CardEntryPage() {
             </div>
           </div>
 
-          <ul className="flex max-h-64 flex-col gap-1 overflow-y-auto rounded-md border border-border p-1">
+          <ul className="flex max-h-64 flex-col gap-1 overflow-y-auto rounded-xl border border-border p-1">
             {filteredCards.length === 0 && (
               <li className="px-3 py-2 text-sm text-ink-soft">No cards match this search.</li>
             )}
@@ -370,8 +370,8 @@ export function CardEntryPage() {
                     type="button"
                     onClick={() => setSelectedCardId(card.id)}
                     aria-pressed={isSelected}
-                    className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                      isSelected ? 'bg-accent-soft text-ink' : 'text-ink hover:bg-paper-muted'
+                    className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                      isSelected ? 'bg-accent-soft text-accent' : 'text-ink hover:bg-paper-muted'
                     }`}
                   >
                     {card.name}
@@ -393,10 +393,10 @@ export function CardEntryPage() {
                   type="button"
                   onClick={() => setSelectedOrientation(option.value)}
                   aria-pressed={selectedOrientation === option.value}
-                  className={`rounded-md border px-4 py-2 text-sm transition-colors ${
+                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
                     selectedOrientation === option.value
-                      ? 'border-accent bg-accent-soft text-ink'
-                      : 'border-border bg-paper text-ink hover:bg-paper-muted'
+                      ? 'border-accent bg-accent-soft text-accent'
+                      : 'border-border bg-paper-muted text-ink hover:bg-paper'
                   }`}
                 >
                   {option.label}
@@ -412,7 +412,7 @@ export function CardEntryPage() {
           )}
 
           {submitError && (
-            <p role="alert" className="rounded-md bg-error-soft px-3 py-2 text-sm text-error">
+            <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
               {submitError}
             </p>
           )}
@@ -421,11 +421,11 @@ export function CardEntryPage() {
             type="button"
             disabled={!selectedCardId || !selectedOrientation || isSubmitting}
             onClick={() => void handleSubmit()}
-            className="self-start rounded-md bg-accent px-4 py-2 text-paper hover:opacity-90 disabled:opacity-50"
+            className="self-start rounded-full bg-accent px-4 py-2 text-paper hover:opacity-90 disabled:opacity-50"
           >
             {isSubmitting ? 'Recording…' : 'Record draw'}
           </button>
-        </section>
+        </Panel>
       )}
     </div>
   )

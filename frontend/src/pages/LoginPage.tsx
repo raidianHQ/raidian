@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { login } from '../api/auth'
 import { useAuth } from '../auth/useAuth'
+import { Panel } from '../components/Panel'
+import { PasswordInput } from '../components/PasswordInput'
 
 export function LoginPage() {
   const { setToken } = useAuth()
@@ -32,55 +34,56 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-sm">
-      <h1 className="mb-6 text-2xl font-medium text-ink">Log in</h1>
-      {navigationState?.registeredEmail && (
-        <p className="mb-4 rounded-md bg-accent-soft px-3 py-2 text-sm text-ink-soft">
-          Account created. Log in to continue.
-        </p>
-      )}
-      <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm text-ink-soft">
-          Email
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="rounded-md border border-border bg-paper px-3 py-2 text-ink"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-ink-soft">
-          Password
-          <input
-            type="password"
-            required
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="rounded-md border border-border bg-paper px-3 py-2 text-ink"
-          />
-        </label>
-        {error && (
-          <p role="alert" className="rounded-md bg-error-soft px-3 py-2 text-sm text-error">
-            {error}
+    <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">
+      <Panel>
+        <h1 className="mb-6 text-center font-serif text-3xl text-ink">Log in</h1>
+        {navigationState?.registeredEmail && (
+          <p className="mb-4 rounded-xl bg-accent-soft px-3 py-2 text-sm text-accent">
+            Account created. Log in to continue.
           </p>
         )}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-md bg-accent px-3 py-2 text-paper hover:opacity-90 disabled:opacity-60"
-        >
-          {isSubmitting ? 'Logging in…' : 'Log in'}
-        </button>
-      </form>
-      <p className="mt-4 text-sm text-ink-soft">
-        Don&apos;t have an account?{' '}
-        <Link to="/register" className="text-accent">
-          Register
-        </Link>
-      </p>
+        <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
+          <label className="flex flex-col gap-1 text-sm text-ink-soft">
+            Email
+            <input
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="rounded-xl border border-border bg-paper px-3 py-2 text-ink"
+            />
+          </label>
+          <div className="flex flex-col gap-1 text-sm text-ink-soft">
+            <label htmlFor="login-password">Password</label>
+            <PasswordInput
+              id="login-password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={setPassword}
+            />
+          </div>
+          {error && (
+            <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
+              {error}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-full bg-accent px-3 py-2 text-paper hover:opacity-90 disabled:opacity-60"
+          >
+            {isSubmitting ? 'Logging in…' : 'Log in'}
+          </button>
+        </form>
+        <p className="mt-4 text-center text-sm text-ink-soft">
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="text-accent">
+            Register
+          </Link>
+        </p>
+      </Panel>
     </div>
   )
 }

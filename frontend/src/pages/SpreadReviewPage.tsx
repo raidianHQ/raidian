@@ -5,14 +5,15 @@ import { getNarrative, interpretReading, type InterpretationSummary, type Narrat
 import { getReading, type ReadingDetail, type ReadingStatus } from '../api/readings'
 import { useAuth } from '../auth/useAuth'
 import { CardArtwork } from '../components/CardArtwork'
+import { Panel } from '../components/Panel'
 
 /**
- * Spread Review / Reading Detail (Step 50) -- the Product Spec's "full
- * visual layout of all positions, cards, and orientations" screen
- * (RAIDIAN_WISE_PRODUCT_SPEC_V1.md Section 6), built directly against
- * the existing, already-audited GET /readings/{reading_id} contract
- * (Documentation/READING_DETAIL_API_DESIGN.md) -- no new backend
- * behavior, no new fields, no new endpoint.
+ * Spread Review / Reading Detail (Step 50; restyled for the cosmic
+ * redesign) -- the Product Spec's "full visual layout of all positions,
+ * cards, and orientations" screen (RAIDIAN_WISE_PRODUCT_SPEC_V1.md
+ * Section 6), built directly against the existing, already-audited GET
+ * /readings/{reading_id} contract (Documentation/READING_DETAIL_API_DESIGN.md)
+ * -- no new backend behavior, no new fields, no new endpoint.
  *
  * Card presentation (Step 75; extracted to ../components/CardArtwork.tsx
  * so ReadingResultPage's own card-by-card presentation can reuse the
@@ -150,7 +151,7 @@ export function SpreadReviewPage() {
   if (loadError) {
     return (
       <div className="mx-auto w-full max-w-3xl">
-        <p role="alert" className="rounded-md bg-error-soft px-3 py-2 text-sm text-error">
+        <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
           {loadError}
         </p>
       </div>
@@ -171,37 +172,34 @@ export function SpreadReviewPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <h1 className="mb-1 text-2xl font-medium text-ink">Spread Review</h1>
-      <p className="mb-6 text-sm text-ink-soft">
-        <span className="rounded-full border border-border px-2 py-0.5 text-xs uppercase tracking-wide text-ink-soft">
+      <div className="mb-8 text-center">
+        <span className="mb-2 inline-block rounded-full border border-border px-2.5 py-0.5 text-sm tracking-wide text-accent uppercase">
           {STATUS_LABEL[reading.status]}
         </span>
-      </p>
-
-      <div className="mb-6 flex flex-col gap-1">
-        <p className="text-lg text-ink">{reading.question}</p>
-        <p className="text-sm text-ink-soft">
+        <h1 className="font-serif text-3xl text-ink sm:text-4xl">Spread Review</h1>
+        <p className="mt-3 text-lg text-ink italic sm:text-xl">&ldquo;{reading.question}&rdquo;</p>
+        <p className="mt-2 text-base text-ink-soft sm:text-lg">
           <span className="font-medium text-ink">{reading.spread.name}</span>
           {reading.spread.description && <> — {reading.spread.description}</>}
         </p>
       </div>
 
       {isComplete ? (
-        <div className="mb-6 rounded-lg border border-accent bg-accent-soft px-4 py-3">
-          <p className="font-medium text-ink">This spread is complete.</p>
-          <p className="mt-1 text-sm text-ink-soft">Every required position has been drawn.</p>
+        <Panel className="mb-8">
+          <p className="font-serif text-xl text-ink">This spread is complete.</p>
+          <p className="mt-1 text-base text-ink-soft">Every required position has been drawn.</p>
 
           {(interpretFlow.phase === 'idle' || interpretFlow.phase === 'interpret-failed') && (
             <>
               {interpretFlow.phase === 'interpret-failed' && (
-                <p role="alert" className="mt-3 rounded-md bg-error-soft px-3 py-2 text-sm text-error">
+                <p role="alert" className="mt-3 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
                   {interpretFlow.error}
                 </p>
               )}
               <button
                 type="button"
                 onClick={() => void handleInterpretClick()}
-                className="mt-3 rounded-md bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
+                className="mt-3 rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
               >
                 Interpret My Reading
               </button>
@@ -211,25 +209,25 @@ export function SpreadReviewPage() {
           {(interpretFlow.phase === 'interpreting' || interpretFlow.phase === 'narrating') && (
             <div className="mt-3 flex flex-col gap-1">
               <p className="text-sm text-ink">Interpreting your reading…</p>
-              <p className="text-xs text-ink-soft">
-                Raidian Wise is building a structured analysis of your spread -- no AI is involved in this step.
+              <p className="text-sm text-ink-soft">
+                Raidian Reflection is building a structured analysis of your spread -- no AI is involved in this step.
               </p>
             </div>
           )}
 
           {interpretFlow.phase === 'narrative-failed' && (
             <div className="mt-3 flex flex-col gap-2">
-              <p role="alert" className="rounded-md bg-error-soft px-3 py-2 text-sm text-error">
+              <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
                 {interpretFlow.error}
               </p>
-              <p className="text-xs text-ink-soft">
+              <p className="text-sm text-ink-soft">
                 Your interpretation was recorded. Only the reflection text failed to load -- retrying will not
                 create another interpretation.
               </p>
               <button
                 type="button"
                 onClick={() => void fetchNarrative(interpretFlow.interpretation)}
-                className="self-start rounded-md bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
+                className="self-start rounded-full bg-accent px-4 py-2 text-sm text-paper hover:opacity-90"
               >
                 Try loading the reflection again
               </button>
@@ -237,7 +235,7 @@ export function SpreadReviewPage() {
           )}
 
           {interpretFlow.phase === 'idle' && (
-            <p className="mt-3 text-xs text-ink-soft">
+            <p className="mt-3 text-sm text-ink-soft">
               Already interpreted this reading?{' '}
               <Link to={`/readings/${reading.id}/result`} className="text-accent underline">
                 View the result
@@ -245,62 +243,62 @@ export function SpreadReviewPage() {
               .
             </p>
           )}
-        </div>
+        </Panel>
       ) : (
-        <div className="mb-6 rounded-lg border border-border bg-paper-muted px-4 py-3">
-          <p className="font-medium text-ink">
+        <Panel className="mb-8">
+          <p className="font-serif text-xl text-ink">
             {positions.length - undrawnPositions.length} of {positions.length} position
             {positions.length === 1 ? '' : 's'} drawn.
           </p>
           {undrawnPositions.length > 0 && (
-            <p className="mt-1 text-sm text-ink-soft">
+            <p className="mt-1 text-base text-ink-soft">
               Still to draw: {undrawnPositions.map((position) => position.name).join(', ')}
             </p>
           )}
           <Link to={`/readings/${reading.id}/draw`} className="mt-3 inline-block text-sm text-accent underline">
             Continue drawing
           </Link>
-        </div>
+        </Panel>
       )}
 
-      <section className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {positions.map((position) => {
-          const draw = drawnByPositionId.get(position.id)
-          return (
-            <div key={position.id} className="flex flex-col items-center gap-2">
-              <div className="flex w-full flex-col items-center gap-1">
-                <span className="text-center text-sm font-medium text-ink">{position.name}</span>
-                {!position.required && (
-                  <span className="text-xs text-ink-soft">(optional)</span>
+      <Panel as="section" className="mb-8">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {positions.map((position) => {
+            const draw = drawnByPositionId.get(position.id)
+            return (
+              <div key={position.id} className="flex flex-col items-center gap-2">
+                <div className="flex w-full flex-col items-center gap-1">
+                  <span className="text-center text-sm font-medium text-ink-soft sm:text-base">{position.name}</span>
+                  {!position.required && <span className="text-xs text-ink-soft">(optional)</span>}
+                </div>
+
+                {draw ? (
+                  <div className="flex w-full flex-col items-center gap-2 rounded-2xl border border-border bg-paper-muted p-2 text-center">
+                    <div className="aspect-2/3 w-full overflow-hidden rounded-xl bg-paper">
+                      <CardArtwork card={draw.card} orientation={draw.orientation} />
+                    </div>
+                    <span className="font-serif text-base text-ink sm:text-lg">{draw.card.name}</span>
+                    <span className="text-sm text-ink-soft">
+                      {draw.card.arcana === 'major' ? 'Major Arcana' : draw.card.suit}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-sm ${
+                        draw.orientation === 'reversed' ? 'bg-error-soft text-error' : 'bg-accent-soft text-accent'
+                      }`}
+                    >
+                      {draw.orientation === 'reversed' ? '↓ Reversed' : '↑ Upright'}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex aspect-2/3 w-full flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-border px-2 py-3 text-center">
+                    <span className="text-xs text-ink-soft">Not yet drawn</span>
+                  </div>
                 )}
               </div>
-
-              {draw ? (
-                <div className="flex w-full flex-col items-center gap-2 rounded-lg border-2 border-accent bg-paper p-2 text-center shadow-sm">
-                  <div className="aspect-2/3 w-full overflow-hidden rounded-md bg-paper-muted">
-                    <CardArtwork card={draw.card} orientation={draw.orientation} />
-                  </div>
-                  <span className="text-sm font-medium text-ink">{draw.card.name}</span>
-                  <span className="text-xs text-ink-soft">
-                    {draw.card.arcana === 'major' ? 'Major Arcana' : draw.card.suit}
-                  </span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs ${
-                      draw.orientation === 'reversed' ? 'bg-error-soft text-error' : 'bg-accent-soft text-ink'
-                    }`}
-                  >
-                    {draw.orientation === 'reversed' ? '↓ Reversed' : '↑ Upright'}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex aspect-2/3 w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border bg-paper-muted px-2 py-3 text-center">
-                  <span className="text-xs text-ink-soft">Not yet drawn</span>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </section>
+            )
+          })}
+        </div>
+      </Panel>
 
       <Link to="/" className="text-sm text-accent underline">
         Back to home

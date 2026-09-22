@@ -4,10 +4,12 @@ import { ApiError } from '../api/client'
 import { createReading, performDigitalDraw, type DrawMethod, type ReadingSummary } from '../api/readings'
 import { listSpreads, type SpreadSummary } from '../api/spreads'
 import { useAuth } from '../auth/useAuth'
+import { Panel } from '../components/Panel'
 
 /**
  * New Reading -- Spread Selection + Question entry + Draw Method choice
- * (Step 47; Draw Method choice added for Digital Draw).
+ * (Step 47; Draw Method choice added for Digital Draw; restyled for the
+ * cosmic redesign).
  *
  * ---------------------------------------------------------------------
  * POST /readings sequencing decision (explicitly determined, not a
@@ -37,7 +39,7 @@ import { useAuth } from '../auth/useAuth'
 
 const DRAW_METHODS: { value: DrawMethod; label: string; description: string }[] = [
   { value: 'physical', label: 'Use My Deck', description: 'Draw your own physical cards and enter them here.' },
-  { value: 'digital', label: 'Digital Draw', description: 'Let Raidian Wise draw the cards for you.' },
+  { value: 'digital', label: 'Digital Draw', description: 'Let Raidian Reflection draw the cards for you.' },
 ]
 
 export function NewReadingPage() {
@@ -98,11 +100,13 @@ export function NewReadingPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <h1 className="mb-2 text-2xl font-medium text-ink">New Reading</h1>
-      <p className="mb-8 text-sm text-ink-soft">Choose a layout, then enter your question.</p>
+      <div className="mb-8 text-center">
+        <h1 className="font-serif text-3xl text-ink sm:text-4xl">New Reading</h1>
+        <p className="mt-2 text-sm text-ink-soft">Choose a layout, then enter your question.</p>
+      </div>
 
       {loadError && (
-        <p role="alert" className="mb-6 rounded-md bg-error-soft px-3 py-2 text-sm text-error">
+        <p role="alert" className="mb-6 rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
           {loadError}
         </p>
       )}
@@ -110,9 +114,9 @@ export function NewReadingPage() {
       {!loadError && spreads === null && <p className="text-sm text-ink-soft">Loading spreads…</p>}
 
       {spreads !== null && (
-        <>
-          <fieldset className="mb-8 flex flex-col gap-3">
-            <legend className="mb-2 text-sm font-medium text-ink">Layout</legend>
+        <Panel className="flex flex-col gap-8">
+          <fieldset className="flex flex-col gap-3">
+            <legend className="mb-2 text-xs font-medium tracking-[0.2em] text-accent uppercase">Layout</legend>
             {spreads.map((spread) => {
               const isSelected = spread.id === selectedSpreadId
               return (
@@ -121,15 +125,15 @@ export function NewReadingPage() {
                   type="button"
                   onClick={() => setSelectedSpreadId(spread.id)}
                   aria-pressed={isSelected}
-                  className={`rounded-lg border px-4 py-3 text-left transition-colors ${
+                  className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
                     isSelected
                       ? 'border-accent bg-accent-soft'
-                      : 'border-border bg-paper hover:bg-paper-muted'
+                      : 'border-border bg-paper-muted hover:bg-paper'
                   }`}
                 >
                   <div className="flex items-baseline justify-between gap-4">
-                    <span className="font-medium text-ink">{spread.name}</span>
-                    <span className="whitespace-nowrap text-xs text-ink-soft">
+                    <span className="font-serif text-lg text-ink">{spread.name}</span>
+                    <span className="text-xs whitespace-nowrap text-ink-soft">
                       {spread.position_count} position{spread.position_count === 1 ? '' : 's'}
                     </span>
                   </div>
@@ -142,20 +146,22 @@ export function NewReadingPage() {
             })}
           </fieldset>
 
-          <label className="mb-6 flex flex-col gap-1 text-sm text-ink-soft">
-            Your question
+          <label className="flex flex-col gap-1 text-sm text-ink-soft">
+            <span className="text-xs font-medium tracking-[0.2em] text-accent uppercase">Your question</span>
             <textarea
               required
               rows={3}
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               placeholder="What should I focus on right now?"
-              className="rounded-md border border-border bg-paper px-3 py-2 text-ink"
+              className="rounded-xl border border-border bg-paper px-3 py-2 text-ink placeholder:text-ink-soft/70"
             />
           </label>
 
-          <fieldset className="mb-8 flex flex-col gap-3">
-            <legend className="mb-2 text-sm font-medium text-ink">How will you draw?</legend>
+          <fieldset className="flex flex-col gap-3">
+            <legend className="mb-2 text-xs font-medium tracking-[0.2em] text-accent uppercase">
+              How will you draw?
+            </legend>
             {DRAW_METHODS.map((method) => {
               const isSelected = method.value === drawMethod
               return (
@@ -164,13 +170,13 @@ export function NewReadingPage() {
                   type="button"
                   onClick={() => setDrawMethod(method.value)}
                   aria-pressed={isSelected}
-                  className={`rounded-lg border px-4 py-3 text-left transition-colors ${
+                  className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
                     isSelected
                       ? 'border-accent bg-accent-soft'
-                      : 'border-border bg-paper hover:bg-paper-muted'
+                      : 'border-border bg-paper-muted hover:bg-paper'
                   }`}
                 >
-                  <span className="font-medium text-ink">{method.label}</span>
+                  <span className="font-serif text-lg text-ink">{method.label}</span>
                   <p className="mt-1 text-sm text-ink-soft">{method.description}</p>
                 </button>
               )
@@ -178,7 +184,7 @@ export function NewReadingPage() {
           </fieldset>
 
           {submitError && (
-            <p role="alert" className="mb-4 rounded-md bg-error-soft px-3 py-2 text-sm text-error">
+            <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error">
               {submitError}
             </p>
           )}
@@ -187,7 +193,7 @@ export function NewReadingPage() {
             type="button"
             disabled={!canSubmit}
             onClick={() => void handleSubmit()}
-            className="rounded-md bg-accent px-4 py-2 text-paper hover:opacity-90 disabled:opacity-50"
+            className="self-start rounded-full bg-accent px-5 py-2.5 text-paper hover:opacity-90 disabled:opacity-50"
           >
             {isSubmitting
               ? drawMethod === 'digital'
@@ -195,7 +201,7 @@ export function NewReadingPage() {
                 : 'Creating reading…'
               : 'Begin reading'}
           </button>
-        </>
+        </Panel>
       )}
     </div>
   )
