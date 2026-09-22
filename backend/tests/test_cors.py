@@ -159,7 +159,7 @@ def test_preflight_for_a_disallowed_origin_does_not_grant_access(api_seeded_sess
 # --- Allowed methods ----------------------------------------------------------
 
 
-def test_allowed_methods_are_exactly_get_and_post(api_seeded_session, client):
+def test_allowed_methods_are_exactly_get_post_and_delete(api_seeded_session, client):
     response = client.options(
         "/spreads",
         headers={
@@ -169,20 +169,30 @@ def test_allowed_methods_are_exactly_get_and_post(api_seeded_session, client):
     )
 
     allowed_methods = {m.strip() for m in response.headers["access-control-allow-methods"].split(",")}
-    assert allowed_methods == {"GET", "POST"}
+    assert allowed_methods == {"GET", "POST", "DELETE"}
 
 
-def test_delete_is_not_an_allowed_method(api_seeded_session, client):
+def test_preflight_for_a_delete_route_succeeds(api_seeded_session, client):
+    """Delete Saved Reading (Raidian Reading Lifecycle improvements) --
+    DELETE /readings/{reading_id} is cross-origin in production (the
+    GitHub Pages-hosted frontend calling a separately-hosted backend), so
+    the browser's preflight for it must actually succeed; this was the
+    root cause of the live "Could not delete this reading" failure
+    before allow_methods included DELETE.
+    """
     response = client.options(
-        "/spreads",
+        "/readings/00000000-0000-0000-0000-000000000000",
         headers={
             "Origin": _ALLOWED_ORIGIN_1,
             "Access-Control-Request-Method": "DELETE",
+            "Access-Control-Request-Headers": "authorization",
         },
     )
 
-    allowed_methods = response.headers.get("access-control-allow-methods", "")
-    assert "DELETE" not in allowed_methods
+    assert response.status_code == 200
+    allowed_methods = {m.strip() for m in response.headers["access-control-allow-methods"].split(",")}
+    assert "DELETE" in allowed_methods
+    assert "authorization" in response.headers["access-control-allow-headers"].lower()
 
 
 # --- Allowed headers ------------------------------------------------------------
