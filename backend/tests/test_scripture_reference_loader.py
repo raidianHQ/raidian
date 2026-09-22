@@ -61,6 +61,26 @@ def test_every_seeded_translation_is_approved():
         assert entry["translation"] in APPROVED_SCRIPTURE_TRANSLATIONS
 
 
+def test_discernment_and_clarity_have_real_seeded_references():
+    """Guards the specific fix for the reported "Discernment produces no
+    Scripture" bug: `discernment` and `clarity` must each have at least
+    one real, verifiable seeded reference (a recognized canonical book
+    name -- see BIBLE_BOOKS -- not a placeholder), not merely exist as
+    theme_vocabulary tags with nothing mapped to them.
+    """
+    entries = load_scripture_reference_definitions()
+    by_theme: dict[str, list[dict]] = {}
+    for entry in entries:
+        by_theme.setdefault(entry["theme"], []).append(entry)
+
+    for theme in ("discernment", "clarity"):
+        theme_entries = by_theme.get(theme, [])
+        assert theme_entries, f"expected at least one seeded reference for theme {theme!r}"
+        for entry in theme_entries:
+            assert entry["book"] in BIBLE_BOOKS
+            assert entry["reference_display"]
+
+
 def test_no_seeded_entry_contains_passage_text_fields():
     """A structural guardrail against ever silently gaining a `text` or
     `passage`/`verse_text` field -- Section 15.1's licensing constraint

@@ -19,21 +19,27 @@
 # today -- Section 16, Q5 remains open); only public-domain translations
 # are approved (app/seed/loader.py's APPROVED_SCRIPTURE_TRANSLATIONS).
 #
-# Deliberately small: this seeds only the subset of Section 15.3's
-# suggested theme taxonomy (fear, anxiety, wisdom, decisions, patience,
-# waiting, relationships, forgiveness, grief, hope, money/stewardship,
-# work, change, uncertainty, trust, surrender) that already exists
-# verbatim as a tag in theme_vocabulary.yaml today: fear, anxiety,
-# patience, relationships, grief, hope, uncertainty. The rest have no
-# exact tag match in the closed vocabulary -- mapping them would mean
-# guessing which existing tag the brief's words "really" meant, the same
-# invented-mapping judgment compounds.py already refuses to make for its
-# own named compounds, for the same reason. Adding them is future work,
-# gated on a deliberate tag-mapping decision (or new vocabulary content),
-# not something this seed set approximates.
+# Deliberately small: this seeds only a subset of theme_vocabulary.yaml's
+# full tag set -- fear, anxiety, patience, relationships, grief, hope,
+# uncertainty, discernment, clarity today. Mapping a new theme here is a
+# deliberate content decision (a real, verifiable reference plus original
+# commentary), never a guess at which existing tag some other word
+# "really" meant -- the same invented-mapping judgment compounds.py
+# already refuses to make for its own named compounds, for the same
+# reason. Covering more of the vocabulary is future work, gated on that
+# same deliberate per-theme decision, not something this seed set
+# approximates.
 #
-# One reference per theme for this foundation; a theme may have more than
-# one approved reference in the future without any schema change.
+# A theme may have more than one approved reference (see discernment
+# below). Two related-but-distinct themes may also each carry their own
+# approved reference and be treated as a semantic cluster at selection
+# time -- app/services/scripture/selection.py's own `_RELATED_THEMES`
+# curates which theme pairs are close enough in meaning for this (for
+# example discernment/clarity, already paired in this project's own
+# authored card content -- see Queen of Swords' primary_themes/
+# secondary_themes in rider_waite_smith/swords.yaml). This is a small,
+# explicit, hand-reviewed relation, never fuzzy/keyword matching -- see
+# that module's own docstring.
 
 - theme: fear
   book: "2 Timothy"
@@ -142,3 +148,50 @@
     Where a reading names uncertainty, this passage raises a genuine
     question worth sitting with, not an answer either the cards or this
     passage can hand over directly.
+
+- theme: discernment
+  book: "1 Kings"
+  chapter: 3
+  verse_start: 9
+  verse_end: null
+  reference_display: "1 Kings 3:9"
+  translation: KJV
+  context_note: >
+    Solomon, newly made king, asks God for an understanding heart able
+    to discern between good and bad, rather than for wealth or victory
+    over his enemies.
+  reflection_connection: >
+    Where a reading points toward discernment, this passage frames it as
+    something asked for and cultivated, not a verdict this reading -- or
+    any single card in it -- can hand down on its own.
+
+- theme: discernment
+  book: Hebrews
+  chapter: 5
+  verse_start: 14
+  verse_end: null
+  reference_display: "Hebrews 5:14"
+  translation: KJV
+  context_note: >
+    The writer of Hebrews describes discernment between good and evil as
+    a capacity built through practice and maturity, not an instinct
+    someone simply has or lacks.
+  reflection_connection: >
+    A reading that surfaces discernment may be worth holding alongside
+    this framing -- less a single right answer to locate, more a habit
+    of attention this moment invites.
+
+- theme: clarity
+  book: Psalms
+  chapter: 119
+  verse_start: 105
+  verse_end: null
+  reference_display: "Psalm 119:105"
+  translation: KJV
+  context_note: >
+    A psalm describing guidance as a lamp for the next step, not a
+    floodlight over the whole road ahead.
+  reflection_connection: >
+    Where a reading calls for clarity, this passage offers a different
+    expectation of what clarity can look like -- enough light for what
+    is immediately ahead, not necessarily the entire path.

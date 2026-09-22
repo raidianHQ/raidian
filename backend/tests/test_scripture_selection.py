@@ -6,19 +6,24 @@ explicit integration tests at the bottom), so most of these tests remain
 stable even if that seed content changes.
 
 Scripture Theme-Selection Design Audit, Option 2, as amended to allow a
-ranked fallback: Scripture selection first tries the reading's primary
-theme -- a Single Card reading's own first-listed authored theme, or a
-multi-card reading's already-computed central_issue -- and, only if that
-theme has no approved mapping, falls back through the InterpretiveModel's
-own already-ranked `supporting_themes`, in order, then `clarification`,
-`blocker`, and `advice` (each an already-computed, structurally-selected
-single theme, used only when present), using the first candidate in that
-whole order that has an approved mapping. `theme_strength` alone (a theme
-that is merely present in the reading, not promoted to any of the fields
-above) is never consulted as a fallback source. `_model()` below builds a
-two-card fixture by default so most tests exercise the central_issue path
-(mirroring their pre-existing intent); `_single_card_model()` builds a
-genuine one-card fixture for the Single Card-specific tests.
+ranked fallback, and further amended to allow every candidate with an
+approved mapping to contribute (not just the first): Scripture selection
+tries the reading's primary theme -- a Single Card reading's own
+first-listed authored theme, or a multi-card reading's already-computed
+central_issue -- then, in order, the InterpretiveModel's own
+already-ranked `supporting_themes`, then `clarification`, `blocker`, and
+`advice` (each an already-computed, structurally-selected single theme,
+used only when present). Every candidate in that whole order that has an
+approved mapping contributes its own references (capped per candidate by
+_MAX_REFLECTIONS, deduplicated across candidates), not merely the first
+one found -- so a reading touching several Scripture-mapped themes
+returns all of them, grouped candidate-by-candidate in priority order.
+`theme_strength` alone (a theme that is merely present in the reading,
+not promoted to any of the fields above) is never consulted as a
+candidate source. `_model()` below builds a two-card fixture by default
+so most tests exercise the central_issue path (mirroring their
+pre-existing intent); `_single_card_model()` builds a genuine one-card
+fixture for the Single Card-specific tests.
 """
 
 from __future__ import annotations
@@ -202,9 +207,13 @@ def test_a_theme_can_have_more_than_one_approved_reference(db_session):
 
 
 def test_the_reflections_limit_still_applies_within_a_single_theme(db_session):
-    """_MAX_REFLECTIONS now bounds one theme's own approved references,
-    not how many different themes can contribute -- the sibling test
-    below proves the cross-theme cascade this used to exercise is gone.
+    """_MAX_REFLECTIONS bounds one candidate theme's own approved
+    references -- a theme with more than this many approved rows still
+    only contributes this many. This fixture has no other mapped
+    candidate to also contribute (supporting_themes/clarification/
+    blocker/advice are all unset), so the total here is also 3; see the
+    "multiple candidates contribute" tests elsewhere in this file for
+    proof that the cap is per-candidate, not an overall ceiling.
     """
     for book, chapter, verse in [("Psalms", 1, 1), ("Psalms", 23, 1), ("Proverbs", 3, 5), ("Isaiah", 41, 10)]:
         _reference(
@@ -246,11 +255,13 @@ def test_a_theme_merely_present_in_theme_strength_is_not_a_fallback_source(db_se
     assert perspective.reflections == ()
 
 
-def test_central_issue_match_is_selected_first_even_when_a_supporting_theme_is_also_mapped(db_session):
-    """Proves priority order and preserves pre-existing behavior: when
-    central_issue itself has an approved mapping, that match wins
-    outright -- a mapped supporting_theme, clarification, blocker, or
-    advice is never consulted, let alone merged in alongside it.
+def test_every_mapped_candidate_contributes_in_priority_order_when_all_are_mapped(db_session):
+    """Proves priority order is preserved while every mapped candidate now
+    contributes: when central_issue, supporting_themes, clarification,
+    blocker, and advice are *all* individually mapped, every one of them
+    shows up -- grouped candidate-by-candidate, in that same priority
+    order -- rather than only the first (central_issue) winning outright
+    and the rest being discarded.
     """
     _reference(db_session, "anxiety", reference_display="Philippians 4:6-7")
     _reference(db_session, "hope", book="Romans", chapter=15, verse_start=13, verse_end=None, reference_display="Romans 15:13")
@@ -271,7 +282,7 @@ def test_central_issue_match_is_selected_first_even_when_a_supporting_theme_is_a
 
     perspective = select_scripture_reflections(db_session, model)
 
-    assert {r.theme for r in perspective.reflections} == {"anxiety"}
+    assert [r.theme for r in perspective.reflections] == ["anxiety", "hope", "grief", "patience", "relationships"]
 
 
 def test_falls_back_to_a_mapped_supporting_theme_when_central_issue_is_unmapped(db_session):
@@ -320,6 +331,118 @@ def test_no_reflection_when_neither_central_issue_nor_any_supporting_theme_has_a
     assert perspective.reflections == ()
 
 
+# --- Semantic relation cluster (_RELATED_THEMES / _theme_cluster) ----------------
+
+
+def test_theme_cluster_includes_a_curated_related_theme():
+    from app.services.scripture.selection import _theme_cluster
+
+    assert _theme_cluster("discernment") == ("discernment", "clarity")
+    assert _theme_cluster("clarity") == ("clarity", "discernment")
+
+
+def test_theme_cluster_is_just_the_theme_itself_when_nothing_is_curated():
+    from app.services.scripture.selection import _theme_cluster
+
+    assert _theme_cluster("hope") == ("hope",)
+    assert _theme_cluster("anxiety") == ("anxiety",)
+
+
+def test_related_theme_pairs_reference_real_vocabulary_tags():
+    """Guards against a future _RELATED_THEMES edit introducing a typo'd
+    or invented tag -- every theme named on either side of a curated
+    relation must already exist verbatim in the real, closed
+    theme_vocabulary.yaml, exactly like a scripture_references.yaml
+    theme must (app/seed/loader.py's own validation).
+    """
+    from app.seed.loader import load_theme_vocabulary
+    from app.services.scripture.selection import _RELATED_THEMES
+
+    vocabulary = load_theme_vocabulary()
+    for theme, related in _RELATED_THEMES.items():
+        assert theme in vocabulary
+        for other in related:
+            assert other in vocabulary
+
+
+def test_a_curated_related_theme_contributes_its_own_real_reference_not_a_fabricated_one(db_session):
+    """A theme with a curated relation (discernment -> clarity) merges in
+    the related theme's own already-approved row(s) -- real content a
+    human reviewer added to scripture_references.yaml, never a synthesized
+    or placeholder reference. Each returned reflection's own `theme` field
+    truthfully names which approved tag it came from.
+    """
+    _reference(
+        db_session, "discernment", book="1 Kings", chapter=3, verse_start=9, verse_end=None,
+        reference_display="1 Kings 3:9",
+    )
+    _reference(
+        db_session, "clarity", book="Psalms", chapter=119, verse_start=105, verse_end=None,
+        reference_display="Psalm 119:105",
+    )
+    model = _model(theme_strength=(ThemeStrength(theme="discernment", count=1, citations=(_citation("discernment"),)),))
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert {r.theme for r in perspective.reflections} == {"discernment", "clarity"}
+    assert {r.reference_display for r in perspective.reflections} == {"1 Kings 3:9", "Psalm 119:105"}
+    for reflection in perspective.reflections:
+        assert reflection.theme_citations  # every reflection traces to real reading evidence
+
+
+def test_a_theme_without_a_curated_relation_does_not_pull_in_an_unrelated_themes_reference(db_session):
+    """Existing behavior guard: a theme with no curated relation (e.g.
+    "anxiety") must only ever match its own exact tag -- an approved
+    reference under a different, unrelated theme ("hope") must never be
+    pulled in just because it also happens to have a mapping.
+    """
+    _reference(db_session, "anxiety", reference_display="Philippians 4:6-7")
+    _reference(db_session, "hope", book="Romans", chapter=15, verse_start=13, verse_end=None, reference_display="Romans 15:13")
+    model = _model(theme_strength=(ThemeStrength(theme="anxiety", count=1, citations=(_citation("anxiety"),)),))
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert {r.theme for r in perspective.reflections} == {"anxiety"}
+
+
+def test_discernment_candidate_still_returns_nothing_when_neither_it_nor_clarity_is_mapped(db_session):
+    model = _model(theme_strength=(ThemeStrength(theme="discernment", count=1, citations=(_citation("discernment"),)),))
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert perspective.reflections == ()
+
+
+def test_a_reference_reached_by_two_different_candidates_clusters_is_not_duplicated(db_session):
+    """Deduplication across *candidates*, not just within one candidate's
+    own cluster: central_issue "discernment" pulls in clarity's reference
+    via its curated relation, and clarity is *also*, separately, ranked as
+    its own supporting theme -- a real, plausible combination since a
+    reading can independently promote both a card's primary theme
+    (discernment) and its secondary theme (clarity). Clarity's own
+    reference must appear exactly once, not twice, even though two
+    different candidates' clusters both resolve to it.
+    """
+    _reference(
+        db_session, "discernment", book="1 Kings", chapter=3, verse_start=9, verse_end=None,
+        reference_display="1 Kings 3:9",
+    )
+    _reference(
+        db_session, "clarity", book="Psalms", chapter=119, verse_start=105, verse_end=None,
+        reference_display="Psalm 119:105",
+    )
+    model = _model(
+        theme_strength=(ThemeStrength(theme="discernment", count=2, citations=(_citation("discernment"),)),),
+        supporting_themes=(Explained(value="clarity", citations=(_citation("clarity"),)),),
+    )
+    assert model.central_issue.value == "discernment"
+
+    perspective = select_scripture_reflections(db_session, model)
+
+    assert [r.reference_display for r in perspective.reflections] == ["1 Kings 3:9", "Psalm 119:105"]
+    assert len(perspective.reflections) == 2  # not 3 -- clarity's row is not repeated
+
+
 # --- Fallback through clarification / blocker / advice ---------------------------
 
 
@@ -361,11 +484,12 @@ def test_production_scenario_falls_back_to_clarification_when_nothing_earlier_ma
     assert reflection.theme_citations == grief_citations
 
 
-def test_supporting_theme_wins_over_clarification_when_both_are_mapped(db_session):
-    """A ranked supporting theme is tried before clarification: when
-    central_issue is unmapped but a supporting theme has an approved
-    mapping, that supporting theme wins even though clarification is
-    also mapped.
+def test_supporting_theme_and_clarification_both_contribute_supporting_theme_first(db_session):
+    """A ranked supporting theme is still tried before clarification, and
+    both now contribute when both are mapped: central_issue is unmapped
+    ("ambition"), so the supporting theme's references come first,
+    followed by clarification's -- clarification is no longer discarded
+    just because an earlier candidate also matched.
     """
     _reference(db_session, "hope", book="Romans", chapter=15, verse_start=13, verse_end=None, reference_display="Romans 15:13")
     _reference(db_session, "grief", book="Psalms", chapter=34, verse_start=18, verse_end=None, reference_display="Psalm 34:18")
@@ -381,7 +505,7 @@ def test_supporting_theme_wins_over_clarification_when_both_are_mapped(db_sessio
 
     perspective = select_scripture_reflections(db_session, model)
 
-    assert {r.theme for r in perspective.reflections} == {"hope"}
+    assert [r.theme for r in perspective.reflections] == ["hope", "grief"]
 
 
 def test_clarification_is_used_when_central_issue_and_supporting_themes_are_unmapped(db_session):
@@ -573,6 +697,40 @@ def test_integration_single_card_uses_the_stars_own_first_theme(seeded_session):
     perspective = select_scripture_reflections(seeded_session, model)
 
     assert {r.theme for r in perspective.reflections} == {"hope"}
+
+
+def test_integration_discernment_produces_multiple_related_references(seeded_session):
+    """The exact reported bug: a Single Card reading of Queen of Swords
+    establishes "discernment" as its strongest theme (primary_themes[0]
+    in rider_waite_smith/swords.yaml), and Scripture must not come back
+    empty for it. It also proves the semantic-relation cluster end to
+    end against the real seeded dataset: Queen of Swords' own authored
+    content already pairs `discernment` (primary) with `clarity`
+    (secondary) on the very same card, mirroring
+    selection.py's `_RELATED_THEMES["discernment"] == ("clarity",)`, so
+    the returned reflections legitimately span both real, approved theme
+    tags -- not just the one exact string "discernment" -- without any
+    fuzzy/keyword matching involved.
+    """
+    from app.services.interpretation.engine import interpret
+
+    reading = build_reading(
+        seeded_session, spread_name="Single Card",
+        draws=[("The Card", "Queen of Swords", Orientation.UPRIGHT)],
+    )
+    model = interpret(reading, seeded_session)
+
+    assert model.card_interpretations[0].themes[0] == "discernment"
+
+    perspective = select_scripture_reflections(seeded_session, model)
+
+    themes_present = {r.theme for r in perspective.reflections}
+    assert themes_present == {"discernment", "clarity"}
+    assert len(perspective.reflections) >= 2
+    # Every reflection traces back to real evidence in this reading, never
+    # a fabricated citation.
+    for reflection in perspective.reflections:
+        assert len(reflection.theme_citations) >= 1
 
 
 def test_integration_multi_card_falls_back_to_a_mapped_supporting_theme(seeded_session):
