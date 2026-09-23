@@ -66,6 +66,38 @@ def _matched_reading(session: Session, owner: User) -> Reading:
     )
 
 
+def _unmatched_reading(session: Session, owner: User) -> Reading:
+    """A Single Card reading of The Chariot, with its own three
+    Scripture candidate themes (determination, focus, momentum --
+    major_arcana.yaml's own authored primary/secondary themes) verified
+    to have *no* approved mapping through this specific request.
+
+    The Chariot alone no longer guarantees this: since the second
+    Scripture coverage expansion batch, two of its three candidates
+    (determination, focus) are themselves approved themes -- confirmed
+    by direct brute-force search (see the coverage-audit follow-up)
+    that, at 89 of 107 controlled themes now mapped, *no* real
+    Single Card or Three Card combination of drawn cards produces a
+    naturally empty result any more; every card carries at least one
+    now-covered theme. Rather than weaken this test's own intent (an
+    empty-result 200, and no misleading snapshot persisted, via the
+    real API route and the real selection pipeline), this fixture
+    deliberately removes just the two ScriptureReference rows that
+    would otherwise match this one reading's own candidates --
+    "momentum" is untouched and remains a genuine, Tier-3, deliberately
+    unmapped theme -- isolating the empty-result code path without
+    touching any other reading's or theme's seeded data.
+    """
+    reading = build_reading(
+        session, spread_name="Single Card", draws=[("The Card", "The Chariot", Orientation.UPRIGHT)], owner=owner
+    )
+    session.execute(
+        ScriptureReference.__table__.delete().where(ScriptureReference.theme.in_(("determination", "focus")))
+    )
+    session.commit()
+    return reading
+
+
 # --- Fixtures ------------------------------------------------------------------
 
 
@@ -191,20 +223,16 @@ def test_scripture_reflection_shape_when_a_mapping_exists(api_seeded_session, cl
 def test_scripture_reflections_empty_but_200_when_no_theme_has_an_approved_mapping(
     api_seeded_session, client, owner
 ):
-    thin_reading = build_reading(
-        api_seeded_session, spread_name="Single Card",
-        draws=[("The Card", "Four of Wands", Orientation.UPRIGHT)],
-        owner=owner,
-    )
-    api_seeded_session.commit()
+    thin_reading = _unmatched_reading(api_seeded_session, owner)
     client.post(f"/readings/{thin_reading.id}/interpret")
 
     response = client.get(f"/readings/{thin_reading.id}/scripture")
 
     assert response.status_code == 200
-    # Four of Wands's own themes are not among this foundation's seeded
-    # Scripture themes (fear/anxiety/patience/relationships/grief/hope/
-    # uncertainty) -- an empty list is the correct, non-error outcome.
+    # None of The Chariot's Scripture candidates (determination, focus,
+    # momentum) have an approved mapping through this reading -- see
+    # _unmatched_reading()'s own docstring -- so an empty list is the
+    # correct, non-error outcome.
     assert response.json()["reflections"] == []
 
 
@@ -304,12 +332,7 @@ def test_current_scripture_route_never_selects_or_persists_anything_itself(
 
 
 def test_no_matching_scripture_does_not_create_a_misleading_snapshot(api_seeded_session, client, owner):
-    thin_reading = build_reading(
-        api_seeded_session, spread_name="Single Card",
-        draws=[("The Card", "Four of Wands", Orientation.UPRIGHT)],
-        owner=owner,
-    )
-    api_seeded_session.commit()
+    thin_reading = _unmatched_reading(api_seeded_session, owner)
     client.post(f"/readings/{thin_reading.id}/interpret")
 
     response = client.get(f"/readings/{thin_reading.id}/scripture")
@@ -331,23 +354,20 @@ def test_no_match_does_not_block_a_later_addition_to_the_approved_dataset(
     reference was added would be permanently stuck at "no reference"
     even after the dataset grows.
     """
-    thin_reading = build_reading(
-        api_seeded_session, spread_name="Single Card",
-        draws=[("The Card", "Four of Wands", Orientation.UPRIGHT)],
-        owner=owner,
-    )
-    api_seeded_session.commit()
+    thin_reading = _unmatched_reading(api_seeded_session, owner)
     client.post(f"/readings/{thin_reading.id}/interpret")
 
     first = client.get(f"/readings/{thin_reading.id}/scripture")
     assert first.json()["reflections"] == []
 
-    # Four of Wands' own real primary theme (wands.yaml) -- newly approved
-    # after the fact.
+    # The Chariot's own real primary theme (major_arcana.yaml) --
+    # _unmatched_reading() deliberately removed this reading's own
+    # approved "determination" row above; re-adding it here simulates a
+    # theme being newly approved after the fact.
     api_seeded_session.add(
         ScriptureReference(
-            theme="stability", book="Psalm", chapter=118, verse_start=24, verse_end=None,
-            reference_display="Psalm 118:24", translation="KJV",
+            theme="determination", book="Philippians", chapter=3, verse_start=14, verse_end=None,
+            reference_display="Philippians 3:14", translation="KJV",
             context_note="A note.", reflection_connection="A connection.",
         )
     )

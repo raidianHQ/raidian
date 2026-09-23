@@ -23,7 +23,7 @@ from sqlalchemy.pool import StaticPool
 from app.api.dependencies import get_reflection_engine_client
 from app.core.security import create_access_token
 from app.db.session import get_db
-from app.models import Base, Orientation, User
+from app.models import Base, Orientation, ScriptureReference, User
 from app.models.reading import Reading
 from app.seed.seed import seed_reference_data
 from tests.factories import make_user
@@ -212,15 +212,33 @@ def test_generate_route_include_scripture_true_supplies_scripture_and_allows_it_
 
 
 def _unmatched_reading(session: Session, owner: User) -> Reading:
-    """A Single Card reading of The Chariot -- its own first authored
-    theme ("determination") has no approved Scripture mapping anywhere
-    in its candidate chain (verified directly against the seeded
-    dataset), proving the "opted in but nothing found" path stays
-    graceful: no error, and no snapshot persisted.
+    """A Single Card reading of The Chariot, with its own three Scripture
+    candidate themes (determination, focus, momentum -- major_arcana.yaml's
+    own authored primary/secondary themes) verified to have *no* approved
+    mapping through this specific request -- proving the "opted in but
+    nothing found" path stays graceful: no error, and no snapshot
+    persisted.
+
+    The Chariot alone no longer guarantees this: since the second
+    Scripture coverage expansion batch, two of its three candidates
+    (determination, focus) are themselves approved themes -- at 89 of
+    107 controlled themes now mapped, no real Single Card or Three Card
+    combination of drawn cards produces a naturally empty result any
+    more (every card carries at least one now-covered theme; see
+    tests/test_api_scripture.py's own identically-named fixture for the
+    full explanation). This fixture deliberately removes just the two
+    ScriptureReference rows that would otherwise match this one
+    reading's own candidates -- "momentum" is untouched and remains a
+    genuine, Tier-3, deliberately unmapped theme.
     """
-    return build_reading(
+    reading = build_reading(
         session, spread_name="Single Card", draws=[("The Card", "The Chariot", Orientation.UPRIGHT)], owner=owner
     )
+    session.execute(
+        ScriptureReference.__table__.delete().where(ScriptureReference.theme.in_(("determination", "focus")))
+    )
+    session.commit()
+    return reading
 
 
 # --- AI Narrative + Scriptural Reflection integration (Raidian Reading Lifecycle

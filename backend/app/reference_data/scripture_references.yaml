@@ -19,16 +19,47 @@
 # today -- Section 16, Q5 remains open); only public-domain translations
 # are approved (app/seed/loader.py's APPROVED_SCRIPTURE_TRANSLATIONS).
 #
-# Deliberately small: this seeds only a subset of theme_vocabulary.yaml's
-# full tag set -- fear, anxiety, patience, relationships, grief, hope,
-# uncertainty, discernment, clarity today. Mapping a new theme here is a
-# deliberate content decision (a real, verifiable reference plus original
-# commentary), never a guess at which existing tag some other word
-# "really" meant -- the same invented-mapping judgment compounds.py
-# already refuses to make for its own named compounds, for the same
-# reason. Covering more of the vocabulary is future work, gated on that
-# same deliberate per-theme decision, not something this seed set
-# approximates.
+# Still only a subset of theme_vocabulary.yaml's full tag set (89 of 107
+# themes as of this batch) -- expanded in three passes:
+#   1) an initial 9 themes: fear, anxiety, patience, relationships, grief,
+#      hope, uncertainty, discernment, clarity.
+#   2) the Scripture coverage audit's "Strong" tier (39 themes):
+#      new_beginnings, authority, stability, discipline, mentorship,
+#      emotional_connection, compassion, nurturing, joy, contentment,
+#      loss, mystery, inner_strength, courage, solitude, choice,
+#      fairness, accountability, truth, honest_communication, conflict,
+#      hardship, burden, exhaustion, transformation, letting_go,
+#      revelation, reckoning, renewal, healing, rest, vigilance,
+#      completion, wholeness, abundance, skill_and_craft, diligence,
+#      generosity, community.
+#   3) the audit's remaining Tier 1 ("Strong", 24 themes) and Tier 2
+#      ("Moderate", 17 themes) proposals, approved together as one
+#      batch: willpower, ambition, breakthrough, structure, tradition,
+#      hidden_knowledge, introspection, indecision, upheaval,
+#      self_evaluation, legacy, material_security, reliability,
+#      entrapment, memory, creativity, opportunity, risk_taking, focus,
+#      determination, attachment, recovery, collaboration, authenticity
+#      (Tier 1); intuition, inner_guidance, adaptability, strategy,
+#      illusion, endings, transition, cycles, potential, exploration,
+#      openness, control, recognition, fulfillment, vitality,
+#      romantic_pursuit, curiosity (Tier 2 -- each framed with explicit
+#      care in its reflection_connection where the passage is closely
+#      related but not a literal synonym for the theme, e.g. self-control
+#      for "control", Spirit-guidance for "intuition"/"inner_guidance").
+# Mapping a new theme here is a deliberate content decision (a real,
+# verifiable reference plus original commentary), never a guess at which
+# existing tag some other word "really" meant -- the same
+# invented-mapping judgment compounds.py already refuses to make for its
+# own named compounds, for the same reason. The audit's remaining
+# "Tier 3 / weak" themes (belief_systems, balance, integration,
+# values_alignment, communication, diplomacy, practicality,
+# resourcefulness, self_sufficiency, patterns, restriction, evasion,
+# spontaneity, assertiveness, momentum, idealism, sensuality,
+# manifestation -- 18 themes) were deliberately left unmapped: either no
+# clean single-verse fit exists without forcing one, or (self_sufficiency)
+# mapping one risks implying Scripture endorses something it more often
+# cautions against, or (sensuality, manifestation) the theme needs an
+# explicit, separate content decision beyond this batch's own scope.
 #
 # A theme may have more than one approved reference (see discernment
 # below). Two related-but-distinct themes may also each carry their own
@@ -195,3 +226,2554 @@
     Where a reading calls for clarity, this passage offers a different
     expectation of what clarity can look like -- enough light for what
     is immediately ahead, not necessarily the entire path.
+- theme: new_beginnings
+  book: 2 Corinthians
+  chapter: 5
+  verse_start: 17
+  verse_end: null
+  reference_display: "2 Corinthians 5:17"
+  translation: KJV
+  context_note: >
+    Paul describes anyone united with Christ as a new creation -- old
+    things passed away, with something genuinely new in their place.
+  reflection_connection: >
+    Where a reading points toward new beginnings, this passage frames
+    newness as a real change in condition, not simply a fresh start on
+    the same footing as before.
+
+- theme: new_beginnings
+  book: Revelation
+  chapter: 21
+  verse_start: 5
+  verse_end: null
+  reference_display: "Revelation 21:5"
+  translation: KJV
+  context_note: >
+    A vision of the one seated on the throne declaring that all things
+    are being made new.
+  reflection_connection: >
+    A reading that surfaces new beginnings may be worth holding alongside
+    this passage's own scale -- renewal here is not framed as a single
+    isolated event, but as something ongoing.
+
+- theme: authority
+  book: Romans
+  chapter: 13
+  verse_start: 1
+  verse_end: null
+  reference_display: "Romans 13:1"
+  translation: KJV
+  context_note: >
+    Paul instructs the Roman church that governing authority exists
+    under God's own permission, not as a power unto itself.
+  reflection_connection: >
+    Where a reading names authority, this passage raises a question worth
+    sitting with -- what a given authority is actually for, not merely
+    that it holds power.
+
+- theme: authority
+  book: Matthew
+  chapter: 28
+  verse_start: 18
+  verse_end: null
+  reference_display: "Matthew 28:18"
+  translation: KJV
+  context_note: >
+    Jesus tells his disciples that all authority in heaven and on earth
+    has been given to him, just before commissioning them.
+  reflection_connection: >
+    A reading that surfaces authority may be worth considering alongside
+    this passage's own framing -- authority given for a purpose, not held
+    for its own sake.
+
+- theme: authority
+  book: Matthew
+  chapter: 8
+  verse_start: 9
+  verse_end: null
+  reference_display: "Matthew 8:9"
+  translation: KJV
+  context_note: >
+    A Roman centurion explains his own understanding of authority --
+    someone himself under authority, who gives orders that are obeyed in
+    turn.
+  reflection_connection: >
+    Where a reading points toward authority, this passage offers a
+    different angle on it -- authority understood partly through being
+    subject to it.
+
+- theme: stability
+  book: Psalms
+  chapter: 40
+  verse_start: 2
+  verse_end: null
+  reference_display: "Psalm 40:2"
+  translation: KJV
+  context_note: >
+    A psalm of David describing being lifted out of a miry pit and set
+    on solid rock, with his steps established.
+  reflection_connection: >
+    Where a reading names stability, this passage frames it as something
+    given after instability, not a condition that was always present.
+
+- theme: stability
+  book: Matthew
+  chapter: 7
+  verse_start: 24
+  verse_end: 25
+  reference_display: "Matthew 7:24-25"
+  translation: KJV
+  context_note: >
+    Jesus' parable of the wise man who built his house on rock, which
+    stood through storm and flood.
+  reflection_connection: >
+    A reading that surfaces stability may be worth holding alongside this
+    passage's own point -- what a foundation is built on matters more
+    than how calm conditions happen to be.
+
+- theme: stability
+  book: Psalms
+  chapter: 62
+  verse_start: 2
+  verse_end: null
+  reference_display: "Psalm 62:2"
+  translation: KJV
+  context_note: >
+    A psalm naming God as rock, salvation, and defence -- a source of
+    stability that will not be greatly shaken.
+  reflection_connection: >
+    Where a reading points toward stability, this passage offers a
+    starting point for reflection on where that steadiness is actually
+    being drawn from.
+
+- theme: discipline
+  book: Hebrews
+  chapter: 12
+  verse_start: 11
+  verse_end: null
+  reference_display: "Hebrews 12:11"
+  translation: KJV
+  context_note: >
+    The writer of Hebrews acknowledges that discipline feels painful in
+    the moment, yet can yield a settled, mature outcome afterward.
+  reflection_connection: >
+    Where a reading names discipline, this passage frames it as something
+    that costs something now for the sake of what it builds later, not
+    as an end in itself.
+
+- theme: discipline
+  book: Proverbs
+  chapter: 3
+  verse_start: 11
+  verse_end: 12
+  reference_display: "Proverbs 3:11-12"
+  translation: KJV
+  context_note: >
+    A proverb urging the reader not to despise correction, comparing it
+    to a father's care for a child he delights in.
+  reflection_connection: >
+    A reading that surfaces discipline may be worth considering alongside
+    this passage's own reframing -- correction offered out of care, not
+    simply imposed.
+
+- theme: discipline
+  book: 1 Corinthians
+  chapter: 9
+  verse_start: 27
+  verse_end: null
+  reference_display: "1 Corinthians 9:27"
+  translation: KJV
+  context_note: >
+    Paul describes deliberately bringing his own body into subjection,
+    concerned that he might otherwise fail to live out what he preaches.
+  reflection_connection: >
+    Where a reading points toward discipline, this passage names it as a
+    chosen, ongoing effort rather than a trait someone simply has.
+
+- theme: mentorship
+  book: 2 Timothy
+  chapter: 2
+  verse_start: 2
+  verse_end: null
+  reference_display: "2 Timothy 2:2"
+  translation: KJV
+  context_note: >
+    Paul instructs Timothy to pass on what he has learned to others who
+    are themselves capable of teaching it further.
+  reflection_connection: >
+    Where a reading names mentorship, this passage frames it as something
+    meant to continue past any one relationship -- passed on, not kept.
+
+- theme: mentorship
+  book: Titus
+  chapter: 2
+  verse_start: 3
+  verse_end: 4
+  reference_display: "Titus 2:3-4"
+  translation: KJV
+  context_note: >
+    Paul asks older women in the church to teach and encourage younger
+    women, out of their own lived experience.
+  reflection_connection: >
+    A reading that surfaces mentorship may be worth holding alongside
+    this passage's own picture of it -- guidance offered from within a
+    community, not from a distance.
+
+- theme: mentorship
+  book: Proverbs
+  chapter: 27
+  verse_start: 17
+  verse_end: null
+  reference_display: "Proverbs 27:17"
+  translation: KJV
+  context_note: >
+    A short proverb comparing the sharpening of iron by iron to how one
+    person can sharpen another.
+  reflection_connection: >
+    Where a reading points toward mentorship, this passage suggests it
+    can run both directions -- shaping both people involved, not only
+    one.
+
+- theme: emotional_connection
+  book: 1 Samuel
+  chapter: 18
+  verse_start: 1
+  verse_end: null
+  reference_display: "1 Samuel 18:1"
+  translation: KJV
+  context_note: >
+    A description of the bond between Jonathan and David, whose souls are
+    described as knit together after Jonathan first heard David speak.
+  reflection_connection: >
+    Where a reading names emotional connection, this passage frames it as
+    something that can form quickly and run deep, not something that
+    only grows slowly over time.
+
+- theme: emotional_connection
+  book: Romans
+  chapter: 12
+  verse_start: 15
+  verse_end: null
+  reference_display: "Romans 12:15"
+  translation: KJV
+  context_note: >
+    Paul instructs the Roman church to rejoice with those who rejoice and
+    weep with those who weep.
+  reflection_connection: >
+    A reading that surfaces emotional connection may be worth considering
+    alongside this passage's own standard -- meeting another person in
+    whatever they are actually feeling, not just in agreement.
+
+- theme: emotional_connection
+  book: Ecclesiastes
+  chapter: 4
+  verse_start: 9
+  verse_end: 10
+  reference_display: "Ecclesiastes 4:9-10"
+  translation: KJV
+  context_note: >
+    The Preacher observes that two are better than one, since one can
+    help the other up if either should fall.
+  reflection_connection: >
+    Where a reading points toward emotional connection, this passage
+    names a practical reason for it -- support that is only available
+    because someone else is actually present.
+
+- theme: compassion
+  book: Colossians
+  chapter: 3
+  verse_start: 12
+  verse_end: null
+  reference_display: "Colossians 3:12"
+  translation: KJV
+  context_note: >
+    Paul asks the Colossian church to clothe themselves in qualities
+    including compassion, kindness, and humility.
+  reflection_connection: >
+    Where a reading names compassion, this passage frames it as something
+    deliberately put on, alongside other qualities, rather than a feeling
+    that simply arises on its own.
+
+- theme: compassion
+  book: Matthew
+  chapter: 9
+  verse_start: 36
+  verse_end: null
+  reference_display: "Matthew 9:36"
+  translation: KJV
+  context_note: >
+    Jesus, seeing the crowds, is moved with compassion because they
+    seemed weary and without direction.
+  reflection_connection: >
+    A reading that surfaces compassion may be worth holding alongside
+    this passage's own trigger for it -- noticing what condition someone
+    else is actually in.
+
+- theme: compassion
+  book: Luke
+  chapter: 10
+  verse_start: 33
+  verse_end: null
+  reference_display: "Luke 10:33"
+  translation: KJV
+  context_note: >
+    From the parable of the Good Samaritan -- the one who stopped to help
+    was the traveler who had compassion on the injured man.
+  reflection_connection: >
+    Where a reading points toward compassion, this passage frames it as
+    something shown by action, to someone the passage's own audience may
+    not have expected.
+
+- theme: nurturing
+  book: 1 Thessalonians
+  chapter: 2
+  verse_start: 7
+  verse_end: null
+  reference_display: "1 Thessalonians 2:7"
+  translation: KJV
+  context_note: >
+    Paul describes his own gentleness toward the Thessalonian church,
+    comparing it to a nurse cherishing her children.
+  reflection_connection: >
+    Where a reading names nurturing, this passage frames it as a
+    deliberate gentleness offered to others, not only a quality shown
+    toward one's own family.
+
+- theme: nurturing
+  book: Isaiah
+  chapter: 40
+  verse_start: 11
+  verse_end: null
+  reference_display: "Isaiah 40:11"
+  translation: KJV
+  context_note: >
+    A description of God as a shepherd who gathers the lambs in his arm
+    and gently leads those with young.
+  reflection_connection: >
+    A reading that surfaces nurturing may be worth considering alongside
+    this image -- strength used gently, in pace with what is being
+    cared for.
+
+- theme: nurturing
+  book: Ephesians
+  chapter: 6
+  verse_start: 4
+  verse_end: null
+  reference_display: "Ephesians 6:4"
+  translation: KJV
+  context_note: >
+    Paul instructs fathers not to provoke their children to anger, but to
+    bring them up with nurture and instruction.
+  reflection_connection: >
+    Where a reading points toward nurturing, this passage pairs it with
+    restraint -- care that avoids provoking, not only care that
+    provides.
+
+- theme: joy
+  book: Nehemiah
+  chapter: 8
+  verse_start: 10
+  verse_end: null
+  reference_display: "Nehemiah 8:10"
+  translation: KJV
+  context_note: >
+    Nehemiah tells the people not to grieve, naming the joy of the LORD
+    as their strength on a day meant for celebration.
+  reflection_connection: >
+    Where a reading names joy, this passage frames it as a source of
+    strength in its own right, not merely a pleasant feeling alongside
+    it.
+
+- theme: joy
+  book: Psalms
+  chapter: 30
+  verse_start: 5
+  verse_end: null
+  reference_display: "Psalm 30:5"
+  translation: KJV
+  context_note: >
+    A psalm contrasting a night of weeping with joy that arrives by
+    morning.
+  reflection_connection: >
+    A reading that surfaces joy may be worth holding alongside this
+    passage's own timing -- joy described as something that can follow
+    difficulty, not only precede it.
+
+- theme: joy
+  book: Galatians
+  chapter: 5
+  verse_start: 22
+  verse_end: null
+  reference_display: "Galatians 5:22"
+  translation: KJV
+  context_note: >
+    Paul lists joy among the fruit of the Spirit, alongside love, peace,
+    and several other qualities.
+  reflection_connection: >
+    Where a reading points toward joy, this passage places it in company
+    with other qualities, rather than treating it as something that
+    stands entirely on its own.
+
+- theme: contentment
+  book: Philippians
+  chapter: 4
+  verse_start: 11
+  verse_end: null
+  reference_display: "Philippians 4:11"
+  translation: KJV
+  context_note: >
+    Paul writes from difficult circumstances that he has learned to be
+    content whatever his own state happens to be.
+  reflection_connection: >
+    Where a reading names contentment, this passage frames it as
+    something learned over time, not a condition someone either starts
+    with or lacks.
+
+- theme: contentment
+  book: 1 Timothy
+  chapter: 6
+  verse_start: 6
+  verse_end: null
+  reference_display: "1 Timothy 6:6"
+  translation: KJV
+  context_note: >
+    Paul tells Timothy that godliness paired with contentment is itself
+    great gain.
+  reflection_connection: >
+    A reading that surfaces contentment may be worth holding alongside
+    this passage's own pairing of it with something else, rather than as
+    a stand-alone goal.
+
+- theme: contentment
+  book: Hebrews
+  chapter: 13
+  verse_start: 5
+  verse_end: null
+  reference_display: "Hebrews 13:5"
+  translation: KJV
+  context_note: >
+    The writer of Hebrews urges contentment with what one already has,
+    grounded in a promise never to be forsaken.
+  reflection_connection: >
+    Where a reading points toward contentment, this passage ties it to a
+    specific reason, rather than presenting it as a feeling to simply
+    will into being.
+
+- theme: loss
+  book: Job
+  chapter: 1
+  verse_start: 21
+  verse_end: null
+  reference_display: "Job 1:21"
+  translation: KJV
+  context_note: >
+    After catastrophic losses, Job blesses the name of the LORD, naming
+    what was given and what has been taken away.
+  reflection_connection: >
+    Where a reading names loss, this passage does not explain it away --
+    it sits with loss directly, without offering a tidy resolution.
+
+- theme: loss
+  book: Matthew
+  chapter: 5
+  verse_start: 4
+  verse_end: null
+  reference_display: "Matthew 5:4"
+  translation: KJV
+  context_note: >
+    From the Beatitudes -- a blessing named specifically for those who
+    mourn, with comfort promised to them.
+  reflection_connection: >
+    A reading that surfaces loss may be worth holding alongside this
+    passage's own promise, offered without pretending mourning itself is
+    skipped over.
+
+- theme: loss
+  book: Revelation
+  chapter: 21
+  verse_start: 4
+  verse_end: null
+  reference_display: "Revelation 21:4"
+  translation: KJV
+  context_note: >
+    A vision describing every tear wiped away, with death, sorrow, and
+    pain no longer present.
+  reflection_connection: >
+    Where a reading points toward loss, this passage offers a long
+    horizon for reflection -- not a claim about what this reading's own
+    loss will resolve into.
+
+- theme: mystery
+  book: Deuteronomy
+  chapter: 29
+  verse_start: 29
+  verse_end: null
+  reference_display: "Deuteronomy 29:29"
+  translation: KJV
+  context_note: >
+    Moses distinguishes between secret things that belong to God and
+    revealed things given for the people to act on.
+  reflection_connection: >
+    Where a reading names mystery, this passage offers a boundary worth
+    keeping -- some things held back are not this reading's, or any
+    reading's, to resolve.
+
+- theme: mystery
+  book: 1 Corinthians
+  chapter: 2
+  verse_start: 7
+  verse_end: null
+  reference_display: "1 Corinthians 2:7"
+  translation: KJV
+  context_note: >
+    Paul speaks of a wisdom once hidden, now spoken of among those
+    considered mature in faith.
+  reflection_connection: >
+    A reading that surfaces mystery may be worth holding alongside this
+    passage's own claim -- that what is hidden can still, in time, be
+    understood.
+
+- theme: mystery
+  book: Colossians
+  chapter: 1
+  verse_start: 26
+  verse_end: 27
+  reference_display: "Colossians 1:26-27"
+  translation: KJV
+  context_note: >
+    Paul describes a mystery once hidden through generations, now made
+    known to those he is writing to.
+  reflection_connection: >
+    Where a reading points toward mystery, this passage frames it as
+    something that can eventually be disclosed, not necessarily
+    permanent.
+
+- theme: inner_strength
+  book: Philippians
+  chapter: 4
+  verse_start: 13
+  verse_end: null
+  reference_display: "Philippians 4:13"
+  translation: KJV
+  context_note: >
+    Paul states that he can do all things through the one who
+    strengthens him -- written from a position of real hardship.
+  reflection_connection: >
+    Where a reading names inner strength, this passage frames it as
+    drawn from beyond oneself, not generated by sheer will alone.
+
+- theme: inner_strength
+  book: Ephesians
+  chapter: 3
+  verse_start: 16
+  verse_end: null
+  reference_display: "Ephesians 3:16"
+  translation: KJV
+  context_note: >
+    Paul prays that the Ephesian church would be strengthened with might
+    in their inner being.
+  reflection_connection: >
+    A reading that surfaces inner strength may be worth holding alongside
+    this passage's own distinction -- strength located inwardly, not
+    measured by outward circumstance.
+
+- theme: inner_strength
+  book: 2 Corinthians
+  chapter: 12
+  verse_start: 9
+  verse_end: null
+  reference_display: "2 Corinthians 12:9"
+  translation: KJV
+  context_note: >
+    Paul recounts being told that grace is sufficient, and that strength
+    is made complete in weakness rather than despite it.
+  reflection_connection: >
+    Where a reading points toward inner strength, this passage offers an
+    unexpected reframing -- strength found through acknowledged weakness,
+    not in spite of it.
+
+- theme: courage
+  book: Joshua
+  chapter: 1
+  verse_start: 9
+  verse_end: null
+  reference_display: "Joshua 1:9"
+  translation: KJV
+  context_note: >
+    God instructs Joshua to be strong and of good courage as he takes on
+    leadership, promising to be with him wherever he goes.
+  reflection_connection: >
+    Where a reading names courage, this passage ties it to a specific
+    reason for it, not courage summoned from nothing.
+
+- theme: courage
+  book: Psalms
+  chapter: 27
+  verse_start: 14
+  verse_end: null
+  reference_display: "Psalm 27:14"
+  translation: KJV
+  context_note: >
+    A psalm pairing courage with waiting -- strength of heart described
+    as something built while waiting, not only before or after it.
+  reflection_connection: >
+    A reading that surfaces courage may be worth holding alongside this
+    passage's own pacing -- courage that can coexist with not yet having
+    an answer.
+
+- theme: courage
+  book: 1 Corinthians
+  chapter: 16
+  verse_start: 13
+  verse_end: null
+  reference_display: "1 Corinthians 16:13"
+  translation: KJV
+  context_note: >
+    Paul closes with a short series of instructions to the Corinthian
+    church, including to stand firm and be strong.
+  reflection_connection: >
+    Where a reading points toward courage, this passage frames it as one
+    part of a larger posture, alongside watchfulness and steadiness.
+
+- theme: solitude
+  book: Mark
+  chapter: 1
+  verse_start: 35
+  verse_end: null
+  reference_display: "Mark 1:35"
+  translation: KJV
+  context_note: >
+    Jesus rises early, while it is still dark, and withdraws to a
+    solitary place to pray.
+  reflection_connection: >
+    Where a reading names solitude, this passage frames it as a
+    deliberate withdrawal for a purpose, not simply an absence of other
+    people.
+
+- theme: solitude
+  book: Matthew
+  chapter: 14
+  verse_start: 23
+  verse_end: null
+  reference_display: "Matthew 14:23"
+  translation: KJV
+  context_note: >
+    After sending the crowds away, Jesus goes up a mountain alone to
+    pray as evening comes.
+  reflection_connection: >
+    A reading that surfaces solitude may be worth considering alongside
+    this passage's own timing -- chosen after a period of activity, not
+    instead of it.
+
+- theme: solitude
+  book: Psalms
+  chapter: 46
+  verse_start: 10
+  verse_end: null
+  reference_display: "Psalm 46:10"
+  translation: KJV
+  context_note: >
+    A psalm's instruction to be still, in the midst of describing
+    upheaval among nations.
+  reflection_connection: >
+    Where a reading points toward solitude, this passage frames stillness
+    as something asked for even when surrounding circumstances are not
+    themselves still.
+
+- theme: choice
+  book: Deuteronomy
+  chapter: 30
+  verse_start: 19
+  verse_end: null
+  reference_display: "Deuteronomy 30:19"
+  translation: KJV
+  context_note: >
+    Moses sets life and death, blessing and cursing, before the people,
+    and urges them to choose life.
+  reflection_connection: >
+    Where a reading names choice, this passage frames it as consequential
+    and real, not a formality standing in for a decision already made.
+
+- theme: choice
+  book: Joshua
+  chapter: 24
+  verse_start: 15
+  verse_end: null
+  reference_display: "Joshua 24:15"
+  translation: KJV
+  context_note: >
+    Joshua asks the people to choose, that day, whom they will serve,
+    and states his own household's choice.
+  reflection_connection: >
+    A reading that surfaces choice may be worth holding alongside this
+    passage's own example -- a choice named openly, not left unspoken.
+
+- theme: fairness
+  book: Micah
+  chapter: 6
+  verse_start: 8
+  verse_end: null
+  reference_display: "Micah 6:8"
+  translation: KJV
+  context_note: >
+    Micah names what is required in simple terms: to do justly, love
+    mercy, and walk humbly.
+  reflection_connection: >
+    Where a reading names fairness, this passage pairs it with mercy and
+    humility, rather than presenting it as a standard that stands alone.
+
+- theme: fairness
+  book: Leviticus
+  chapter: 19
+  verse_start: 15
+  verse_end: null
+  reference_display: "Leviticus 19:15"
+  translation: KJV
+  context_note: >
+    An instruction against unrighteous judgment, specifically warning
+    against favoring either the poor or the powerful.
+  reflection_connection: >
+    A reading that surfaces fairness may be worth holding alongside this
+    passage's own concern -- fairness that holds regardless of who is
+    involved.
+
+- theme: fairness
+  book: Proverbs
+  chapter: 11
+  verse_start: 1
+  verse_end: null
+  reference_display: "Proverbs 11:1"
+  translation: KJV
+  context_note: >
+    A proverb contrasting a false balance, called an abomination, with a
+    just weight.
+  reflection_connection: >
+    Where a reading points toward fairness, this passage locates it in an
+    ordinary, practical image -- fairness measured in small, verifiable
+    ways.
+
+- theme: accountability
+  book: Romans
+  chapter: 14
+  verse_start: 12
+  verse_end: null
+  reference_display: "Romans 14:12"
+  translation: KJV
+  context_note: >
+    Paul states plainly that each person will give an account of
+    themselves.
+  reflection_connection: >
+    Where a reading names accountability, this passage frames it as
+    personal -- an account each person gives for themselves, not on
+    another's behalf.
+
+- theme: accountability
+  book: Luke
+  chapter: 12
+  verse_start: 48
+  verse_end: null
+  reference_display: "Luke 12:48"
+  translation: KJV
+  context_note: >
+    Jesus states that whoever has been given much will have much
+    required of them in turn.
+  reflection_connection: >
+    A reading that surfaces accountability may be worth holding alongside
+    this passage's own measure -- weighed against what was given, not
+    against a fixed, universal standard.
+
+- theme: truth
+  book: John
+  chapter: 8
+  verse_start: 32
+  verse_end: null
+  reference_display: "John 8:32"
+  translation: KJV
+  context_note: >
+    Jesus tells those who believe in him that knowing the truth will make
+    them free.
+  reflection_connection: >
+    Where a reading names truth, this passage ties it to freedom, not
+    only to correctness -- worth sitting with as its own kind of claim.
+
+- theme: truth
+  book: John
+  chapter: 14
+  verse_start: 6
+  verse_end: null
+  reference_display: "John 14:6"
+  translation: KJV
+  context_note: >
+    Jesus identifies himself as the way, the truth, and the life, in
+    response to a disciple's question about the way forward.
+  reflection_connection: >
+    A reading that surfaces truth may be worth holding alongside this
+    passage's own framing -- truth presented as something to be found in
+    a person, not only in a fact.
+
+- theme: honest_communication
+  book: Ephesians
+  chapter: 4
+  verse_start: 25
+  verse_end: null
+  reference_display: "Ephesians 4:25"
+  translation: KJV
+  context_note: >
+    Paul instructs the Ephesian church to put away lying and speak truth,
+    naming one another as members of the same body.
+  reflection_connection: >
+    Where a reading names honest communication, this passage ties it
+    directly to relationship -- truthfulness framed as care for the
+    other person, not bluntness for its own sake.
+
+- theme: honest_communication
+  book: Zechariah
+  chapter: 8
+  verse_start: 16
+  verse_end: null
+  reference_display: "Zechariah 8:16"
+  translation: KJV
+  context_note: >
+    An instruction to speak truth to one's neighbor, alongside a call for
+    judgment that is both true and peaceable.
+  reflection_connection: >
+    A reading that surfaces honest communication may be worth holding
+    alongside this passage's own pairing -- truth spoken in a way that
+    still aims at peace.
+
+- theme: honest_communication
+  book: Proverbs
+  chapter: 12
+  verse_start: 22
+  verse_end: null
+  reference_display: "Proverbs 12:22"
+  translation: KJV
+  context_note: >
+    A proverb naming lying lips as detestable, and those who deal truly
+    as a delight.
+  reflection_connection: >
+    Where a reading points toward honest communication, this passage
+    frames it as a matter of trustworthiness over time, not only of a
+    single statement.
+
+- theme: conflict
+  book: James
+  chapter: 4
+  verse_start: 1
+  verse_end: null
+  reference_display: "James 4:1"
+  translation: KJV
+  context_note: >
+    James asks where conflicts among his readers actually come from,
+    pointing to desires at odds within a person.
+  reflection_connection: >
+    Where a reading names conflict, this passage invites a look at its
+    actual source, rather than only at how it shows up between people.
+
+- theme: conflict
+  book: Matthew
+  chapter: 5
+  verse_start: 9
+  verse_end: null
+  reference_display: "Matthew 5:9"
+  translation: KJV
+  context_note: >
+    From the Beatitudes -- a blessing named for peacemakers specifically,
+    not merely for those who avoid conflict.
+  reflection_connection: >
+    A reading that surfaces conflict may be worth holding alongside this
+    passage's own distinction -- peacemaking as active work, not simple
+    absence of disagreement.
+
+- theme: conflict
+  book: Romans
+  chapter: 12
+  verse_start: 18
+  verse_end: null
+  reference_display: "Romans 12:18"
+  translation: KJV
+  context_note: >
+    Paul instructs the Roman church to live peaceably with others, so far
+    as it depends on them.
+  reflection_connection: >
+    Where a reading points toward conflict, this passage names a limit
+    worth noticing -- what depends on oneself, not a guarantee over how
+    another person responds.
+
+- theme: hardship
+  book: Romans
+  chapter: 5
+  verse_start: 3
+  verse_end: 4
+  reference_display: "Romans 5:3-4"
+  translation: KJV
+  context_note: >
+    Paul describes a progression from tribulation to patience, from
+    patience to experience, and from experience to hope.
+  reflection_connection: >
+    Where a reading names hardship, this passage frames it as part of a
+    longer sequence, rather than as an isolated difficulty with no
+    further shape.
+
+- theme: hardship
+  book: 2 Corinthians
+  chapter: 4
+  verse_start: 8
+  verse_end: 9
+  reference_display: "2 Corinthians 4:8-9"
+  translation: KJV
+  context_note: >
+    Paul lists a series of hard circumstances -- troubled, perplexed,
+    struck down -- each paired with something that did not, in the end,
+    happen.
+  reflection_connection: >
+    A reading that surfaces hardship may be worth holding alongside this
+    passage's own structure -- naming difficulty honestly, without
+    minimizing it, while also naming what it did not become.
+
+- theme: hardship
+  book: John
+  chapter: 16
+  verse_start: 33
+  verse_end: null
+  reference_display: "John 16:33"
+  translation: KJV
+  context_note: >
+    Jesus tells his disciples plainly that they will have trouble in the
+    world, alongside an instruction to take heart.
+  reflection_connection: >
+    Where a reading points toward hardship, this passage does not
+    promise its absence -- it names hardship as expected, not as a sign
+    something has gone wrong.
+
+- theme: burden
+  book: Galatians
+  chapter: 6
+  verse_start: 2
+  verse_end: null
+  reference_display: "Galatians 6:2"
+  translation: KJV
+  context_note: >
+    Paul instructs the Galatian church to bear one another's burdens.
+  reflection_connection: >
+    Where a reading names a burden, this passage frames carrying it as
+    something meant to be shared, not necessarily carried alone.
+
+- theme: burden
+  book: Psalms
+  chapter: 55
+  verse_start: 22
+  verse_end: null
+  reference_display: "Psalm 55:22"
+  translation: KJV
+  context_note: >
+    A psalm instructing the reader to cast their burden on the LORD, with
+    a promise of sustaining care.
+  reflection_connection: >
+    A reading that surfaces burden may be worth holding alongside this
+    passage's own instruction -- naming a burden outright, rather than
+    continuing to carry it silently.
+
+- theme: exhaustion
+  book: 1 Kings
+  chapter: 19
+  verse_start: 5
+  verse_end: 7
+  reference_display: "1 Kings 19:5-7"
+  translation: KJV
+  context_note: >
+    Elijah, exhausted after fleeing for his life, is met by an angel who
+    provides food and rest before he continues on.
+  reflection_connection: >
+    Where a reading names exhaustion, this passage does not rush past it
+    -- rest and provision come first, before anything else is asked of
+    him.
+
+- theme: exhaustion
+  book: Mark
+  chapter: 6
+  verse_start: 31
+  verse_end: null
+  reference_display: "Mark 6:31"
+  translation: KJV
+  context_note: >
+    Jesus tells his disciples, busy with ministry to the point of having
+    no time to eat, to come away to a quiet place and rest a while.
+  reflection_connection: >
+    A reading that surfaces exhaustion may be worth holding alongside
+    this passage's own instruction -- rest offered in the middle of real,
+    ongoing demands, not only after they end.
+
+- theme: exhaustion
+  book: Psalms
+  chapter: 127
+  verse_start: 2
+  verse_end: null
+  reference_display: "Psalm 127:2"
+  translation: KJV
+  context_note: >
+    A psalm questioning the value of rising early and staying up late out
+    of anxious effort, naming sleep itself as a gift.
+  reflection_connection: >
+    Where a reading points toward exhaustion, this passage raises a
+    question worth sitting with -- whether the effort driving it is
+    actually necessary.
+
+- theme: transformation
+  book: Romans
+  chapter: 12
+  verse_start: 2
+  verse_end: null
+  reference_display: "Romans 12:2"
+  translation: KJV
+  context_note: >
+    Paul instructs the Roman church not to be conformed to the world, but
+    transformed through the renewing of the mind.
+  reflection_connection: >
+    Where a reading names transformation, this passage locates it in
+    ongoing renewal of thought, not only in outward circumstance.
+
+- theme: transformation
+  book: 2 Corinthians
+  chapter: 3
+  verse_start: 18
+  verse_end: null
+  reference_display: "2 Corinthians 3:18"
+  translation: KJV
+  context_note: >
+    Paul describes believers being changed, from one degree to another,
+    into a fuller likeness of what they behold.
+  reflection_connection: >
+    A reading that surfaces transformation may be worth holding alongside
+    this passage's own pace -- change described as gradual and ongoing,
+    not sudden and complete.
+
+- theme: transformation
+  book: Ezekiel
+  chapter: 36
+  verse_start: 26
+  verse_end: null
+  reference_display: "Ezekiel 36:26"
+  translation: KJV
+  context_note: >
+    God promises a new heart and a new spirit, replacing a heart
+    described as hardened with one described as responsive.
+  reflection_connection: >
+    Where a reading points toward transformation, this passage frames it
+    as given, not only self-produced through effort.
+
+- theme: letting_go
+  book: Philippians
+  chapter: 3
+  verse_start: 13
+  verse_end: 14
+  reference_display: "Philippians 3:13-14"
+  translation: KJV
+  context_note: >
+    Paul describes forgetting what lies behind and reaching toward what
+    lies ahead, pressing on toward a specific goal.
+  reflection_connection: >
+    Where a reading names letting go, this passage frames it as forward
+    motion, not simply as release for its own sake.
+
+- theme: letting_go
+  book: Isaiah
+  chapter: 43
+  verse_start: 18
+  verse_end: 19
+  reference_display: "Isaiah 43:18-19"
+  translation: KJV
+  context_note: >
+    God tells the people not to dwell on former things, naming a new
+    thing already beginning to spring forth.
+  reflection_connection: >
+    A reading that surfaces letting go may be worth holding alongside
+    this passage's own pairing -- release of the past connected directly
+    to something new already underway.
+
+- theme: letting_go
+  book: Ecclesiastes
+  chapter: 3
+  verse_start: 1
+  verse_end: 8
+  reference_display: "Ecclesiastes 3:1-8"
+  translation: KJV
+  context_note: >
+    The Preacher's well-known list of seasons, including a time to keep
+    and a time to cast away.
+  reflection_connection: >
+    Where a reading points toward letting go, this passage frames it as
+    one season among several, not a permanent state or a final verdict.
+
+- theme: revelation
+  book: Amos
+  chapter: 3
+  verse_start: 7
+  verse_end: null
+  reference_display: "Amos 3:7"
+  translation: KJV
+  context_note: >
+    Amos states that the Lord does nothing without first revealing it to
+    his servants the prophets.
+  reflection_connection: >
+    Where a reading names revelation, this passage frames it as
+    disclosure with a purpose, not simply information for its own sake.
+
+- theme: revelation
+  book: 1 Corinthians
+  chapter: 2
+  verse_start: 10
+  verse_end: null
+  reference_display: "1 Corinthians 2:10"
+  translation: KJV
+  context_note: >
+    Paul describes deep things, otherwise hidden, being revealed by the
+    Spirit.
+  reflection_connection: >
+    A reading that surfaces revelation may be worth holding alongside
+    this passage's own claim -- that what is disclosed can go further
+    than what could be reasoned out alone.
+
+- theme: revelation
+  book: Daniel
+  chapter: 2
+  verse_start: 22
+  verse_end: null
+  reference_display: "Daniel 2:22"
+  translation: KJV
+  context_note: >
+    Daniel describes God as one who reveals deep and hidden things, and
+    who knows what lies even in darkness.
+  reflection_connection: >
+    Where a reading points toward revelation, this passage frames it as
+    something given, not something forced open by searching alone.
+
+- theme: reckoning
+  book: Matthew
+  chapter: 25
+  verse_start: 19
+  verse_end: null
+  reference_display: "Matthew 25:19"
+  translation: KJV
+  context_note: >
+    From the parable of the talents -- a lord returns after a long time
+    to settle accounts with his servants.
+  reflection_connection: >
+    Where a reading names reckoning, this passage frames it as something
+    that follows a period of time, not an immediate response to every
+    action.
+
+- theme: reckoning
+  book: Hebrews
+  chapter: 4
+  verse_start: 13
+  verse_end: null
+  reference_display: "Hebrews 4:13"
+  translation: KJV
+  context_note: >
+    The writer of Hebrews describes all things as open and laid bare
+    before the one to whom an account must be given.
+  reflection_connection: >
+    A reading that surfaces reckoning may be worth holding alongside this
+    passage's own scope -- an account understood as already visible, not
+    only pending.
+
+- theme: reckoning
+  book: 2 Corinthians
+  chapter: 5
+  verse_start: 10
+  verse_end: null
+  reference_display: "2 Corinthians 5:10"
+  translation: KJV
+  context_note: >
+    Paul states that everyone must appear to give an account of what has
+    been done.
+  reflection_connection: >
+    Where a reading points toward reckoning, this passage frames it as
+    something eventual and shared, not unique to any one situation.
+
+- theme: renewal
+  book: Isaiah
+  chapter: 40
+  verse_start: 29
+  verse_end: 31
+  reference_display: "Isaiah 40:29-31"
+  translation: KJV
+  context_note: >
+    Isaiah describes strength given to the weary, and renewed strength
+    for those who wait on the LORD.
+  reflection_connection: >
+    Where a reading names renewal, this passage ties it to waiting, not
+    to effort pushed through on its own.
+
+- theme: renewal
+  book: 2 Corinthians
+  chapter: 4
+  verse_start: 16
+  verse_end: null
+  reference_display: "2 Corinthians 4:16"
+  translation: KJV
+  context_note: >
+    Paul contrasts an outward self that is wearing down with an inward
+    self renewed day by day.
+  reflection_connection: >
+    A reading that surfaces renewal may be worth holding alongside this
+    passage's own distinction -- renewal happening beneath outward
+    circumstances, not only visible in them.
+
+- theme: renewal
+  book: Lamentations
+  chapter: 3
+  verse_start: 22
+  verse_end: 23
+  reference_display: "Lamentations 3:22-23"
+  translation: KJV
+  context_note: >
+    Written from grief, this passage describes mercies as new every
+    morning.
+  reflection_connection: >
+    Where a reading points toward renewal, this passage frames it as
+    recurring, not a single event that must last on its own indefinitely.
+
+- theme: healing
+  book: Jeremiah
+  chapter: 17
+  verse_start: 14
+  verse_end: null
+  reference_display: "Jeremiah 17:14"
+  translation: KJV
+  context_note: >
+    A short prayer asking directly for healing, naming God as the one
+    being praised for it.
+  reflection_connection: >
+    Where a reading names healing, this passage frames it as something
+    asked for plainly, not something owed or already guaranteed.
+
+- theme: healing
+  book: Psalms
+  chapter: 147
+  verse_start: 3
+  verse_end: null
+  reference_display: "Psalm 147:3"
+  translation: KJV
+  context_note: >
+    A psalm describing God as one who heals the brokenhearted and binds
+    up their wounds.
+  reflection_connection: >
+    A reading that surfaces healing may be worth holding alongside this
+    passage's own pairing -- healing described together with the wound
+    it responds to, not apart from it.
+
+- theme: healing
+  book: James
+  chapter: 5
+  verse_start: 16
+  verse_end: null
+  reference_display: "James 5:16"
+  translation: KJV
+  context_note: >
+    James instructs believers to confess to one another and pray for one
+    another, so that healing might follow.
+  reflection_connection: >
+    Where a reading points toward healing, this passage ties it to
+    something done together, not only to private resolve.
+
+- theme: rest
+  book: Matthew
+  chapter: 11
+  verse_start: 28
+  verse_end: 30
+  reference_display: "Matthew 11:28-30"
+  translation: KJV
+  context_note: >
+    Jesus invites those who are weary and burdened to come to him, naming
+    what he offers as rest and an easier yoke.
+  reflection_connection: >
+    Where a reading names rest, this passage frames it as offered rather
+    than earned, extended to those who are already carrying weight.
+
+- theme: rest
+  book: Psalms
+  chapter: 23
+  verse_start: 2
+  verse_end: 3
+  reference_display: "Psalm 23:2-3"
+  translation: KJV
+  context_note: >
+    A psalm describing green pastures and still waters, with the soul
+    described as restored.
+  reflection_connection: >
+    A reading that surfaces rest may be worth holding alongside this
+    passage's own image -- rest connected to restoration, not only to a
+    pause in activity.
+
+- theme: rest
+  book: Hebrews
+  chapter: 4
+  verse_start: 9
+  verse_end: 10
+  reference_display: "Hebrews 4:9-10"
+  translation: KJV
+  context_note: >
+    The writer of Hebrews describes a rest that remains available, tied
+    to ceasing from one's own labor.
+  reflection_connection: >
+    Where a reading points toward rest, this passage frames it as a
+    genuine stopping point, not simply a slower pace of the same effort.
+
+- theme: vigilance
+  book: 1 Peter
+  chapter: 5
+  verse_start: 8
+  verse_end: null
+  reference_display: "1 Peter 5:8"
+  translation: KJV
+  context_note: >
+    Peter instructs believers to be sober and vigilant, describing an
+    adversary who is actively seeking an opening.
+  reflection_connection: >
+    Where a reading names vigilance, this passage frames it as ongoing
+    attentiveness, not a single alert moment.
+
+- theme: vigilance
+  book: Matthew
+  chapter: 26
+  verse_start: 41
+  verse_end: null
+  reference_display: "Matthew 26:41"
+  translation: KJV
+  context_note: >
+    Jesus tells his disciples to watch and pray, acknowledging that the
+    spirit is willing but the flesh is weak.
+  reflection_connection: >
+    A reading that surfaces vigilance may be worth holding alongside this
+    passage's own honesty -- staying alert is named as genuinely
+    difficult, not simple.
+
+- theme: vigilance
+  book: Mark
+  chapter: 13
+  verse_start: 37
+  verse_end: null
+  reference_display: "Mark 13:37"
+  translation: KJV
+  context_note: >
+    Jesus closes a longer teaching with a short, direct instruction to
+    watch.
+  reflection_connection: >
+    Where a reading points toward vigilance, this passage keeps the
+    instruction brief and unqualified, without specifying exactly what
+    to expect.
+
+- theme: completion
+  book: Philippians
+  chapter: 1
+  verse_start: 6
+  verse_end: null
+  reference_display: "Philippians 1:6"
+  translation: KJV
+  context_note: >
+    Paul expresses confidence that a good work already begun will be
+    carried through to completion.
+  reflection_connection: >
+    Where a reading names completion, this passage frames it as
+    following from what was already started, not as a separate,
+    unrelated outcome.
+
+- theme: completion
+  book: John
+  chapter: 19
+  verse_start: 30
+  verse_end: null
+  reference_display: "John 19:30"
+  translation: KJV
+  context_note: >
+    A short, direct statement -- "It is finished" -- marking a specific
+    moment of completion.
+  reflection_connection: >
+    A reading that surfaces completion may be worth holding alongside
+    this passage's own brevity -- an ending stated plainly, without
+    elaboration.
+
+- theme: completion
+  book: Zechariah
+  chapter: 4
+  verse_start: 9
+  verse_end: null
+  reference_display: "Zechariah 4:9"
+  translation: KJV
+  context_note: >
+    Zerubbabel is told that the hands which laid a foundation will also
+    be the ones to finish the work.
+  reflection_connection: >
+    Where a reading points toward completion, this passage ties it to
+    continuity -- the same effort that began something carrying it
+    through.
+
+- theme: wholeness
+  book: Mark
+  chapter: 5
+  verse_start: 34
+  verse_end: null
+  reference_display: "Mark 5:34"
+  translation: KJV
+  context_note: >
+    Jesus tells a woman healed after years of illness that her faith has
+    made her whole, and sends her away in peace.
+  reflection_connection: >
+    Where a reading names wholeness, this passage pairs it with peace,
+    not only with the absence of a prior difficulty.
+
+- theme: wholeness
+  book: 1 Thessalonians
+  chapter: 5
+  verse_start: 23
+  verse_end: null
+  reference_display: "1 Thessalonians 5:23"
+  translation: KJV
+  context_note: >
+    Paul prays that the whole person -- spirit, soul, and body -- would
+    be kept complete.
+  reflection_connection: >
+    A reading that surfaces wholeness may be worth holding alongside this
+    passage's own scope -- wholeness named across several parts of a
+    person at once, not just one.
+
+- theme: abundance
+  book: John
+  chapter: 10
+  verse_start: 10
+  verse_end: null
+  reference_display: "John 10:10"
+  translation: KJV
+  context_note: >
+    Jesus contrasts a thief who comes to steal and destroy with his own
+    purpose -- life, and life more abundantly.
+  reflection_connection: >
+    Where a reading names abundance, this passage frames it as
+    intentional and given, not incidental.
+
+- theme: abundance
+  book: Malachi
+  chapter: 3
+  verse_start: 10
+  verse_end: null
+  reference_display: "Malachi 3:10"
+  translation: KJV
+  context_note: >
+    Malachi describes a blessing poured out so large there would not be
+    room enough to receive it.
+  reflection_connection: >
+    A reading that surfaces abundance may be worth holding alongside this
+    passage's own scale -- described as more than what was asked for, not
+    merely sufficient.
+
+- theme: abundance
+  book: Philippians
+  chapter: 4
+  verse_start: 19
+  verse_end: null
+  reference_display: "Philippians 4:19"
+  translation: KJV
+  context_note: >
+    Paul assures the Philippian church that every need will be supplied,
+    according to a wealth he describes as considerable.
+  reflection_connection: >
+    Where a reading points toward abundance, this passage ties it to
+    actual need, not to want without limit.
+
+- theme: skill_and_craft
+  book: Exodus
+  chapter: 31
+  verse_start: 3
+  verse_end: 5
+  reference_display: "Exodus 31:3-5"
+  translation: KJV
+  context_note: >
+    Bezalel is described as filled with skill and understanding for
+    fine, detailed craftsmanship in service of the tabernacle.
+  reflection_connection: >
+    Where a reading names skill and craft, this passage frames it as a
+    gift given for a purpose, not only as a talent developed alone.
+
+- theme: skill_and_craft
+  book: Exodus
+  chapter: 35
+  verse_start: 35
+  verse_end: null
+  reference_display: "Exodus 35:35"
+  translation: KJV
+  context_note: >
+    A description of skilled workers filled with wisdom of heart for
+    varied, specific crafts.
+  reflection_connection: >
+    A reading that surfaces skill and craft may be worth holding
+    alongside this passage's own variety -- many distinct kinds of
+    skilled work, not a single narrow definition of it.
+
+- theme: diligence
+  book: Proverbs
+  chapter: 13
+  verse_start: 4
+  verse_end: null
+  reference_display: "Proverbs 13:4"
+  translation: KJV
+  context_note: >
+    A proverb contrasting a sluggard, left wanting, with the diligent,
+    who are satisfied.
+  reflection_connection: >
+    Where a reading names diligence, this passage ties it directly to
+    outcome, not only to effort for its own sake.
+
+- theme: diligence
+  book: Proverbs
+  chapter: 22
+  verse_start: 29
+  verse_end: null
+  reference_display: "Proverbs 22:29"
+  translation: KJV
+  context_note: >
+    A proverb observing that someone diligent in their work ends up
+    standing before those of high standing, not before ordinary people.
+  reflection_connection: >
+    A reading that surfaces diligence may be worth holding alongside this
+    passage's own claim -- diligence described as something that gets
+    noticed over time.
+
+- theme: diligence
+  book: Colossians
+  chapter: 3
+  verse_start: 23
+  verse_end: null
+  reference_display: "Colossians 3:23"
+  translation: KJV
+  context_note: >
+    Paul instructs that whatever is done should be done heartily, as an
+    offering rather than an obligation.
+  reflection_connection: >
+    Where a reading points toward diligence, this passage locates its
+    motive -- the spirit something is done in, not only the effort
+    itself.
+
+- theme: generosity
+  book: 2 Corinthians
+  chapter: 9
+  verse_start: 7
+  verse_end: null
+  reference_display: "2 Corinthians 9:7"
+  translation: KJV
+  context_note: >
+    Paul describes giving that comes from a decision of the heart, not
+    from pressure or reluctance.
+  reflection_connection: >
+    Where a reading names generosity, this passage ties it to how it is
+    given, not only to what is given.
+
+- theme: generosity
+  book: Proverbs
+  chapter: 11
+  verse_start: 25
+  verse_end: null
+  reference_display: "Proverbs 11:25"
+  translation: KJV
+  context_note: >
+    A proverb describing the generous as themselves enriched, and
+    naming that whoever waters others is watered in turn.
+  reflection_connection: >
+    A reading that surfaces generosity may be worth holding alongside
+    this passage's own observation -- generosity described as
+    reciprocal, not only outward-facing.
+
+- theme: generosity
+  book: Acts
+  chapter: 20
+  verse_start: 35
+  verse_end: null
+  reference_display: "Acts 20:35"
+  translation: KJV
+  context_note: >
+    Paul recalls a saying of Jesus -- that it is more blessed to give
+    than to receive -- while urging support for those who are weak.
+  reflection_connection: >
+    Where a reading points toward generosity, this passage ties it to a
+    specific purpose, supporting someone else, rather than to giving in
+    the abstract.
+
+- theme: community
+  book: Acts
+  chapter: 2
+  verse_start: 44
+  verse_end: 46
+  reference_display: "Acts 2:44-46"
+  translation: KJV
+  context_note: >
+    A description of the early church sharing possessions and meeting
+    together daily, with gladness and simplicity.
+  reflection_connection: >
+    Where a reading names community, this passage frames it as
+    practical and ongoing, not only a feeling of belonging.
+
+- theme: community
+  book: Hebrews
+  chapter: 10
+  verse_start: 24
+  verse_end: 25
+  reference_display: "Hebrews 10:24-25"
+  translation: KJV
+  context_note: >
+    The writer of Hebrews urges believers not to give up meeting
+    together, but to encourage one another instead.
+  reflection_connection: >
+    A reading that surfaces community may be worth holding alongside
+    this passage's own warning -- naming the pull toward withdrawing as
+    something real, worth resisting on purpose.
+
+- theme: community
+  book: 1 Corinthians
+  chapter: 12
+  verse_start: 27
+  verse_end: null
+  reference_display: "1 Corinthians 12:27"
+  translation: KJV
+  context_note: >
+    Paul describes the church collectively as one body, with each person
+    a distinct part of it.
+  reflection_connection: >
+    Where a reading points toward community, this passage frames
+    individual difference as part of what makes the whole function, not
+    something at odds with it.
+- theme: willpower
+  book: Philippians
+  chapter: 2
+  verse_start: 13
+  verse_end: null
+  reference_display: "Philippians 2:13"
+  translation: KJV
+  context_note: >
+    Paul tells the Philippian church that God himself is at work in them,
+    both in their willing and in their doing.
+  reflection_connection: >
+    Where a reading names willpower, this passage frames it as
+    supported, not summoned from nothing -- will paired with a deeper
+    source behind it.
+
+- theme: willpower
+  book: Proverbs
+  chapter: 16
+  verse_start: 3
+  verse_end: null
+  reference_display: "Proverbs 16:3"
+  translation: KJV
+  context_note: >
+    A proverb instructing the reader to commit their works to the LORD,
+    with a promise that their thoughts will be established.
+  reflection_connection: >
+    A reading that surfaces willpower may be worth holding alongside
+    this passage's own pairing -- effort committed to a larger purpose,
+    not exercised in isolation.
+
+- theme: ambition
+  book: Philippians
+  chapter: 2
+  verse_start: 3
+  verse_end: null
+  reference_display: "Philippians 2:3"
+  translation: KJV
+  context_note: >
+    Paul instructs the Philippian church to do nothing out of strife or
+    vainglory, but to consider others ahead of themselves.
+  reflection_connection: >
+    Where a reading names ambition, this passage names a real risk
+    worth reflecting on -- not a claim that ambition itself is wrong,
+    but a question about what it is actually serving.
+
+- theme: ambition
+  book: James
+  chapter: 3
+  verse_start: 14
+  verse_end: 16
+  reference_display: "James 3:14-16"
+  translation: KJV
+  context_note: >
+    James describes envying and strife as an earthly wisdom that
+    produces confusion, contrasted elsewhere with wisdom from above.
+  reflection_connection: >
+    A reading that surfaces ambition may be worth holding alongside this
+    passage's own caution -- worth examining what is actually driving
+    it, not treating ambition as automatically suspect.
+
+- theme: breakthrough
+  book: 2 Samuel
+  chapter: 5
+  verse_start: 20
+  verse_end: null
+  reference_display: "2 Samuel 5:20"
+  translation: KJV
+  context_note: >
+    After a victory, David names the place Baal-perazim -- "the LORD
+    hath broken forth" -- describing the breakthrough itself as given,
+    not simply achieved.
+  reflection_connection: >
+    Where a reading names breakthrough, this passage frames it as
+    something to name and remember, not only something to expect.
+
+- theme: breakthrough
+  book: Micah
+  chapter: 2
+  verse_start: 13
+  verse_end: null
+  reference_display: "Micah 2:13"
+  translation: KJV
+  context_note: >
+    A short image of a breaker going up before the people, opening the
+    way for them to pass through.
+  reflection_connection: >
+    A reading that surfaces breakthrough may be worth holding alongside
+    this passage's own picture -- a way opened ahead, not forced from
+    behind.
+
+- theme: structure
+  book: 1 Corinthians
+  chapter: 3
+  verse_start: 10
+  verse_end: 11
+  reference_display: "1 Corinthians 3:10-11"
+  translation: KJV
+  context_note: >
+    Paul describes himself as a wise masterbuilder who laid a
+    foundation, naming what that foundation actually is.
+  reflection_connection: >
+    Where a reading names structure, this passage raises a question
+    worth sitting with -- not just whether something is well-built, but
+    what it is built on.
+
+- theme: tradition
+  book: 2 Thessalonians
+  chapter: 2
+  verse_start: 15
+  verse_end: null
+  reference_display: "2 Thessalonians 2:15"
+  translation: KJV
+  context_note: >
+    Paul instructs the Thessalonian church to stand fast and hold to
+    what they were taught, whether spoken or written.
+  reflection_connection: >
+    A reading that surfaces tradition may be worth holding alongside
+    this passage's own framing -- something actively held, not simply
+    inherited.
+
+- theme: hidden_knowledge
+  book: Colossians
+  chapter: 2
+  verse_start: 3
+  verse_end: null
+  reference_display: "Colossians 2:3"
+  translation: KJV
+  context_note: >
+    Paul describes treasures of wisdom and knowledge as hidden in
+    Christ.
+  reflection_connection: >
+    Where a reading names hidden knowledge, this passage frames it as
+    something located, not merely concealed for its own sake.
+
+- theme: introspection
+  book: Psalms
+  chapter: 139
+  verse_start: 23
+  verse_end: 24
+  reference_display: "Psalm 139:23-24"
+  translation: KJV
+  context_note: >
+    A psalm asking God to search the heart and thoughts, and to reveal
+    any wicked way within.
+  reflection_connection: >
+    A reading that surfaces introspection may be worth holding alongside
+    this prayer's own posture -- self-examination invited, not conducted
+    alone.
+
+- theme: introspection
+  book: Lamentations
+  chapter: 3
+  verse_start: 40
+  verse_end: null
+  reference_display: "Lamentations 3:40"
+  translation: KJV
+  context_note: >
+    A short instruction to search and test one's own ways, and to turn
+    back.
+  reflection_connection: >
+    Where a reading points toward introspection, this passage ties it to
+    a next step, not only to the act of looking inward.
+
+- theme: indecision
+  book: James
+  chapter: 1
+  verse_start: 6
+  verse_end: 8
+  reference_display: "James 1:6-8"
+  translation: KJV
+  context_note: >
+    James describes one who wavers as like a wave driven by the wind,
+    naming a double-minded person as unstable.
+  reflection_connection: >
+    Where a reading names indecision, this passage names its felt
+    experience plainly, without treating it as a minor or trivial state.
+
+- theme: upheaval
+  book: Haggai
+  chapter: 2
+  verse_start: 6
+  verse_end: 7
+  reference_display: "Haggai 2:6-7"
+  translation: KJV
+  context_note: >
+    God promises to shake the heavens, the earth, the sea, and the dry
+    land, in a passage about coming change.
+  reflection_connection: >
+    A reading that surfaces upheaval may be worth holding alongside this
+    passage's own scale -- shaking named as purposeful, not random.
+
+- theme: upheaval
+  book: Hebrews
+  chapter: 12
+  verse_start: 26
+  verse_end: 27
+  reference_display: "Hebrews 12:26-27"
+  translation: KJV
+  context_note: >
+    The writer of Hebrews quotes the same promise of shaking, and
+    explains it as removing what can be shaken so what cannot remains.
+  reflection_connection: >
+    Where a reading points toward upheaval, this passage offers a
+    distinction worth sitting with -- between what is unsettled and what
+    endures underneath it.
+
+- theme: self_evaluation
+  book: 2 Corinthians
+  chapter: 13
+  verse_start: 5
+  verse_end: null
+  reference_display: "2 Corinthians 13:5"
+  translation: KJV
+  context_note: >
+    Paul instructs the Corinthian church to examine themselves, testing
+    their own condition rather than assuming it.
+  reflection_connection: >
+    Where a reading names self-evaluation, this passage frames it as a
+    direct instruction, not merely an occasional habit.
+
+- theme: self_evaluation
+  book: Galatians
+  chapter: 6
+  verse_start: 4
+  verse_end: null
+  reference_display: "Galatians 6:4"
+  translation: KJV
+  context_note: >
+    Paul instructs each person to test their own work, so that whatever
+    satisfaction follows is grounded in their own effort, not comparison.
+  reflection_connection: >
+    A reading that surfaces self-evaluation may be worth holding
+    alongside this passage's own caution -- examined on its own terms,
+    not measured against someone else.
+
+- theme: legacy
+  book: Proverbs
+  chapter: 13
+  verse_start: 22
+  verse_end: null
+  reference_display: "Proverbs 13:22"
+  translation: KJV
+  context_note: >
+    A proverb describing a good person as leaving an inheritance for
+    their children's children.
+  reflection_connection: >
+    Where a reading names legacy, this passage frames it across
+    generations, not only within one lifetime.
+
+- theme: legacy
+  book: Psalms
+  chapter: 78
+  verse_start: 4
+  verse_end: null
+  reference_display: "Psalm 78:4"
+  translation: KJV
+  context_note: >
+    A psalm describing a deliberate choice to tell the next generation
+    what has been done and learned.
+  reflection_connection: >
+    A reading that surfaces legacy may be worth holding alongside this
+    passage's own emphasis -- legacy as something actively passed on,
+    not simply left behind.
+
+- theme: material_security
+  book: Matthew
+  chapter: 6
+  verse_start: 31
+  verse_end: 33
+  reference_display: "Matthew 6:31-33"
+  translation: KJV
+  context_note: >
+    Jesus tells his listeners not to be anxious about food or clothing,
+    naming a different priority to seek first.
+  reflection_connection: >
+    Where a reading names material security, this passage does not deny
+    the concern -- it reorders it, without pretending the need itself is
+    imaginary.
+
+- theme: material_security
+  book: Proverbs
+  chapter: 30
+  verse_start: 8
+  verse_end: 9
+  reference_display: "Proverbs 30:8-9"
+  translation: KJV
+  context_note: >
+    A prayer asking for neither poverty nor riches, but only what is
+    needed.
+  reflection_connection: >
+    A reading that surfaces material security may be worth holding
+    alongside this passage's own request -- security framed as
+    sufficiency, not abundance for its own sake.
+
+- theme: reliability
+  book: 1 Corinthians
+  chapter: 4
+  verse_start: 2
+  verse_end: null
+  reference_display: "1 Corinthians 4:2"
+  translation: KJV
+  context_note: >
+    Paul states plainly what is required of a steward: to be found
+    faithful.
+  reflection_connection: >
+    Where a reading names reliability, this passage ties it to a
+    specific, single standard -- faithfulness, not simply competence.
+
+- theme: reliability
+  book: Proverbs
+  chapter: 25
+  verse_start: 13
+  verse_end: null
+  reference_display: "Proverbs 25:13"
+  translation: KJV
+  context_note: >
+    A proverb comparing a faithful messenger to the refreshment of
+    cold snow at harvest time.
+  reflection_connection: >
+    A reading that surfaces reliability may be worth holding alongside
+    this passage's own image -- reliability described by its effect on
+    others, not only as a private virtue.
+
+- theme: entrapment
+  book: Psalms
+  chapter: 91
+  verse_start: 3
+  verse_end: null
+  reference_display: "Psalm 91:3"
+  translation: KJV
+  context_note: >
+    A psalm naming deliverance from the snare of the fowler.
+  reflection_connection: >
+    Where a reading names entrapment, this passage frames a snare as
+    something to be delivered from, not something to simply endure.
+
+- theme: entrapment
+  book: Proverbs
+  chapter: 29
+  verse_start: 25
+  verse_end: null
+  reference_display: "Proverbs 29:25"
+  translation: KJV
+  context_note: >
+    A proverb naming the fear of man as a snare, contrasted with the
+    safety of trust placed elsewhere.
+  reflection_connection: >
+    A reading that surfaces entrapment may be worth holding alongside
+    this passage's own diagnosis -- one particular kind of trap, worth
+    checking against the reading's own specifics.
+
+- theme: memory
+  book: Deuteronomy
+  chapter: 8
+  verse_start: 2
+  verse_end: null
+  reference_display: "Deuteronomy 8:2"
+  translation: KJV
+  context_note: >
+    Moses instructs the people to remember the whole of their journey,
+    naming what it was meant to reveal about their own hearts.
+  reflection_connection: >
+    Where a reading names memory, this passage frames remembering as
+    purposeful -- meant to reveal something, not only to preserve it.
+
+- theme: memory
+  book: 1 Corinthians
+  chapter: 11
+  verse_start: 24
+  verse_end: 25
+  reference_display: "1 Corinthians 11:24-25"
+  translation: KJV
+  context_note: >
+    Words of institution given in remembrance, repeated as an ongoing
+    practice rather than a one-time instruction.
+  reflection_connection: >
+    A reading that surfaces memory may be worth holding alongside this
+    passage's own repetition -- remembrance kept alive through ongoing
+    practice, not treated as settled once.
+
+- theme: creativity
+  book: Genesis
+  chapter: 1
+  verse_start: 1
+  verse_end: null
+  reference_display: "Genesis 1:1"
+  translation: KJV
+  context_note: >
+    The opening statement of creation itself -- God bringing the
+    heavens and the earth into being.
+  reflection_connection: >
+    Where a reading names creativity, this passage frames it at its
+    largest scale -- worth holding loosely alongside whatever smaller,
+    human-scale creative act the reading concerns.
+
+- theme: creativity
+  book: Exodus
+  chapter: 35
+  verse_start: 30
+  verse_end: 32
+  reference_display: "Exodus 35:30-32"
+  translation: KJV
+  context_note: >
+    Bezalel is named as filled with the spirit of God, in wisdom and
+    understanding, to devise skillful work.
+  reflection_connection: >
+    A reading that surfaces creativity may be worth holding alongside
+    this passage's own framing -- skillful creative work named as a
+    given capacity, not only a personal talent.
+
+- theme: opportunity
+  book: Galatians
+  chapter: 6
+  verse_start: 10
+  verse_end: null
+  reference_display: "Galatians 6:10"
+  translation: KJV
+  context_note: >
+    Paul instructs the Galatian church to do good as opportunity allows,
+    using the word directly.
+  reflection_connection: >
+    Where a reading names opportunity, this passage ties it to a
+    specific use -- not opportunity in the abstract, but opportunity
+    for a particular kind of action.
+
+- theme: risk_taking
+  book: Esther
+  chapter: 4
+  verse_start: 16
+  verse_end: null
+  reference_display: "Esther 4:16"
+  translation: KJV
+  context_note: >
+    Esther resolves to approach the king against the law's own
+    protection, naming the risk plainly -- "if I perish, I perish."
+  reflection_connection: >
+    A reading that surfaces risk-taking may be worth holding alongside
+    this passage's own honesty -- the risk named directly, not
+    minimized or explained away.
+
+- theme: focus
+  book: Hebrews
+  chapter: 12
+  verse_start: 1
+  verse_end: 2
+  reference_display: "Hebrews 12:1-2"
+  translation: KJV
+  context_note: >
+    The writer of Hebrews instructs laying aside every weight and
+    running with endurance, looking to a single fixed point.
+  reflection_connection: >
+    Where a reading names focus, this passage pairs it with letting go
+    of something else first -- focus as much about what is set aside as
+    what is looked toward.
+
+- theme: determination
+  book: Luke
+  chapter: 9
+  verse_start: 51
+  verse_end: null
+  reference_display: "Luke 9:51"
+  translation: KJV
+  context_note: >
+    Jesus is described as steadfastly setting his face to go to
+    Jerusalem, at the point his own journey there begins in earnest.
+  reflection_connection: >
+    A reading that surfaces determination may be worth holding alongside
+    this passage's own image -- resolve named at a specific turning
+    point, not as a vague, general trait.
+
+- theme: determination
+  book: Philippians
+  chapter: 3
+  verse_start: 14
+  verse_end: null
+  reference_display: "Philippians 3:14"
+  translation: KJV
+  context_note: >
+    Paul describes pressing toward a specific mark for a specific prize,
+    naming determination as directed rather than diffuse.
+  reflection_connection: >
+    Where a reading names determination, this passage ties it to a
+    named goal, not to effort without a clear aim.
+
+- theme: attachment
+  book: Matthew
+  chapter: 6
+  verse_start: 19
+  verse_end: 21
+  reference_display: "Matthew 6:19-21"
+  translation: KJV
+  context_note: >
+    Jesus instructs against storing up treasure that can be lost or
+    decayed, naming the heart as following wherever treasure is kept.
+  reflection_connection: >
+    A reading that surfaces attachment may be worth holding alongside
+    this passage's own question -- not that attachment itself is wrong,
+    but what it is actually attached to.
+
+- theme: attachment
+  book: 1 John
+  chapter: 2
+  verse_start: 15
+  verse_end: null
+  reference_display: "1 John 2:15"
+  translation: KJV
+  context_note: >
+    A direct instruction not to love the world or the things in it,
+    naming a conflict between that love and love of the Father.
+  reflection_connection: >
+    Where a reading names attachment, this passage names a real tension
+    worth sitting with, offered as a caution rather than a verdict on
+    this particular reading.
+
+- theme: recovery
+  book: Joel
+  chapter: 2
+  verse_start: 25
+  verse_end: null
+  reference_display: "Joel 2:25"
+  translation: KJV
+  context_note: >
+    God promises to restore what was lost to a swarm of locusts, naming
+    the restoration specifically as years given back.
+  reflection_connection: >
+    Where a reading names recovery, this passage frames it as
+    restoration of what was actually lost, not simply moving on from it.
+
+- theme: recovery
+  book: Job
+  chapter: 42
+  verse_start: 10
+  verse_end: null
+  reference_display: "Job 42:10"
+  translation: KJV
+  context_note: >
+    After sustained loss, Job's own fortunes are described as restored,
+    tied to a specific act of prayer for others.
+  reflection_connection: >
+    A reading that surfaces recovery may be worth holding alongside this
+    passage's own timing -- restoration described as following a real
+    period of loss, not skipping past it.
+
+- theme: collaboration
+  book: Ecclesiastes
+  chapter: 4
+  verse_start: 9
+  verse_end: 12
+  reference_display: "Ecclesiastes 4:9-12"
+  translation: KJV
+  context_note: >
+    The Preacher describes the practical strength of working alongside
+    another, closing with the image of a threefold cord not easily
+    broken.
+  reflection_connection: >
+    Where a reading names collaboration, this passage frames its
+    strength as structural -- something that holds up under strain, not
+    only pleasant company.
+
+- theme: collaboration
+  book: 1 Corinthians
+  chapter: 3
+  verse_start: 9
+  verse_end: null
+  reference_display: "1 Corinthians 3:9"
+  translation: KJV
+  context_note: >
+    Paul describes himself and his fellow workers as labourers together,
+    working on something that belongs to God.
+  reflection_connection: >
+    A reading that surfaces collaboration may be worth holding alongside
+    this passage's own framing -- shared work toward something beyond
+    any one contributor.
+
+- theme: authenticity
+  book: Psalms
+  chapter: 51
+  verse_start: 6
+  verse_end: null
+  reference_display: "Psalm 51:6"
+  translation: KJV
+  context_note: >
+    A psalm of confession naming truth in the inward parts as what is
+    actually desired.
+  reflection_connection: >
+    Where a reading names authenticity, this passage locates it inwardly
+    -- not only in outward consistency, but in what is true underneath
+    it.
+
+- theme: authenticity
+  book: 2 Corinthians
+  chapter: 6
+  verse_start: 6
+  verse_end: null
+  reference_display: "2 Corinthians 6:6"
+  translation: KJV
+  context_note: >
+    Paul lists a series of qualities, including love without
+    pretense -- rendered in this translation as "love unfeigned."
+  reflection_connection: >
+    A reading that surfaces authenticity may be worth holding alongside
+    this passage's own pairing -- named as one quality among several,
+    not a virtue that stands entirely alone.
+
+- theme: intuition
+  book: 1 Kings
+  chapter: 19
+  verse_start: 12
+  verse_end: null
+  reference_display: "1 Kings 19:12"
+  translation: KJV
+  context_note: >
+    After wind, earthquake, and fire, Elijah encounters a still small
+    voice -- notably not in the dramatic events that preceded it.
+  reflection_connection: >
+    Where a reading names intuition, this passage is offered carefully:
+    it describes a specific, Spirit-attributed encounter, not a general
+    endorsement of gut feeling as a guide in itself. Held loosely, it
+    still raises a fair question -- what quieter signal might be worth
+    attending to.
+
+- theme: inner_guidance
+  book: John
+  chapter: 16
+  verse_start: 13
+  verse_end: null
+  reference_display: "John 16:13"
+  translation: KJV
+  context_note: >
+    Jesus tells his disciples that the Spirit of truth will guide them,
+    speaking not on his own authority but from what he hears.
+  reflection_connection: >
+    A reading that surfaces inner guidance is offered this passage with
+    a caution: it describes guidance attributed specifically to the
+    Spirit, not a claim that every inward sense of direction carries
+    the same authority.
+
+- theme: inner_guidance
+  book: Proverbs
+  chapter: 20
+  verse_start: 27
+  verse_end: null
+  reference_display: "Proverbs 20:27"
+  translation: KJV
+  context_note: >
+    A proverb describing the human spirit as searching the innermost
+    parts, likened to a candle.
+  reflection_connection: >
+    Where a reading names inner guidance, this passage frames inward
+    searching as real but partial -- a candle, not a floodlight.
+
+- theme: adaptability
+  book: Philippians
+  chapter: 4
+  verse_start: 11
+  verse_end: 13
+  reference_display: "Philippians 4:11-13"
+  translation: KJV
+  context_note: >
+    Paul describes having learned to meet both abundance and need with
+    the same steadiness, naming a strength that makes this possible.
+  reflection_connection: >
+    A reading that surfaces adaptability is offered this passage as a
+    close but not identical fit -- it describes steadiness across
+    changing circumstance specifically, which overlaps with but is not
+    quite the same claim as adaptability in general.
+
+- theme: strategy
+  book: Luke
+  chapter: 14
+  verse_start: 31
+  verse_end: null
+  reference_display: "Luke 14:31"
+  translation: KJV
+  context_note: >
+    Jesus asks whether a king would go to war without first sitting down
+    to consider whether his forces are sufficient.
+  reflection_connection: >
+    Where a reading names strategy, this passage frames it as honest
+    accounting before action, not action taken on confidence alone.
+
+- theme: strategy
+  book: Proverbs
+  chapter: 24
+  verse_start: 6
+  verse_end: null
+  reference_display: "Proverbs 24:6"
+  translation: KJV
+  context_note: >
+    A proverb naming wise counsel, and safety in a multitude of
+    counsellors, in the context of going to war.
+  reflection_connection: >
+    A reading that surfaces strategy may be worth holding alongside this
+    passage's own emphasis -- strategy built with others' counsel, not
+    only alone.
+
+- theme: illusion
+  book: 2 Corinthians
+  chapter: 11
+  verse_start: 14
+  verse_end: null
+  reference_display: "2 Corinthians 11:14"
+  translation: KJV
+  context_note: >
+    Paul warns that deception can appear convincing, naming a specific
+    example of disguise.
+  reflection_connection: >
+    Where a reading names illusion, this passage is offered carefully --
+    it addresses spiritual deception specifically, not illusion in the
+    broader, everyday sense the word can also carry.
+
+- theme: illusion
+  book: 1 John
+  chapter: 4
+  verse_start: 1
+  verse_end: null
+  reference_display: "1 John 4:1"
+  translation: KJV
+  context_note: >
+    An instruction not to believe every spirit, but to test what is
+    presented before accepting it.
+  reflection_connection: >
+    A reading that surfaces illusion may be worth holding alongside this
+    passage's own instruction -- testing named as the response, not
+    suspicion for its own sake.
+
+- theme: endings
+  book: Ecclesiastes
+  chapter: 7
+  verse_start: 8
+  verse_end: null
+  reference_display: "Ecclesiastes 7:8"
+  translation: KJV
+  context_note: >
+    A proverb naming the end of a thing as better than its beginning,
+    paired with a preference for patience over pride.
+  reflection_connection: >
+    Where a reading names an ending, this passage offers a different
+    vantage point on it -- worth weighing without assuming an ending
+    is automatically a loss.
+
+- theme: transition
+  book: Joshua
+  chapter: 1
+  verse_start: 2
+  verse_end: null
+  reference_display: "Joshua 1:2"
+  translation: KJV
+  context_note: >
+    Following Moses' death, Joshua is instructed to arise and lead the
+    people onward into a specific transition of leadership.
+  reflection_connection: >
+    A reading that surfaces transition is offered this passage as one
+    concrete instance of it -- a specific, named transition, not a
+    general theory of change.
+
+- theme: cycles
+  book: Ecclesiastes
+  chapter: 1
+  verse_start: 4
+  verse_end: 7
+  reference_display: "Ecclesiastes 1:4-7"
+  translation: KJV
+  context_note: >
+    The Preacher describes recurring patterns in nature -- generations,
+    the sun's course, rivers returning to their source.
+  reflection_connection: >
+    Where a reading names cycles, this passage describes them
+    observationally, without drawing a conclusion about whether a given
+    cycle in this reading is one to welcome or to break.
+
+- theme: potential
+  book: 2 Timothy
+  chapter: 1
+  verse_start: 6
+  verse_end: null
+  reference_display: "2 Timothy 1:6"
+  translation: KJV
+  context_note: >
+    Paul instructs Timothy to stir up a specific gift already given to
+    him, rather than leave it dormant.
+  reflection_connection: >
+    A reading that surfaces potential is offered this passage as a
+    close fit for one sense of the word -- a capacity already present,
+    waiting to be actively taken up.
+
+- theme: exploration
+  book: Hebrews
+  chapter: 11
+  verse_start: 8
+  verse_end: null
+  reference_display: "Hebrews 11:8"
+  translation: KJV
+  context_note: >
+    Abraham is described as setting out for a place he would later
+    receive, going without knowing exactly where he was headed.
+  reflection_connection: >
+    Where a reading names exploration, this passage frames it as
+    proceeding without full certainty, not as venturing out only once
+    the destination is already clear.
+
+- theme: openness
+  book: Acts
+  chapter: 17
+  verse_start: 11
+  verse_end: null
+  reference_display: "Acts 17:11"
+  translation: KJV
+  context_note: >
+    The Berean believers are described as receiving new teaching
+    readily, while still examining it against what they already knew.
+  reflection_connection: >
+    A reading that surfaces openness may be worth holding alongside this
+    passage's own pairing -- receptivity joined with examination, not
+    openness that suspends all discernment.
+
+- theme: control
+  book: Proverbs
+  chapter: 25
+  verse_start: 28
+  verse_end: null
+  reference_display: "Proverbs 25:28"
+  translation: KJV
+  context_note: >
+    A proverb comparing someone without rule over their own spirit to a
+    city broken down and without walls.
+  reflection_connection: >
+    Where a reading names control, this passage is offered specifically
+    about self-control -- a narrower sense of the word than control over
+    outward circumstances.
+
+- theme: control
+  book: Galatians
+  chapter: 5
+  verse_start: 22
+  verse_end: 23
+  reference_display: "Galatians 5:22-23"
+  translation: KJV
+  context_note: >
+    Paul lists temperance -- self-control -- among the fruit of the
+    Spirit, alongside several other named qualities.
+  reflection_connection: >
+    A reading that surfaces control may be worth holding alongside this
+    passage's own list -- self-control named as one quality among
+    several, not sought in isolation.
+
+- theme: recognition
+  book: Matthew
+  chapter: 6
+  verse_start: 1
+  verse_end: null
+  reference_display: "Matthew 6:1"
+  translation: KJV
+  context_note: >
+    Jesus instructs against doing good deeds in order to be seen by
+    others.
+  reflection_connection: >
+    Where a reading names recognition, this passage is offered as a
+    caution more than an affirmation -- worth sitting with rather than
+    read as scripture endorsing the pursuit of recognition.
+
+- theme: recognition
+  book: Luke
+  chapter: 14
+  verse_start: 10
+  verse_end: null
+  reference_display: "Luke 14:10"
+  translation: KJV
+  context_note: >
+    Jesus describes an unassuming guest later being invited to a place
+    of honor, rather than claiming it beforehand.
+  reflection_connection: >
+    A reading that surfaces recognition may be worth holding alongside
+    this passage's own sequence -- recognition described as given, not
+    claimed in advance.
+
+- theme: fulfillment
+  book: John
+  chapter: 15
+  verse_start: 11
+  verse_end: null
+  reference_display: "John 15:11"
+  translation: KJV
+  context_note: >
+    Jesus tells his disciples that he has spoken so that his joy would
+    remain in them, and that their own joy would be full.
+  reflection_connection: >
+    Where a reading names fulfillment, this passage ties it to joy made
+    complete through connection to another, not to accomplishment
+    reached alone.
+
+- theme: vitality
+  book: Psalms
+  chapter: 92
+  verse_start: 12
+  verse_end: 14
+  reference_display: "Psalm 92:12-14"
+  translation: KJV
+  context_note: >
+    A psalm describing the righteous as flourishing like a palm tree,
+    still bearing fruit even in old age.
+  reflection_connection: >
+    A reading that surfaces vitality may be worth holding alongside this
+    passage's own timeline -- vitality described as lasting well beyond
+    an early or obvious peak.
+
+- theme: romantic_pursuit
+  book: Genesis
+  chapter: 2
+  verse_start: 24
+  verse_end: null
+  reference_display: "Genesis 2:24"
+  translation: KJV
+  context_note: >
+    A foundational description of a man leaving his family to be joined
+    to his wife, the two described as becoming one.
+  reflection_connection: >
+    Where a reading names romantic pursuit, this passage is offered as a
+    modest, deliberately general anchor -- not a comment on any
+    particular relationship's specifics.
+
+- theme: curiosity
+  book: Luke
+  chapter: 19
+  verse_start: 3
+  verse_end: 4
+  reference_display: "Luke 19:3-4"
+  translation: KJV
+  context_note: >
+    Zacchaeus, wanting to see Jesus but unable to over the crowd, climbs
+    a tree to get a better view.
+  reflection_connection: >
+    A reading that surfaces curiosity may be worth holding alongside
+    this passage's own small, practical persistence -- curiosity acted
+    on, not only felt.

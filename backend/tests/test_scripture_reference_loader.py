@@ -81,6 +81,201 @@ def test_discernment_and_clarity_have_real_seeded_references():
             assert entry["reference_display"]
 
 
+_FIRST_COVERAGE_EXPANSION_THEMES = (
+    "new_beginnings", "authority", "stability", "discipline", "mentorship",
+    "emotional_connection", "compassion", "nurturing", "joy", "contentment",
+    "loss", "mystery", "inner_strength", "courage", "solitude", "choice",
+    "fairness", "accountability", "truth", "honest_communication", "conflict",
+    "hardship", "burden", "exhaustion", "transformation", "letting_go",
+    "revelation", "reckoning", "renewal", "healing", "rest", "vigilance",
+    "completion", "wholeness", "abundance", "skill_and_craft", "diligence",
+    "generosity", "community",
+)
+"""The 39 themes added in the first Scripture coverage expansion batch
+(Raidian Reading Lifecycle improvements -- Scripture coverage audit),
+mirroring _FIRST_COVERAGE_EXPANSION_THEMES's own role: every one of these
+must have at least one real, verifiable seeded reference, each still
+capped at _MAX_REFLECTIONS-worth of genuinely distinct approved rows
+(never inflated just to hit the up-to-3 target)."""
+
+
+def test_first_coverage_expansion_themes_have_real_seeded_references():
+    """Every theme added in the first coverage expansion batch has at
+    least one real, verifiable seeded reference (a recognized canonical
+    book name, a non-empty reference_display) -- mirrors
+    test_discernment_and_clarity_have_real_seeded_references()'s own
+    guard, applied to the larger batch.
+    """
+    entries = load_scripture_reference_definitions()
+    by_theme: dict[str, list[dict]] = {}
+    for entry in entries:
+        by_theme.setdefault(entry["theme"], []).append(entry)
+
+    for theme in _FIRST_COVERAGE_EXPANSION_THEMES:
+        theme_entries = by_theme.get(theme, [])
+        assert theme_entries, f"expected at least one seeded reference for theme {theme!r}"
+        for entry in theme_entries:
+            assert entry["book"] in BIBLE_BOOKS
+            assert entry["reference_display"]
+            assert entry["translation"] == "KJV"
+
+
+def test_first_coverage_expansion_themes_never_exceed_three_references():
+    """"Up to 3 is a target, not a requirement" -- no theme in the new
+    batch was padded with a fourth reference just to reach the cap, and
+    several themes deliberately have fewer than 3 (documented as the
+    batch's own honest outcome, not an oversight).
+    """
+    entries = load_scripture_reference_definitions()
+    by_theme: dict[str, list[dict]] = {}
+    for entry in entries:
+        by_theme.setdefault(entry["theme"], []).append(entry)
+
+    for theme in _FIRST_COVERAGE_EXPANSION_THEMES:
+        assert len(by_theme.get(theme, [])) <= 3
+
+
+_ORIGINAL_SEED_THEMES = {
+    "fear", "anxiety", "patience", "relationships", "grief",
+    "hope", "uncertainty", "discernment", "clarity",
+}
+"""The initial 9-theme seed set, factored out so both the first and
+second coverage-expansion count guards below can reference the same
+baseline."""
+
+
+_SECOND_COVERAGE_EXPANSION_TIER1_THEMES = (
+    "willpower", "ambition", "breakthrough", "structure", "tradition",
+    "hidden_knowledge", "introspection", "indecision", "upheaval",
+    "self_evaluation", "legacy", "material_security", "reliability",
+    "entrapment", "memory", "creativity", "opportunity", "risk_taking",
+    "focus", "determination", "attachment", "recovery", "collaboration",
+    "authenticity",
+)
+"""The 24 "Strong / obvious fit" themes from the second Scripture
+coverage expansion batch (the audit's own remaining Tier 1)."""
+
+
+_SECOND_COVERAGE_EXPANSION_TIER2_THEMES = (
+    "intuition", "inner_guidance", "adaptability", "strategy", "illusion",
+    "endings", "transition", "cycles", "potential", "exploration",
+    "openness", "control", "recognition", "fulfillment", "vitality",
+    "romantic_pursuit", "curiosity",
+)
+"""The 17 "Moderate / plausible fit" themes from the second Scripture
+coverage expansion batch (the audit's own remaining Tier 2) -- each
+seeded with a reference whose reflection_connection explicitly frames
+the passage as related but not a literal synonym for the theme."""
+
+
+_TIER_3_UNMAPPED_THEMES = (
+    "belief_systems", "balance", "integration", "values_alignment",
+    "communication", "diplomacy", "practicality", "resourcefulness",
+    "self_sufficiency", "patterns", "restriction", "evasion",
+    "spontaneity", "assertiveness", "momentum", "idealism", "sensuality",
+    "manifestation",
+)
+"""The 18 "Weak / abstract fit" themes the audit recommended leaving
+unmapped -- guarded here so a future edit can't silently map one of
+these without it being a deliberate, reviewed decision."""
+
+
+def test_second_coverage_expansion_tier1_themes_have_real_seeded_references():
+    """Mirrors test_first_coverage_expansion_themes_have_real_seeded_references()
+    for the second batch's Tier 1 (Strong) themes.
+    """
+    entries = load_scripture_reference_definitions()
+    by_theme: dict[str, list[dict]] = {}
+    for entry in entries:
+        by_theme.setdefault(entry["theme"], []).append(entry)
+
+    for theme in _SECOND_COVERAGE_EXPANSION_TIER1_THEMES:
+        theme_entries = by_theme.get(theme, [])
+        assert theme_entries, f"expected at least one seeded reference for theme {theme!r}"
+        for entry in theme_entries:
+            assert entry["book"] in BIBLE_BOOKS
+            assert entry["reference_display"]
+            assert entry["translation"] == "KJV"
+
+
+def test_second_coverage_expansion_tier2_themes_have_real_seeded_references():
+    """Mirrors the Tier 1 guard above for the second batch's Tier 2
+    (Moderate) themes -- these still require a real, verifiable
+    reference even though their framing is more cautious.
+    """
+    entries = load_scripture_reference_definitions()
+    by_theme: dict[str, list[dict]] = {}
+    for entry in entries:
+        by_theme.setdefault(entry["theme"], []).append(entry)
+
+    for theme in _SECOND_COVERAGE_EXPANSION_TIER2_THEMES:
+        theme_entries = by_theme.get(theme, [])
+        assert theme_entries, f"expected at least one seeded reference for theme {theme!r}"
+        for entry in theme_entries:
+            assert entry["book"] in BIBLE_BOOKS
+            assert entry["reference_display"]
+            assert entry["translation"] == "KJV"
+
+
+def test_second_coverage_expansion_themes_never_exceed_three_references():
+    """"Up to 3 is a target, not a requirement" -- applied to the second
+    batch (Tier 1 + Tier 2 combined). Several themes deliberately have
+    fewer than 3, documented as the batch's own honest outcome.
+    """
+    entries = load_scripture_reference_definitions()
+    by_theme: dict[str, list[dict]] = {}
+    for entry in entries:
+        by_theme.setdefault(entry["theme"], []).append(entry)
+
+    for theme in _SECOND_COVERAGE_EXPANSION_TIER1_THEMES + _SECOND_COVERAGE_EXPANSION_TIER2_THEMES:
+        assert len(by_theme.get(theme, [])) <= 3
+
+
+def test_tier_3_themes_remain_unmapped():
+    """The audit's "Weak / abstract fit" themes were deliberately left
+    without direct Scripture coverage -- this must stay true unless a
+    future change makes that a deliberate, separately-reviewed decision
+    (this test would then need an equally deliberate update, not a
+    silent pass).
+    """
+    entries = load_scripture_reference_definitions()
+    themes = {entry["theme"] for entry in entries}
+    assert themes.isdisjoint(_TIER_3_UNMAPPED_THEMES)
+
+
+def test_seeded_theme_count_reflects_the_first_coverage_expansion():
+    """A coarse, hard-to-fake regression guard: the seed file, after the
+    first coverage expansion batch alone, covered the original 9 themes
+    plus that batch's 39 -- 48 distinct themes. Checked as a subset
+    relationship (not equality) here, since the second batch has since
+    added more; test_seeded_theme_count_reflects_the_second_coverage_expansion
+    below is the current, up-to-date total-count guard.
+    """
+    entries = load_scripture_reference_definitions()
+    themes = {entry["theme"] for entry in entries}
+    assert _ORIGINAL_SEED_THEMES <= themes
+    assert set(_FIRST_COVERAGE_EXPANSION_THEMES) <= themes
+
+
+def test_seeded_theme_count_reflects_the_second_coverage_expansion():
+    """The current, up-to-date total-theme-count guard: 9 original + 39
+    (first batch) + 24 (second batch Tier 1) + 17 (second batch Tier 2)
+    = 89 distinct covered themes, out of 107 total in
+    theme_vocabulary.yaml -- and nothing beyond exactly this set (proves
+    Tier 3 themes, and every other still-uncovered theme, stay out).
+    """
+    entries = load_scripture_reference_definitions()
+    themes = {entry["theme"] for entry in entries}
+    expected = (
+        _ORIGINAL_SEED_THEMES
+        | set(_FIRST_COVERAGE_EXPANSION_THEMES)
+        | set(_SECOND_COVERAGE_EXPANSION_TIER1_THEMES)
+        | set(_SECOND_COVERAGE_EXPANSION_TIER2_THEMES)
+    )
+    assert len(expected) == 89
+    assert themes == expected
+
+
 def test_no_seeded_entry_contains_passage_text_fields():
     """A structural guardrail against ever silently gaining a `text` or
     `passage`/`verse_text` field -- Section 15.1's licensing constraint

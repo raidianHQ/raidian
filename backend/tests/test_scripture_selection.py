@@ -681,7 +681,12 @@ def test_integration_single_card_uses_the_stars_own_first_theme(seeded_session):
     (primary_themes) then inner_strength (secondary) -- all tied at
     count=1 for a Single Card reading, so central_issue resolves to
     "healing" (alphabetically first). Scripture must still use "hope"
-    (themes[0]), which has a real approved mapping in the seeded dataset.
+    (themes[0]) as its primary candidate, not "healing". Since the first
+    Scripture coverage expansion batch, "hope"'s own supporting-theme
+    siblings "inner_strength" and "renewal" are *also* approved themes,
+    so both legitimately contribute too (every mapped candidate
+    contributes, not just the first) -- with "hope" grouped first, since
+    it is the primary candidate, ahead of the ranked supporting themes.
     """
     from app.services.interpretation.engine import interpret
 
@@ -696,7 +701,9 @@ def test_integration_single_card_uses_the_stars_own_first_theme(seeded_session):
 
     perspective = select_scripture_reflections(seeded_session, model)
 
-    assert {r.theme for r in perspective.reflections} == {"hope"}
+    themes_present = [r.theme for r in perspective.reflections]
+    assert set(themes_present) == {"hope", "inner_strength", "renewal"}
+    assert themes_present[0] == "hope"  # primary candidate grouped first
 
 
 def test_integration_discernment_produces_multiple_related_references(seeded_session):
@@ -710,7 +717,10 @@ def test_integration_discernment_produces_multiple_related_references(seeded_ses
     selection.py's `_RELATED_THEMES["discernment"] == ("clarity",)`, so
     the returned reflections legitimately span both real, approved theme
     tags -- not just the one exact string "discernment" -- without any
-    fuzzy/keyword matching involved.
+    fuzzy/keyword matching involved. Since the first Scripture coverage
+    expansion batch, this card's third theme, "honest_communication"
+    (also a ranked supporting theme here), is *also* an approved theme,
+    so it legitimately contributes its own references too.
     """
     from app.services.interpretation.engine import interpret
 
@@ -725,7 +735,7 @@ def test_integration_discernment_produces_multiple_related_references(seeded_ses
     perspective = select_scripture_reflections(seeded_session, model)
 
     themes_present = {r.theme for r in perspective.reflections}
-    assert themes_present == {"discernment", "clarity"}
+    assert themes_present == {"discernment", "clarity", "honest_communication"}
     assert len(perspective.reflections) >= 2
     # Every reflection traces back to real evidence in this reading, never
     # a fabricated citation.
@@ -733,14 +743,25 @@ def test_integration_discernment_produces_multiple_related_references(seeded_ses
         assert len(reflection.theme_citations) >= 1
 
 
-def test_integration_multi_card_falls_back_to_a_mapped_supporting_theme(seeded_session):
+def test_integration_multi_card_every_candidate_slot_contributes_in_priority_order(seeded_session):
     """The real Celtic Cross fixture used throughout this project's own
-    test suite computes central_issue="inner_guidance", which has no
-    approved Scripture mapping -- but this same reading's own
-    already-ranked supporting_themes includes "patience" (mapped).
-    Scripture must now surface "patience"'s approved reference, proving
-    the fallback works end-to-end against the real engine and the real
-    seeded reference data, not just hand-built fixtures.
+    test suite computes central_issue="inner_guidance". Before the
+    second Scripture coverage expansion batch, this was Scripture's own
+    canonical "falls back to a mapped supporting theme" proof --
+    inner_guidance was unmapped, but a ranked supporting theme
+    ("patience") was. Since that batch's Tier 2 now maps
+    "inner_guidance" itself (deliberately, with cautious framing -- see
+    its own seeded reflection_connection), this exact fixture no longer
+    demonstrates a fallback -- every one of its candidate slots
+    (central_issue, supporting_themes, clarification, blocker, and
+    advice) is now individually mapped, which is arguably a stronger
+    end-to-end proof: the full candidate hierarchy contributing at once,
+    still deduplicated, still in priority order, against the real engine
+    and the real seeded dataset, not just hand-built fixtures. The
+    unit-level fallback mechanism itself remains covered by
+    test_falls_back_to_a_mapped_supporting_theme_when_central_issue_is_unmapped
+    above, which uses synthetic (never-seeded) theme names and is
+    unaffected by how broad the real dataset becomes.
     """
     from app.services.interpretation.engine import interpret
 
@@ -762,8 +783,77 @@ def test_integration_multi_card_falls_back_to_a_mapped_supporting_theme(seeded_s
     model = interpret(reading, seeded_session)
 
     assert model.central_issue.value == "inner_guidance"
-    assert any(t.value == "patience" for t in model.supporting_themes)  # ranked fallback candidate
+    assert any(t.value == "patience" for t in model.supporting_themes)
+    assert model.clarification is not None and model.clarification.value == "inner_strength"
+    assert model.blocker is not None and model.blocker.value == "upheaval"
+    assert model.advice is not None and model.advice.value == "intuition"
 
     perspective = select_scripture_reflections(seeded_session, model)
 
-    assert {r.theme for r in perspective.reflections} == {"patience"}
+    themes_present = [r.theme for r in perspective.reflections]
+    # Priority order: central_issue, then supporting_themes in rank order
+    # (inner_strength ahead of intuition ahead of patience), then
+    # clarification/blocker/advice -- but clarification="inner_strength"
+    # and advice="intuition" were already seen as supporting themes, so
+    # they are not repeated; only blocker="upheaval" is a genuinely new
+    # candidate at that stage.
+    assert themes_present == [
+        "inner_guidance", "inner_guidance",
+        "inner_strength", "inner_strength", "inner_strength",
+        "intuition",
+        "patience",
+        "upheaval", "upheaval",
+    ]
+    # No reference repeated, despite inner_strength/intuition being
+    # reachable via two different candidate slots each.
+    reference_displays = [r.reference_display for r in perspective.reflections]
+    assert len(reference_displays) == len(set(reference_displays))
+
+
+def test_integration_first_coverage_expansion_batch_multiple_themes_contribute_without_duplication(
+    seeded_session,
+):
+    """The exact production scenario diagnosed in the Scripture coverage
+    audit (Queen of Pentacles / Five of Pentacles / Five of Wands, Three
+    Card): before the first coverage expansion batch, central_issue
+    "conflict" and supporting_themes "determination"/"hardship"/"loss"
+    were all unmapped, so this reading's Scriptural Reflection came back
+    empty even though it was a genuine, non-buggy result given the data
+    at the time. The first batch mapped conflict/hardship/loss; the
+    second batch's Tier 1 then also mapped "determination" (Five of
+    Wands' own secondary theme, ranked first among this reading's
+    supporting_themes) -- so this same real reading now surfaces all
+    four themes' own references, still grouped candidate-by-candidate in
+    priority order, with no reference repeated -- proving multiple
+    newly-covered themes can each contribute at once, end to end against
+    the real engine and the real seeded dataset, with no global cap
+    across the reading.
+    """
+    from app.services.interpretation.engine import interpret
+
+    reading = build_reading(
+        seeded_session, spread_name="Three Card",
+        draws=[
+            ("Recent Past", "Queen of Pentacles", Orientation.UPRIGHT),
+            ("Present Situation", "Five of Pentacles", Orientation.UPRIGHT),
+            ("Near Future", "Five of Wands", Orientation.UPRIGHT),
+        ],
+    )
+    model = interpret(reading, seeded_session)
+
+    assert model.central_issue.value == "conflict"
+    supporting = [t.value for t in model.supporting_themes]
+    assert supporting == ["determination", "hardship", "loss"]
+
+    perspective = select_scripture_reflections(seeded_session, model)
+
+    themes_present = [r.theme for r in perspective.reflections]
+    assert set(themes_present) == {"conflict", "determination", "hardship", "loss"}
+    # No reference repeated -- each of this reading's own distinct
+    # approved rows appears exactly once.
+    reference_displays = [r.reference_display for r in perspective.reflections]
+    assert len(reference_displays) == len(set(reference_displays))
+    # conflict (central_issue) is grouped first, ahead of the three
+    # ranked supporting themes -- priority order preserved.
+    assert themes_present[0] == "conflict"
+    assert themes_present.index("determination") < themes_present.index("hardship") < themes_present.index("loss")
