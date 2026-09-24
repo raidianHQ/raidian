@@ -189,6 +189,26 @@ body {
     overflow: visible !important;
   }
 
+  /* iOS Safari follow-up: card images were still being clipped at page
+     boundaries despite `break-inside-avoid` on their outer wrapper. Two
+     gaps, both WebKit-specific (desktop's print engine already respects
+     the existing rule): (1) that wrapper is itself a flex container (a
+     grid item, for Your Spread) -- WebKit's print fragmentation support
+     inside flex/grid formatting contexts is unreliable, so the hint on
+     it is easily dropped; (2) `.print-card-frame` (the plain block box
+     that is the actual image container, sized via aspect-ratio) carried
+     no break protection of its own. Reinforcing both with the legacy
+     `page-break-inside` alias (some WebKit print/PDF paths key off it
+     more reliably than the modern property) and adding the same
+     protection directly to the frame -- a plain block box, not a
+     flex/grid container -- targets the box WebKit is actually slicing,
+     without changing any element's display type or visual layout. */
+  #reading-print-area .break-inside-avoid,
+  #reading-print-area .print-card-frame {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   /* Long-form reading prose: keep at least 3 lines together at a page
      boundary rather than stranding a single line at the bottom of one
      page (an orphan) or the top of the next (a widow). */
