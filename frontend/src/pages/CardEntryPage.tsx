@@ -258,6 +258,24 @@ export function CardEntryPage() {
         </Panel>
       )}
 
+      {canDraw && (
+        // New-user guidance: the position boxes below give no visual hint
+        // that clicking one opens the card-entry interface -- this makes
+        // that interaction explicit without changing it (no auto-open).
+        // Hidden once the spread is complete, mirroring the "spread
+        // complete" panel above which already covers that state.
+        <div className="mb-6 text-center">
+          <h2 className="font-serif text-xl text-ink">
+            {positions.length === 1 ? 'Enter Your Drawn Card' : 'Enter Your Drawn Cards'}
+          </h2>
+          <p className="mt-2 text-sm text-ink-soft">
+            {positions.length === 1
+              ? 'Draw a card from your physical deck, then click the card position below to enter the card you drew.'
+              : 'Using your physical deck, draw a card for each position. Click a card position below to enter the card you drew.'}
+          </p>
+        </div>
+      )}
+
       <section className="mb-8">
         <h2 className="mb-2 text-xs font-medium tracking-[0.2em] text-accent uppercase">Positions</h2>
         <ul className="flex flex-col gap-2">
