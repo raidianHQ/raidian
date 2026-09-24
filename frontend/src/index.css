@@ -189,6 +189,47 @@ body {
     overflow: visible !important;
   }
 
+  /* "Your Spread" Grid -> print-only block/inline-block layout: even with
+     the break-inside/page-break-inside reinforcement above, iOS Safari
+     still clipped card images here inconsistently -- confirmed
+     WebKit-specific and Grid-specific, since the identically-protected,
+     non-Grid "Card by Card" section (a plain flex column, untouched)
+     fragments correctly every time. CSS Grid's item-level print
+     fragmentation is the unreliable part in WebKit; plain block/
+     inline-block layout is the one fragmentation model every print
+     engine (including older WebKit) has handled correctly for decades,
+     so it replaces Grid here, in print only -- screen keeps the actual
+     `grid`/`flex` utility classes and this on-screen layout completely
+     unchanged, since none of these selectors can match outside print. */
+  #reading-print-area .print-spread-grid {
+    display: block;
+  }
+
+  /* Two per row by default (mirrors the screen grid's own `grid-cols-2`),
+     three per row once the print page is wide enough (mirrors `sm:
+     grid-cols-3` below) -- `break-inside`/`page-break-inside: avoid` here
+     is inherited from the `.break-inside-avoid` rule further down (every
+     cell already carries that class); `gap` has no inline-block
+     equivalent, so spacing is done with margins instead. */
+  #reading-print-area .print-spread-cell {
+    display: inline-block;
+    width: 48%;
+    margin: 0 1% 1.25rem;
+    vertical-align: top;
+  }
+
+  /* The cell's own direct text children (position label, card name,
+     orientation badge) are plain `<span>`s that relied on the wrapper's
+     `display: flex` to stack as separate lines -- without it they'd run
+     inline. `width: fit-content` + centered margins keeps each one sized
+     to its own text (matching the existing rounded orientation badge's
+     look) rather than stretching edge to edge. */
+  #reading-print-area .print-spread-cell > span {
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+  }
+
   /* iOS Safari follow-up: card images were still being clipped at page
      boundaries despite `break-inside-avoid` on their outer wrapper. Two
      gaps, both WebKit-specific (desktop's print engine already respects
@@ -215,5 +256,16 @@ body {
   #reading-print-area p {
     orphans: 3;
     widows: 3;
+  }
+}
+
+/* Three per row once the print page is wide enough to reasonably fit them --
+   a top-level rule (not nested inside @media print above) so it doesn't
+   depend on CSS nesting support; mirrors the screen grid's own `sm:
+   grid-cols-3` breakpoint (640px). Screen layout is unaffected: this only
+   ever matches while printing. */
+@media print and (min-width: 640px) {
+  #reading-print-area .print-spread-cell {
+    width: 31.33%;
   }
 }

@@ -686,12 +686,15 @@ export function ReadingResultPage() {
           text. */}
       {positions.length > 0 && (
         <SectionPanel title="Your Spread" icon={<SpreadIcon className="h-8 w-8 text-accent" />}>
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-7">
+          <div className="print-spread-grid grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-7">
             {positions.map((position) => {
               const draw = drawByPositionName.get(position.name)
               if (!draw) return null
               return (
-                <div key={position.id} className="flex flex-col items-center gap-2 text-center break-inside-avoid">
+                <div
+                  key={position.id}
+                  className="print-spread-cell flex flex-col items-center gap-2 text-center break-inside-avoid"
+                >
                   <span className="text-sm font-medium text-ink-soft sm:text-base">{position.name}</span>
                   <div className="print-card-frame aspect-2/3 w-full overflow-hidden rounded-xl bg-paper p-2 sm:p-3">
                     <CardArtwork card={draw.card} orientation={draw.orientation} />
