@@ -181,6 +181,18 @@ body {
     overflow: visible !important;
   }
 
+  /* Document layout: page 1 is a dedicated cover/introduction (title,
+     spread type, question) in print -- the "Your Spread" section (its
+     heading and its cards together, since they share one SectionPanel)
+     always starts on its own following page, rather than the heading
+     landing stranded at the bottom of page 1 with the cards pushed to
+     page 2. Marked directly on that SectionPanel via its own `className`
+     prop (ReadingResultPage.tsx) instead of a new wrapper element. */
+  #reading-print-area .print-break-before {
+    break-before: page;
+    page-break-before: always;
+  }
+
   /* Tarot card image frames (Your Spread + Card by Card) share the same
      overflow-hidden/pagination interaction as SectionPanel above --
      addressed via their own marker class (see ReadingResultPage.tsx)

@@ -685,7 +685,11 @@ export function ReadingResultPage() {
           position label, name, and orientation badge as plain stacked
           text. */}
       {positions.length > 0 && (
-        <SectionPanel title="Your Spread" icon={<SpreadIcon className="h-8 w-8 text-accent" />}>
+        <SectionPanel
+          title="Your Spread"
+          icon={<SpreadIcon className="h-8 w-8 text-accent" />}
+          className="print-break-before"
+        >
           <div className="print-spread-grid grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-7">
             {positions.map((position) => {
               const draw = drawByPositionName.get(position.name)
