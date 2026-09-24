@@ -693,7 +693,7 @@ export function ReadingResultPage() {
               return (
                 <div key={position.id} className="flex flex-col items-center gap-2 text-center break-inside-avoid">
                   <span className="text-sm font-medium text-ink-soft sm:text-base">{position.name}</span>
-                  <div className="aspect-2/3 w-full overflow-hidden rounded-xl bg-paper p-2 sm:p-3">
+                  <div className="print-card-frame aspect-2/3 w-full overflow-hidden rounded-xl bg-paper p-2 sm:p-3">
                     <CardArtwork card={draw.card} orientation={draw.orientation} />
                   </div>
                   <span className="font-serif text-base text-ink sm:text-lg">{draw.card.name}</span>
@@ -838,7 +838,7 @@ export function ReadingResultPage() {
               return (
                 <div key={index} className="flex gap-4 break-inside-avoid">
                   {draw && (
-                    <div className="aspect-2/3 w-16 shrink-0 overflow-hidden rounded-lg bg-paper-muted sm:w-24">
+                    <div className="print-card-frame aspect-2/3 w-16 shrink-0 overflow-hidden rounded-lg bg-paper-muted sm:w-24">
                       <CardArtwork card={draw.card} orientation={card.orientation} />
                     </div>
                   )}

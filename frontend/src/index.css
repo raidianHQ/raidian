@@ -154,4 +154,46 @@ body {
   #reading-print-area details:not([open]) summary ~ * {
     display: block !important;
   }
+
+  /* Pagination (PDF export investigation): mobile/desktop PDF export via
+     window.print() showed headings stranded at the bottom of a page,
+     cards clipped/split across pages, and awkward text breaks -- worst on
+     iOS Safari's print engine specifically. None of this changes on-screen
+     layout; it only takes effect under @media print. */
+
+  /* Keep every section heading attached to the content that follows it,
+     instead of a heading landing as the last line on a page with its
+     content starting fresh on the next. */
+  #reading-print-area h1,
+  #reading-print-area h2,
+  #reading-print-area h3 {
+    break-after: avoid-page;
+  }
+
+  /* SectionPanel's `overflow-hidden` (screen-only purpose: clip its header
+     band to the panel's rounded corners) interferes with WebKit's print
+     pagination -- content inside a non-`visible` overflow context can be
+     clipped rather than flowing naturally onto the next page. Nothing in
+     print needs that clipping (no scrolling, and the only visible cost is
+     the header band's square top corners no longer being clipped to the
+     panel's rounded ones), so it's relaxed for every major panel here. */
+  #reading-print-area section {
+    overflow: visible !important;
+  }
+
+  /* Tarot card image frames (Your Spread + Card by Card) share the same
+     overflow-hidden/pagination interaction as SectionPanel above --
+     addressed via their own marker class (see ReadingResultPage.tsx)
+     rather than a fragile Tailwind-generated class selector. */
+  #reading-print-area .print-card-frame {
+    overflow: visible !important;
+  }
+
+  /* Long-form reading prose: keep at least 3 lines together at a page
+     boundary rather than stranding a single line at the bottom of one
+     page (an orphan) or the top of the next (a widow). */
+  #reading-print-area p {
+    orphans: 3;
+    widows: 3;
+  }
 }
