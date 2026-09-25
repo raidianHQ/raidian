@@ -3,6 +3,7 @@ import { useAuth } from '../auth/useAuth'
 import { BottomNav } from './BottomNav'
 import { CosmicBackground } from './CosmicBackground'
 import { CrescentStarIcon } from './icons'
+import { NavMenu } from './NavMenu'
 
 /**
  * Application shell (Step 47; restyled for the cosmic redesign --
@@ -12,11 +13,12 @@ import { CrescentStarIcon } from './icons'
  * reads as part of the night-sky background (CosmicBackground) rather
  * than sitting inside a heavy solid navbar, per the design brief.
  *
- * Navigation is split by viewport rather than duplicated: "History" and
- * "New Reading" live in the header on sm+ screens, and in BottomNav
- * (mobile's elegant bottom bar, matching the design reference) below
- * that breakpoint. Log in/out/Register always stay in the header --
- * they aren't part of the reference's bottom-nav set.
+ * Navigation is one consistent system across every viewport, not split by
+ * breakpoint: the header's hamburger (NavMenu) holds New Reading/Reading
+ * History/Logout, and BottomNav (Home/Readings/New Reading) is visible at
+ * every width, not just mobile -- both render only while authenticated.
+ * Log in/Register stay as their own plain header links for a logged-out
+ * visitor; they aren't part of either the menu or the bottom nav.
  *
  * The unauthenticated header also hides whichever of Log in/Register
  * matches the current route -- otherwise the Login page would show a
@@ -25,7 +27,7 @@ import { CrescentStarIcon } from './icons'
  * navbar rather than a screen actually designed for what it's showing.
  */
 export function AppShell() {
-  const { isAuthenticated, clearToken } = useAuth()
+  const { isAuthenticated } = useAuth()
   const location = useLocation()
 
   return (
@@ -34,34 +36,9 @@ export function AppShell() {
 
       <header className="relative z-10 px-4 pt-8 pb-4 sm:px-8 sm:pt-12">
         <div className="mx-auto flex max-w-275 items-center justify-between gap-4">
-          <div className="flex min-h-[2rem] items-center gap-4 text-sm tracking-widest uppercase">
-            {isAuthenticated && (
-              <Link
-                to="/readings"
-                className="hidden text-ink-soft no-underline transition-colors hover:text-accent sm:inline"
-              >
-                History
-              </Link>
-            )}
-          </div>
+          <div className="flex min-h-[2rem] items-center gap-4">{isAuthenticated && <NavMenu />}</div>
           <div className="flex items-center gap-4 text-sm tracking-widest uppercase">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/readings/new"
-                  className="hidden text-ink-soft no-underline transition-colors hover:text-accent sm:inline"
-                >
-                  New Reading
-                </Link>
-                <button
-                  type="button"
-                  onClick={clearToken}
-                  className="rounded-full border border-border px-3.5 py-1.5 text-ink-soft transition-colors hover:border-accent hover:text-accent"
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
+            {!isAuthenticated && (
               <>
                 {location.pathname !== '/login' && (
                   <Link to="/login" className="text-ink-soft no-underline transition-colors hover:text-accent">
@@ -140,7 +117,7 @@ export function AppShell() {
 
       <main
         className={`relative z-10 mx-auto flex w-full max-w-275 flex-1 flex-col px-4 pt-6 sm:px-8 ${
-          isAuthenticated ? 'pb-24 sm:pb-16' : 'pb-16'
+          isAuthenticated ? 'pb-24' : 'pb-16'
         }`}
       >
         <Outlet />
